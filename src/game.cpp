@@ -35,10 +35,5 @@ void Game::initGame() {
       blind_.moveTopCardTo(player_2.handdeck());
       blind_.moveTopCardTo(player_3.handdeck());
     }
-
-    qDebug() << "Player-2: " << player_2.handdeck().print();
-    qDebug() << "Player-3: " << player_3.handdeck().print();
-    qDebug() << "Skat: " << skat_.print();
-    qDebug() << "Player-1: " << player_1.handdeck().print();
   }
 }
