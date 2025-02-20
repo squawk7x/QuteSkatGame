@@ -37,10 +37,12 @@ Table::Table(
     QObject::connect(
         cardButton, &QPushButton::clicked, this,
         [this, cardButton, gbPlayer1Layout, gbTrickLayout, card]() {
-          gbPlayer1Layout->removeWidget(cardButton);
-          cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-          game_.playCard(card);
-          gbTrickLayout->addWidget(cardButton);
+          if (game_.playerList_[0]->id() == game_.player_1.id()) {
+            gbPlayer1Layout->removeWidget(cardButton);
+            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+            game_.playCard(card);
+            gbTrickLayout->addWidget(cardButton);
+          }
         });
   }
 
@@ -56,6 +58,16 @@ Table::Table(
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
     gbPlayer2Layout->addWidget(cardButton);
+    QObject::connect(
+        cardButton, &QPushButton::clicked, this,
+        [this, cardButton, gbPlayer2Layout, gbTrickLayout, card]() {
+          if (game_.playerList_[0]->id() == game_.player_2.id()) {
+            gbPlayer2Layout->removeWidget(cardButton);
+            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+            game_.playCard(card);
+            gbTrickLayout->addWidget(cardButton);
+          }
+        });
   }
 
   for (const Card &card : game_.player_3.handdeck_.cards()) {
@@ -63,7 +75,34 @@ Table::Table(
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
     gbPlayer3Layout->addWidget(cardButton);
+    QObject::connect(
+        cardButton, &QPushButton::clicked, this,
+        [this, cardButton, gbPlayer3Layout, gbTrickLayout, card]() {
+          if (game_.playerList_[0]->id() == game_.player_3.id()) {
+            gbPlayer3Layout->removeWidget(cardButton);
+            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+            game_.playCard(card);
+            gbTrickLayout->addWidget(cardButton);
+          }
+        });
   }
+
+  QObject::connect(&game_, &Game::clearTrickLayout, this,
+                   &Table::onClearTrickLayout);
 }
 
 Table::~Table() { delete ui; }
+
+void Table::onClearTrickLayout() {
+  qDebug() << "called onClearTrickLayout";
+
+  QLayout *layout = findChild<QGroupBox *>("gbTrick")->layout();
+  if (!layout) return;
+
+  while (QLayoutItem *item = layout->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+}

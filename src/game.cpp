@@ -35,5 +35,21 @@ void Game::initGame() {
 // Slots:
 void Game::playCard(
     Card card) {
-  player_1.handdeck_.moveCardTo(card, trick_);
+  auto& hand = playerList_[0]->handdeck_.cards();
+  auto it = std::find(hand.begin(), hand.end(), card);
+
+  if (it != hand.end()) {  // Card found
+    if (trick_.cards().size() == 3) {
+      playerList_[0]->tricks_.push_back(trick_);
+      trick_.clearCards();
+      emit(clearTrickLayout());
+    }
+    playerList_[0]->handdeck_.moveCardTo(card, trick_);
+    qDebug() << "Card played: " << QString::fromStdString(card.str());
+    qDebug() << "trick_: " << trick_.print();
+
+    std::ranges::rotate(playerList_, playerList_.begin() + 1);
+  } else {
+    qDebug() << "Error: Card not found in your hand!";
+  }
 }

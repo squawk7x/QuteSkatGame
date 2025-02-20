@@ -44,7 +44,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
   qt_add_executable(quteSkatGame MANUAL_FINALIZATION ${PROJECT_SOURCES}
                     src/main.cpp src/game.h src/game.cpp
                     res/cards/10_of_clubs.png res/cards/10_of_diamonds.png res/cards/10_of_hearts.png res/cards/10_of_spades.png res/cards/6_of_clubs.png res/cards/6_of_diamonds.png res/cards/6_of_hearts.png res/cards/6_of_spades.png res/cards/7_of_clubs.png res/cards/7_of_diamonds.png res/cards/7_of_hearts.png res/cards/7_of_spades.png res/cards/8_of_clubs.png res/cards/8_of_diamonds.png res/cards/8_of_hearts.png res/cards/8_of_spades.png res/cards/9_of_clubs.png res/cards/9_of_diamonds.png res/cards/9_of_hearts.png res/cards/9_of_spades.png res/cards/ace_of_clubs.png res/cards/ace_of_diamonds.png res/cards/ace_of_hearts.png res/cards/ace_of_spades.png res/cards/backside_blue.png res/cards/backside_red.png res/cards/jack_of_clubs.png res/cards/jack_of_diamonds.png res/cards/jack_of_hearts.png res/cards/jack_of_spades.png res/cards/king_of_clubs.png res/cards/king_of_diamonds.png res/cards/king_of_hearts.png res/cards/king_of_spades.png res/cards/queen_of_clubs.png res/cards/queen_of_diamonds.png res/cards/queen_of_hearts.png res/cards/queen_of_spades.png
-                    src/tricks.h src/tricks.cpp)
+                )
 
   qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()

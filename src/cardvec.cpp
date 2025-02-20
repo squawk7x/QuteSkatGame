@@ -37,6 +37,9 @@ void CardVec::moveTopCardTo(
   }
 }
 
+void CardVec::moveCardVecTo(
+    std::vector<CardVec>& target) {}
+
 // Shuffle the cards
 void CardVec::shuffle() {
   std::random_device rd;

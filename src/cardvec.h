@@ -23,6 +23,7 @@ class CardVec {
 
   void moveCardTo(const Card& card, CardVec& target);
   void moveTopCardTo(CardVec& targetVec);
+  void moveCardVecTo(std::vector<CardVec>& target);
 
   std::string print();
   void clearCards();

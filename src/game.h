@@ -24,6 +24,7 @@ class Game : public QObject {
   void initGame();
 
  signals:
+  void clearTrickLayout();
 
  public slots:
   void playCard(Card card);

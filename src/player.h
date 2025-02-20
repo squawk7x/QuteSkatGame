@@ -2,9 +2,7 @@
 #define PLAYER_H
 
 #include <QObject>
-
 #include "cardvec.h"
-#include "tricks.h"
 
 class Player : public QObject {
   // Q_OBJECT
@@ -18,7 +16,7 @@ class Player : public QObject {
  public:
   CardVec handdeck_;
   CardVec skat_;  // active player will get the 'Skat'
-  Tricks tricks_;
+  std::vector<CardVec> tricks_;
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),
