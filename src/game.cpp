@@ -31,3 +31,9 @@ void Game::initGame() {
     for (Player* player : playerList_) player->handdeck_.sortCardsByPattern();
   }
 }
+
+// Slots:
+void Game::playCard(
+    Card card) {
+  player_1.handdeck_.moveCardTo(card, trick_);
+}
