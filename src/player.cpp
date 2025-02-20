@@ -3,12 +3,14 @@
 #include <QDebug>
 
 Player::Player(
-    int id, std::string name, bool isRobot, int score, CardVec handdeck)
+    int id, std::string name, bool isRobot, int score, CardVec handdeck,
+    CardVec skat)
     : id_(id),
       name_(name),
       isRobot_(isRobot),
       score_(score),
-      handdeck_(handdeck) {}
+      handdeck_(handdeck),
+      skat_(skat) {}
 
 // Operators
 bool operator<(
@@ -32,7 +34,8 @@ std::string Player::name() const { return name_; }
 bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
 
-CardVec &Player::handdeck() { return handdeck_; }  // ✅ Return by reference
+// CardVec &Player::handdeck_ { return handdeck_; }  // ✅ Return by reference
+// CardVec &Player::skat() { return skat_; }  // ✅ Return by reference
 
 // Methods
 int Player::pointsOnHand() {

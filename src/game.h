@@ -15,8 +15,9 @@ class Game : public QObject {
   Player player_2{2, "Player-2"};
   Player player_3{3, "Player-3"};
   CardVec skat_{2};
+  std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
 
-  explicit Game(QObject *parent = nullptr);
+  explicit Game(QObject* parent = nullptr);
 
   void initGame();
 

@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "cardvec.h"
+#include "tricks.h"
 
 class Player : public QObject {
   // Q_OBJECT
@@ -13,11 +14,15 @@ class Player : public QObject {
   std::string name_;
   bool isRobot_;
   int score_;
-  CardVec handdeck_;
 
  public:
+  CardVec handdeck_;
+  CardVec skat_;  // active player will get the 'Skat'
+  Tricks tricks_;
+
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
-                  int score = 0, CardVec handdeck = CardVec(10));
+                  int score = 0, CardVec handdeck = CardVec(10),
+                  CardVec skat = CardVec(2));
   ~Player() = default;
 
   friend bool operator<(const Player &lhs, const Player &rhs);
@@ -29,7 +34,8 @@ class Player : public QObject {
   std::string name() const;
   bool isRobot() const;
   int score() const;
-  CardVec &handdeck();  // ✅ Return by reference
+  // CardVec &handdeck_;  // ✅ Return by reference
+  // CardVec &skat();  // ✅ Return by reference
 
   // Methods
   int pointsOnHand();

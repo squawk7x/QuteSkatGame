@@ -1,7 +1,6 @@
 #include "cardvec.h"
 
 #include <algorithm>
-#include <iostream>
 #include <random>
 #include <unordered_map>
 

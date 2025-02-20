@@ -24,12 +24,12 @@ Table::Table(
   gbPlayer3->setLayout(gbPlayer3Layout);
   gbSkat->setLayout(gbSkatLayout);
 
-  for (const Card &card : game_.player_1.handdeck().cards()) {
+  for (const Card &card : game_.player_1.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    cardButton->setStyleSheet(
-        "font-size: 20px; padding: 5px; border: 1px solid black;");
+    // cardButton->setStyleSheet(
+    //     "font-size: 20px; padding: 5px; border: 1px solid black;");
 
     gbPlayer1Layout->addWidget(cardButton);
 
@@ -43,28 +43,28 @@ Table::Table(
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    cardButton->setStyleSheet(
-        "font-size: 20px; padding: 5px; border: 1px solid black;");
+    // cardButton->setStyleSheet(
+    //     "font-size: 20px; padding: 5px; border: 1px solid black;");
 
     gbSkatLayout->addWidget(cardButton);
   }
 
-  for (const Card &card : game_.player_2.handdeck().cards()) {
+  for (const Card &card : game_.player_2.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    cardButton->setStyleSheet(
-        "font-size: 20px; padding: 5px; border: 1px solid black;");
+    // cardButton->setStyleSheet(
+    //     "font-size: 20px; padding: 5px; border: 1px solid black;");
 
     gbPlayer2Layout->addWidget(cardButton);
   }
 
-  for (const Card &card : game_.player_3.handdeck().cards()) {
+  for (const Card &card : game_.player_3.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    cardButton->setStyleSheet(
-        "font-size: 20px; padding: 5px; border: 1px solid black;");
+    // cardButton->setStyleSheet(
+    //     "font-size: 20px; padding: 5px; border: 1px solid black;");
 
     gbPlayer3Layout->addWidget(cardButton);
   }
