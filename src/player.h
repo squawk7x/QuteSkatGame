@@ -17,10 +17,11 @@ class Player : public QObject {
   CardVec handdeck_;
   CardVec skat_;  // active player will get the 'Skat'
   std::vector<CardVec> tricks_;
+  bool hasTrick_;
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),
-                  CardVec skat = CardVec(2));
+                  CardVec skat = CardVec(2), bool hasTrick = false);
   ~Player() = default;
 
   friend bool operator<(const Player &lhs, const Player &rhs);
@@ -32,8 +33,6 @@ class Player : public QObject {
   std::string name() const;
   bool isRobot() const;
   int score() const;
-  // CardVec &handdeck_;  // ✅ Return by reference
-  // CardVec &skat();  // ✅ Return by reference
 
   // Methods
   int pointsOnHand();
@@ -43,7 +42,7 @@ class Player : public QObject {
   void setIsRobot(bool isRobot);
 
  public slots:
-  // void onCountPoints(int shuffles = 1);
+  // void onCountPoints();
 };
 
 #endif  // PLAYER_H

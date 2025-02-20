@@ -38,9 +38,20 @@ Table::Table(
         cardButton, &QPushButton::clicked, this,
         [this, cardButton, gbPlayer1Layout, gbTrickLayout, card]() {
           if (game_.playerList_[0]->id() == game_.player_1.id()) {
+            // ✅ First, check if the move is valid before doing anything
+            if (!game_.isCardValid(card)) {
+              qDebug() << "Move rejected: Invalid card choice.";
+              return;  // 🚨 Exit early if the move is not valid
+            }
+
+            // ✅ Only remove the card if it's valid
             gbPlayer1Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+
+            // ✅ Play the card
             game_.playCard(card);
+
+            // ✅ Move card to trick only after it has been successfully played
             gbTrickLayout->addWidget(cardButton);
           }
         });
@@ -62,9 +73,20 @@ Table::Table(
         cardButton, &QPushButton::clicked, this,
         [this, cardButton, gbPlayer2Layout, gbTrickLayout, card]() {
           if (game_.playerList_[0]->id() == game_.player_2.id()) {
+            // ✅ First, check if the move is valid before doing anything
+            if (!game_.isCardValid(card)) {
+              qDebug() << "Move rejected: Invalid card choice.";
+              return;  // 🚨 Exit early if the move is not valid
+            }
+
+            // ✅ Only remove the card if it's valid
             gbPlayer2Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+
+            // ✅ Play the card
             game_.playCard(card);
+
+            // ✅ Move card to trick only after it has been successfully played
             gbTrickLayout->addWidget(cardButton);
           }
         });
@@ -79,9 +101,20 @@ Table::Table(
         cardButton, &QPushButton::clicked, this,
         [this, cardButton, gbPlayer3Layout, gbTrickLayout, card]() {
           if (game_.playerList_[0]->id() == game_.player_3.id()) {
+            // ✅ First, check if the move is valid before doing anything
+            if (!game_.isCardValid(card)) {
+              qDebug() << "Move rejected: Invalid card choice.";
+              return;  // 🚨 Exit early if the move is not valid
+            }
+
+            // ✅ Only remove the card if it's valid
             gbPlayer3Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
+
+            // ✅ Play the card
             game_.playCard(card);
+
+            // ✅ Move card to trick only after it has been successfully played
             gbTrickLayout->addWidget(cardButton);
           }
         });
@@ -90,8 +123,6 @@ Table::Table(
   QObject::connect(&game_, &Game::clearTrickLayout, this,
                    &Table::onClearTrickLayout);
 }
-
-Table::~Table() { delete ui; }
 
 void Table::onClearTrickLayout() {
   qDebug() << "called onClearTrickLayout";
@@ -106,3 +137,5 @@ void Table::onClearTrickLayout() {
     delete item;  // Cleanup the layout item itself
   }
 }
+
+Table::~Table() { delete ui; }

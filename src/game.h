@@ -20,6 +20,7 @@ class Game : public QObject {
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
 
   explicit Game(QObject* parent = nullptr);
+  bool isCardValid(const Card& card);
 
   void initGame();
 
@@ -27,7 +28,7 @@ class Game : public QObject {
   void clearTrickLayout();
 
  public slots:
-  void playCard(Card card);
+  void playCard(const Card& card);
 };
 
 #endif  // GAME_H
