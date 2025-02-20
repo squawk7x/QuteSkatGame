@@ -57,12 +57,12 @@ bool Game::isCardValid(
   }
 
   if (trick_.cards().empty())
-    return true;  // ✅ Any card is valid if trick is empty
+    return true;  // Any card is valid if trick is empty
 
   const auto& firstCard = trick_.cards().front();
   const std::string& requiredSuit = firstCard.suit();
 
-  // ❓ Check if player has a card of the required suit
+  // Check if player has a card of the required suit
   bool hasRequiredSuit = std::ranges::any_of(
       playerList_.front()->handdeck_.cards(),
       [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
@@ -90,7 +90,7 @@ bool Game::isCardValid(
     }
   }
 
-  // ✅ If the card doesn't match the required suit, it may still be valid
+  // If the card doesn't match the required suit, it may still be valid
   return !(hasRequiredSuit && card.suit() != requiredSuit);
 }
 
@@ -105,20 +105,17 @@ void Game::playCard(
     return;
   }
 
-  // ❌ Stop execution immediately if the card is invalid
   if (!isCardValid(card)) {
     qDebug() << "Move rejected: Invalid card choice. Player must follow suit.";
     return;
   }
 
-  // ✅ If trick is full, clear it before playing new card
-
-  // ✅ Move the card from hand to trick
+  // Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
   qDebug() << "Card played: " << QString::fromStdString(card.str());
   qDebug() << "Updated trick_: " << trick_.print();
 
-  // 🔄 Rotate turn order
+  // Rotate turn order
   std::rotate(playerList_.begin(), playerList_.begin() + 1, playerList_.end());
   qDebug() << "Next player: " << playerList_.front()->id();
 }
