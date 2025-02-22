@@ -10,7 +10,7 @@ class Game : public QObject {
   Q_OBJECT
 
   Rule rule_ = Rule::Suit;
-  std::string trumpSuit_ = "♥";
+  std::string trumpSuit_ = "";
 
  public:
   Player player_1{1, "Player-1", false};  // isRobot = false

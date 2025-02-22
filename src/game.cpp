@@ -97,10 +97,14 @@ void Game::playCard(
     bool isCardGreater =
         (card.suit() == trick_.cards().front().suit() ||
          card.suit() == trumpSuit_) &&
-        std::ranges::all_of(trick_.cards(), [&card](Card& trickCard) {
-          qDebug() << trickCard.power() << card.power();
-          return card.power() > trickCard.power();
-        });
+        (trick_.cards().size() <= 1 ||
+         std::ranges::all_of(
+             std::ranges::subrange(trick_.cards().begin(),
+                                   std::prev(trick_.cards().end())),
+             [&card](const Card& trickCard) {
+               qDebug() << trickCard.power() << card.power();
+               return card.power() > trickCard.power();
+             }));
 
     if (isCardGreater) {
       for (auto& player : playerList_) player->hasTrick_ = false;
