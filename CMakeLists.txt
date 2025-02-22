@@ -22,7 +22,6 @@ include_directories(src)
 
 set(PROJECT_SOURCES
     src/main.cpp
-    # src/xmain.cpp
     src/table.cpp
     src/table.h
     src/table.ui
@@ -138,7 +137,8 @@ include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
 add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
 
 # Add the test executable Add test executable
-add_executable(runTests tests/test_card.cpp src/card.cpp)
+add_executable(runTests tests/test_card.cpp src/card.cpp
+                        tests/tst_cardpower.cpp)
 
 # Link GoogleTest properly
 target_link_libraries(runTests gtest gtest_main)

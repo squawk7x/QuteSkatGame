@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 // Definitions for global card properties
 std::vector<std::string> suits = {"♣", "♥", "♠", "♦"};
@@ -9,6 +10,15 @@ std::vector<std::string> ranks = {"J", "A", "10", "K", "Q", "9", "8", "7"};
 std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
                                       "queen", "9",   "8",  "7"};
 std::vector<std::string> suitnames = {"clubs", "hearts", "spades", "diamonds"};
+
+const std::unordered_map<std::string, int> rankToPowerNull = {
+    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},
+    {"J", 5}, {"Q", 6}, {"K", 7}, {"A", 8}};
+
+// power for trump and power for J are adjusted after 'Reizen'
+const std::unordered_map<std::string, int> rankToPowerSuit = {
+    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 6},
+    {"J", 8}, {"Q", 4}, {"K", 5}, {"A", 7}};
 
 // Constructor: Card("♥", "Q")
 Card::Card(
@@ -144,6 +154,8 @@ std::string Card::name() const { return name_; }
 
 int Card::value() const { return value_; }
 
+int Card::power() const { return power_; }
+
 // Private Methods
 void Card::initCard() {
   if (suit_.empty() || rank_.empty()) return;
@@ -192,5 +204,35 @@ void Card::setValue(
     value_ = 2;
   } else {
     value_ = 0;
+  }
+}
+
+void Card::setPower(
+    const std::string& rank, const std::string& trumpSuit, Rule rule) {
+  if (rule == Rule::Suit || rule == Rule::Grand) {
+    auto it = rankToPowerSuit.find(rank);
+    power_ = (it != rankToPowerSuit.end()) ? it->second : 0;
+
+    // Add 10 if the card belongs to the trump suit
+    if (suit_ == trumpSuit) {
+      power_ += 10;
+    }
+
+    if (rank == "J") {
+      if (suit_ == "♦")
+        power_ = 21;
+      else if (suit_ == "♥")
+        power_ = 22;
+      else if (suit_ == "♠")
+        power_ = 23;
+      else if (suit_ == "♣")
+        power_ = 24;
+    }
+
+  } else if (rule == Rule::Null) {
+    auto it = rankToPowerNull.find(rank);
+    power_ = (it != rankToPowerNull.end()) ? it->second : 0;
+  } else {
+    power_ = 0;  // Default case if Rule is undefined
   }
 }

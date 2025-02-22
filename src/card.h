@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // Definitions for th3e global card properties
@@ -11,6 +12,14 @@ extern std::vector<std::string> suits;
 extern std::vector<std::string> ranks;
 extern std::vector<std::string> suitnames;
 extern std::vector<std::string> ranknames;
+extern const std::unordered_map<std::string, int> rankToPowerNull;
+extern const std::unordered_map<std::string, int> rankToPowerSuit;
+
+enum class Rule {
+  Suit,   // Suit and J are trump
+  Grand,  // Only J are trump
+  Null    // No trump
+};
 
 class Card {
  private:
@@ -22,6 +31,7 @@ class Card {
   std::string str_;
   std::string name_;
   int value_;
+  int power_;
 
  public:
   // Constructors
@@ -51,6 +61,9 @@ class Card {
   std::string str() const;
   std::string name() const;
   int value() const;
+  int power() const;
+  void setPower(const std::string& rank, const std::string& trumpSuit = "",
+                Rule rule = Rule::Suit);
 
   // Setters
  private:
