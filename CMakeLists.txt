@@ -15,8 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
-set(TS_FILES res/quteSkatGame_en_US.ts
-    res/quteSkatGame_en_US.ts)
+set(TS_FILES res/quteSkatGame_en_US.ts res/quteSkatGame_en_US.ts)
 
 # Include the src directory for header files
 include_directories(src)
@@ -41,10 +40,51 @@ set(PROJECT_SOURCES
 # src/cardvec.cpp src/cardvec.h)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-  qt_add_executable(quteSkatGame MANUAL_FINALIZATION ${PROJECT_SOURCES}
-                    src/main.cpp src/game.h src/game.cpp
-                    res/cards/10_of_clubs.png res/cards/10_of_diamonds.png res/cards/10_of_hearts.png res/cards/10_of_spades.png res/cards/6_of_clubs.png res/cards/6_of_diamonds.png res/cards/6_of_hearts.png res/cards/6_of_spades.png res/cards/7_of_clubs.png res/cards/7_of_diamonds.png res/cards/7_of_hearts.png res/cards/7_of_spades.png res/cards/8_of_clubs.png res/cards/8_of_diamonds.png res/cards/8_of_hearts.png res/cards/8_of_spades.png res/cards/9_of_clubs.png res/cards/9_of_diamonds.png res/cards/9_of_hearts.png res/cards/9_of_spades.png res/cards/ace_of_clubs.png res/cards/ace_of_diamonds.png res/cards/ace_of_hearts.png res/cards/ace_of_spades.png res/cards/backside_blue.png res/cards/backside_red.png res/cards/jack_of_clubs.png res/cards/jack_of_diamonds.png res/cards/jack_of_hearts.png res/cards/jack_of_spades.png res/cards/king_of_clubs.png res/cards/king_of_diamonds.png res/cards/king_of_hearts.png res/cards/king_of_spades.png res/cards/queen_of_clubs.png res/cards/queen_of_diamonds.png res/cards/queen_of_hearts.png res/cards/queen_of_spades.png
-                )
+  qt_add_executable(
+    quteSkatGame
+    MANUAL_FINALIZATION
+    ${PROJECT_SOURCES}
+    src/main.cpp
+    src/game.h
+    src/game.cpp
+    res/cards/10_of_clubs.png
+    res/cards/10_of_diamonds.png
+    res/cards/10_of_hearts.png
+    res/cards/10_of_spades.png
+    res/cards/6_of_clubs.png
+    res/cards/6_of_diamonds.png
+    res/cards/6_of_hearts.png
+    res/cards/6_of_spades.png
+    res/cards/7_of_clubs.png
+    res/cards/7_of_diamonds.png
+    res/cards/7_of_hearts.png
+    res/cards/7_of_spades.png
+    res/cards/8_of_clubs.png
+    res/cards/8_of_diamonds.png
+    res/cards/8_of_hearts.png
+    res/cards/8_of_spades.png
+    res/cards/9_of_clubs.png
+    res/cards/9_of_diamonds.png
+    res/cards/9_of_hearts.png
+    res/cards/9_of_spades.png
+    res/cards/ace_of_clubs.png
+    res/cards/ace_of_diamonds.png
+    res/cards/ace_of_hearts.png
+    res/cards/ace_of_spades.png
+    res/cards/backside_blue.png
+    res/cards/backside_red.png
+    res/cards/jack_of_clubs.png
+    res/cards/jack_of_diamonds.png
+    res/cards/jack_of_hearts.png
+    res/cards/jack_of_spades.png
+    res/cards/king_of_clubs.png
+    res/cards/king_of_diamonds.png
+    res/cards/king_of_hearts.png
+    res/cards/king_of_spades.png
+    res/cards/queen_of_clubs.png
+    res/cards/queen_of_diamonds.png
+    res/cards/queen_of_hearts.png
+    res/cards/queen_of_spades.png)
 
   qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
@@ -82,15 +122,22 @@ if(QT_VERSION_MAJOR EQUAL 6)
   qt_finalize_executable(quteSkatGame)
 endif()
 
-# Enable testing enable_testing() GoogleTest Setup
-set(GTEST_DIR third_party/googletest)
-# Adjusted path
-add_subdirectory(${GTEST_DIR})
+# ---------------------------------------------------------
 
-# Include directories for GoogleTest
-include_directories(${GTEST_DIR}/googletest/include)
+# Enable testing
+enable_testing()
 
-# Add test executable
+# GoogleTest & GoogleMock Setup
+set(GTEST_DIR /usr/share/googletest)
+set(GMOCK_DIR /usr/share/googletest/googlemock)
+
+# Include GoogleTest and GoogleMock
+include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
+
+# Specify the binary directory for GoogleTest
+add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
+
+# Add the test executable Add test executable
 add_executable(runTests tests/test_card.cpp src/card.cpp)
 
 # Link GoogleTest properly
