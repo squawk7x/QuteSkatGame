@@ -44,78 +44,88 @@ void Game::initGame() {
 bool Game::isCardValid(
     const Card& card) {
   if (trick_.cards().size() == 3) {
-    while (!playerList_.front()->hasTrick_) {
-      std::rotate(playerList_.begin(), playerList_.begin() + 1,
-                  playerList_.end());
-    }
-    qDebug() << "Trick full. Moving to player's tricks.";
-    qDebug() << "Next player with hasTrick: " << playerList_.front()->id();
-    playerList_.front()->tricks_.push_back(trick_);
-    trick_.clearCards();
+    trick_.cards().clear();
     emit clearTrickLayout();
-    return false;
   }
 
-  if (trick_.cards().empty())
-    return true;  // Any card is valid if trick is empty
+  if (trick_.cards().empty()) {
+    return true;
+  }
 
   const auto& firstCard = trick_.cards().front();
   const std::string& requiredSuit = firstCard.suit();
 
-  // Check if player has a card of the required suit
   bool hasRequiredSuit = std::ranges::any_of(
       playerList_.front()->handdeck_.cards(),
       [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
 
-  qDebug() << "Checking card validity for player ID: "
-           << playerList_.front()->id();
-  qDebug() << "Trying to play: " << QString::fromStdString(card.str());
-  qDebug() << "First card in trick: "
-           << QString::fromStdString(firstCard.str());
-  qDebug() << "Required suit: " << QString::fromStdString(requiredSuit);
-  qDebug() << "Player has required suit? " << hasRequiredSuit;
-
-  // If the player has the required suit, check the rank condition
-  if (hasRequiredSuit) {
-    bool isRankGreaterThanAllInTrick =
-        std::ranges::all_of(trick_.cards(), [&card](const Card& trickCard) {
-          return card.rank() > trickCard.rank();
-        });
-
-    // If the card rank is greater than all in the trick, set the hasTrick flag
-    if (isRankGreaterThanAllInTrick) {
-      playerList_[0]->hasTrick_ = true;
-    } else {
-      playerList_[0]->hasTrick_ = false;  // You may want to reset the flag
-    }
+  if (!hasRequiredSuit) {
+    return true;
   }
 
-  // If the card doesn't match the required suit, it may still be valid
-  return !(hasRequiredSuit && card.suit() != requiredSuit);
+  if (card.suit() == requiredSuit) {
+    return true;
+  }
+
+  return false;
 }
 
 // Slots:
 void Game::playCard(
     const Card& card) {
-  auto& hand = playerList_.front()->handdeck_.cards();
+  auto& activePlayer = playerList_.front();  // The current player
+  auto& hand = activePlayer->handdeck_.cards();
 
-  // Check if the card is in the player's hand
+  // 1. Check if the card is in the active player's hand, if not return
   if (std::find(hand.begin(), hand.end(), card) == hand.end()) {
-    qDebug() << "Error: Card not found in player's hand!";
     return;
   }
 
+  // 2. Validate the card move
   if (!isCardValid(card)) {
-    qDebug() << "Move rejected: Invalid card choice. Player must follow suit.";
     return;
   }
 
-  // Move the card from hand to trick
+  // 3. Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
-  qDebug() << "Card played: " << QString::fromStdString(card.str());
-  qDebug() << "Updated trick_: " << trick_.print();
 
-  // Rotate turn order
-  std::rotate(playerList_.begin(), playerList_.begin() + 1, playerList_.end());
-  qDebug() << "Next player: " << playerList_.front()->id();
+  // 4. Check if the card's power is greater than all cards in the trick
+  if (trick_.cards().size() == 1) {
+    playerList_.front()->hasTrick_ = true;
+    qDebug() << playerList_.front()->name() << " has the trick!";
+  } else {
+    bool isCardGreater =
+        (card.suit() == trick_.cards().front().suit() ||
+         card.suit() == trumpSuit_) &&
+        std::ranges::all_of(trick_.cards(), [&card](Card& trickCard) {
+          qDebug() << trickCard.power() << card.power();
+          return card.power() > trickCard.power();
+        });
+
+    if (isCardGreater) {
+      for (auto& player : playerList_) player->hasTrick_ = false;
+      playerList_.front()->hasTrick_ = true;
+      qDebug() << playerList_.front()->name() << " has the trick now!";
+    }
+  }
+
+  // 5. Rotate turn order based on the number of cards in the trick
+  if (trick_.cards().size() == 3) {
+    // Find the player who has the trick
+    auto winner =
+        std::find_if(playerList_.begin(), playerList_.end(),
+                     [](const auto& player) { return player->hasTrick_; });
+
+    // If the winner is not already at the front, rotate the list so that the
+    // winner becomes front.
+    if (winner != playerList_.end() && !playerList_.front()->hasTrick_) {
+      std::rotate(playerList_.begin(), winner, playerList_.end());
+    }
+    qDebug() << "Rotating to: " << playerList_.front()->name();
+  } else {
+    // Rotate to the next player if the trick is not full
+    std::rotate(playerList_.begin(), playerList_.begin() + 1,
+                playerList_.end());
+    qDebug() << "Next player: " << playerList_.front()->name();
+  }
 }

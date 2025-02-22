@@ -94,7 +94,9 @@ Card::Card(
       rankname_(std::move(other.rankname_)),
       str_(std::move(other.str_)),
       name_(std::move(other.name_)),
-      value_(other.value_)  // Copy primitive type
+      value_(other.value_),  // Copy primitive type
+      power_(other.power_)
+
 {
   // Leave 'other' in a valid state
   other.suit_.clear();
@@ -104,6 +106,7 @@ Card::Card(
   other.str_.clear();
   other.name_.clear();
   other.value_ = 0;
+  other.power_ = 0;
 }
 
 // Move assignment (Fixed Recursive Call)
@@ -119,6 +122,7 @@ Card& Card::operator=(
     str_ = std::move(other.str_);
     name_ = std::move(other.name_);
     value_ = other.value_;  // Just copy the value as it is a primitive type
+    power_ = other.power_;
 
     // Leave 'other' in a valid state
     other.suit_.clear();
@@ -129,6 +133,7 @@ Card& Card::operator=(
     other.str_.clear();
     other.name_.clear();
     other.value_ = 0;
+    other.power_ = 0;
   }
   return *this;
 }
@@ -167,6 +172,7 @@ void Card::initCard() {
   setStr();
   setName();
   setValue(rank_);
+  setPower(rank_);
 }
 
 void Card::setSuitname(
