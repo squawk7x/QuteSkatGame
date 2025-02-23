@@ -41,6 +41,7 @@ class Player : public QObject {
   void setName(const std::string &name);
   void setIsRobot(bool isRobot);
 
+  // Slots
  public slots:
   // void onCountPoints();
 };

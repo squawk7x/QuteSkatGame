@@ -24,6 +24,7 @@ class Table : public QMainWindow {
   Table(QWidget *parent = nullptr);
   ~Table();
 
+  // Slots
  public slots:
   void onClearTrickLayout();
 };

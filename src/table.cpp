@@ -122,6 +122,51 @@ Table::Table(
 
   QObject::connect(&game_, &Game::clearTrickLayout, this,
                    &Table::onClearTrickLayout);
+
+  QPushButton *pbKaro = findChild<QPushButton *>("pbKaro");
+  QPushButton *pbHerz = findChild<QPushButton *>("pbHerz");
+  QPushButton *pbPik = findChild<QPushButton *>("pbPik");
+  QPushButton *pbKreuz = findChild<QPushButton *>("pbKreuz");
+  QPushButton *pbGrand = findChild<QPushButton *>("pbGrand");
+  QPushButton *pbNull = findChild<QPushButton *>("pbNull");
+  QPushButton *pbRamsch = findChild<QPushButton *>("pbRamsch");
+  QPushButton *pbHand = findChild<QPushButton *>("pbHand");
+  QPushButton *pbOuvert = findChild<QPushButton *>("pbOuvert");
+
+  QObject::connect(pbKaro, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "♦";
+    game_.rule_ = Rule::Suit;
+    qDebug() << "trump set to " << game_.trumpSuit_;
+  });
+  QObject::connect(pbHerz, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "♥";
+    game_.rule_ = Rule::Suit;
+    qDebug() << "trump set to " << game_.trumpSuit_;
+  });
+  QObject::connect(pbPik, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "♠";
+    game_.rule_ = Rule::Suit;
+    qDebug() << "trump set to " << game_.trumpSuit_;
+  });
+  QObject::connect(pbKreuz, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "♣";
+    game_.rule_ = Rule::Suit;
+    qDebug() << "trump set to " << game_.trumpSuit_;
+  });
+  QObject::connect(pbGrand, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "";
+    game_.rule_ = Rule::Grand;
+  });
+  QObject::connect(pbNull, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "";
+    game_.rule_ = Rule::Null;
+  });
+  QObject::connect(pbRamsch, &QPushButton::clicked, this, [this]() {
+    game_.trumpSuit_ = "";
+    game_.rule_ = Rule::Ramsch;
+  });
+  QObject::connect(pbOuvert, &QPushButton::clicked, this,
+                   [this]() { game_.trumpSuit_ = ""; });
 }
 
 void Table::onClearTrickLayout() {

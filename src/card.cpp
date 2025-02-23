@@ -159,8 +159,6 @@ std::string Card::name() const { return name_; }
 
 int Card::value() const { return value_; }
 
-int Card::power() const { return power_; }
-
 // Private Methods
 void Card::initCard() {
   if (suit_.empty() || rank_.empty()) return;
@@ -172,7 +170,7 @@ void Card::initCard() {
   setStr();
   setName();
   setValue(rank_);
-  setPower(rank_);
+  // setPower(rank_);
 }
 
 void Card::setSuitname(
@@ -213,10 +211,10 @@ void Card::setValue(
   }
 }
 
-void Card::setPower(
-    const std::string& rank, const std::string& trumpSuit, Rule rule) {
-  if (rule == Rule::Suit || rule == Rule::Grand) {
-    auto it = rankToPowerSuit.find(rank);
+int Card::power(
+    const std::string& trumpSuit, Rule rule) const {
+  if (rule == Rule::Suit || rule == Rule::Grand || rule == Rule::Ramsch) {
+    auto it = rankToPowerSuit.find(rank_);
     power_ = (it != rankToPowerSuit.end()) ? it->second : 0;
 
     // Add 10 if the card belongs to the trump suit
@@ -224,7 +222,7 @@ void Card::setPower(
       power_ += 10;
     }
 
-    if (rank == "J") {
+    if (rank_ == "J") {
       if (suit_ == "♦")
         power_ = 21;
       else if (suit_ == "♥")
@@ -236,9 +234,16 @@ void Card::setPower(
     }
 
   } else if (rule == Rule::Null) {
-    auto it = rankToPowerNull.find(rank);
+    auto it = rankToPowerNull.find(rank_);
     power_ = (it != rankToPowerNull.end()) ? it->second : 0;
   } else {
     power_ = 0;  // Default case if Rule is undefined
   }
+  return power_;
+}
+
+// SLOTS:
+void Card::onSetCardPower(
+    const std::string& suit, Rule rule) {
+  power(suit, rule);
 }

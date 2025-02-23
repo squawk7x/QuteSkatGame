@@ -7,29 +7,28 @@ Game::Game(
     : QObject{parent} {}
 
 void Game::initGame() {
-  {
-    std::ranges::for_each(suits, [&](const std::string& suit) {
-      std::ranges::for_each(ranks, [&](const std::string& rank) {
-        blind_.addCard(Card(suit, rank));
-      });
+  std::ranges::for_each(suits, [&](const std::string& suit) {
+    std::ranges::for_each(ranks, [&](const std::string& rank) {
+      Card card = Card(suit, rank);
+      // QObject::connect(this, &Game::setCardToPower, card,
+      //                  &Card::onSetCardPower);
+      blind_.addCard(std::move(card));
     });
-    blind_.shuffle();
+  });
 
-    // Distribuite cards 3 - skat(2) - 4 - 3
-    for (int i = 1; i <= 3; i++)
-      for (Player* player : playerList_)
-        blind_.moveTopCardTo(player->handdeck_);
-    blind_.moveTopCardTo(skat_);
-    blind_.moveTopCardTo(skat_);
-    for (int i = 1; i <= 4; i++)
-      for (Player* player : playerList_)
-        blind_.moveTopCardTo(player->handdeck_);
-    for (int i = 1; i <= 3; i++)
-      for (Player* player : playerList_)
-        blind_.moveTopCardTo(player->handdeck_);
+  blind_.shuffle();
 
-    for (Player* player : playerList_) player->handdeck_.sortCardsByPattern();
-  }
+  // Distribuite cards 3 - skat(2) - 4 - 3
+  for (int i = 1; i <= 3; i++)
+    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  blind_.moveTopCardTo(skat_);
+  blind_.moveTopCardTo(skat_);
+  for (int i = 1; i <= 4; i++)
+    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  for (int i = 1; i <= 3; i++)
+    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+
+  for (Player* player : playerList_) player->handdeck_.sortCardsByPattern();
 }
 
 /*
@@ -46,6 +45,7 @@ bool Game::isCardValid(
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
+    // return true;
   }
 
   if (trick_.cards().empty()) {
@@ -53,7 +53,13 @@ bool Game::isCardValid(
   }
 
   const auto& firstCard = trick_.cards().front();
-  const std::string& requiredSuit = firstCard.suit();
+  std::string requiredSuit = firstCard.suit();
+
+  // Wenn die erste Karte im Stich ein "J" ist und die Regel Rule::Suit gilt,
+  // dann setze requiredSuit auf trumpSuit_
+  if (firstCard.rank() == "J" && rule_ == Rule::Suit) {
+    requiredSuit = trumpSuit_;
+  }
 
   bool hasRequiredSuit = std::ranges::any_of(
       playerList_.front()->handdeck_.cards(),
@@ -101,9 +107,11 @@ void Game::playCard(
          std::ranges::all_of(
              std::ranges::subrange(trick_.cards().begin(),
                                    std::prev(trick_.cards().end())),
-             [&card](const Card& trickCard) {
-               qDebug() << trickCard.power() << card.power();
-               return card.power() > trickCard.power();
+             [&card, this](Card& trickCard) {
+               qDebug() << trickCard.power(trumpSuit_, rule_)
+                        << card.power(trumpSuit_, rule_);
+               return card.power(trumpSuit_, rule_) >
+                      trickCard.power(trumpSuit_, rule_);
              }));
 
     if (isCardGreater) {
