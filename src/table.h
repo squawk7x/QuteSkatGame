@@ -9,7 +9,7 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class Table;
+class Skattisch;
 }
 QT_END_NAMESPACE
 
@@ -17,7 +17,7 @@ class Table : public QMainWindow {
   Q_OBJECT
 
  private:
-  Ui::Table *ui;
+  Ui::Skattisch *ui;
   Game game_{this};
 
  public:

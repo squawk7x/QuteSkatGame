@@ -10,8 +10,6 @@ void Game::initGame() {
   std::ranges::for_each(suits, [&](const std::string& suit) {
     std::ranges::for_each(ranks, [&](const std::string& rank) {
       Card card = Card(suit, rank);
-      // QObject::connect(this, &Game::setCardToPower, card,
-      //                  &Card::onSetCardPower);
       blind_.addCard(std::move(card));
     });
   });
@@ -60,6 +58,7 @@ bool Game::isCardValid(
   const auto& firstCard = trick_.cards().front();
   std::string requiredSuit = firstCard.suit();
 
+  // Farbenspiel "♣", "♥", "♠", "♦"
   if (rule == Rule::Suit) {
     if (firstCard.rank() == "J") requiredSuit = trumpSuit_;
 
@@ -70,12 +69,6 @@ bool Game::isCardValid(
             return c.suit() == trumpSuit_ || c.rank() == "J";
           });
 
-      // bool hasTrumpSuitInHand = std::ranges::any_of(
-      //     playerList_.front()->handdeck_.cards(),
-      //     [this](const Card& c) { return c.suit() == trumpSuit_; });
-
-      // If the player has a Jack or a trump suit card, they must play one of
-      // them
       // if (hasJackInHand || hasTrumpSuitInHand)
       if (hasTrumpInHand)
         return card.rank() == "J" || card.suit() == trumpSuit_;
@@ -96,6 +89,7 @@ bool Game::isCardValid(
       return true;  // No card of the required suit in hand, any card is valid
   }
 
+  // Grand oder Ramsch
   else if (rule == Rule::Grand || rule == Rule::Ramsch) {
     if (firstCard.rank() == "J") {
       bool hasJackInHand =
@@ -122,6 +116,7 @@ bool Game::isCardValid(
       return true;  // No card of the required suit in hand, any card is valid
   }
 
+  // Null
   else if (rule == Rule::Null) {
     bool hasRequiredSuitInHand = std::ranges::any_of(
         playerList_.front()->handdeck_.cards(),

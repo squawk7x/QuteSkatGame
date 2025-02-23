@@ -4,7 +4,7 @@
 
 Table::Table(
     QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::Table) {
+    : QMainWindow(parent), ui(new Ui::Skattisch) {
   ui->setupUi(this);
 
   game_.initGame();
@@ -139,8 +139,10 @@ Table::Table(
     QPushButton *pbGrand = findChild<QPushButton *>("pbGrand");
     QPushButton *pbNull = findChild<QPushButton *>("pbNull");
     QPushButton *pbRamsch = findChild<QPushButton *>("pbRamsch");
-    QPushButton *pbHand = findChild<QPushButton *>("pbHand");
     QPushButton *pbOuvert = findChild<QPushButton *>("pbOuvert");
+    QPushButton *pbHand = findChild<QPushButton *>("pbHand");
+    QPushButton *pbSchneider = findChild<QPushButton *>("pbSchneider");
+    QPushButton *pbSchwarz = findChild<QPushButton *>("pbSchwarz");
 
     QObject::connect(pbKaro, &QPushButton::clicked, this, [this]() {
       game_.trumpSuit_ = "♦";
@@ -177,8 +179,12 @@ Table::Table(
       game_.rule_ = Rule::Ramsch;
       qDebug() << "trump set to " << QString::fromStdString(game_.trumpSuit_);
     });
-    QObject::connect(pbOuvert, &QPushButton::clicked, this,
-                     [this]() { game_.trumpSuit_ = ""; });
+    QObject::connect(pbOuvert, &QPushButton::toggled, this,
+                     [this](bool checked) { game_.ouvert_ = checked; });
+    QObject::connect(pbSchneider, &QPushButton::toggled, this,
+                     [this](bool checked) { game_.schneider_ = checked; });
+    QObject::connect(pbSchwarz, &QPushButton::toggled, this,
+                     [this](bool checked) { game_.schwarz_ = checked; });
   }
 
   QObject::connect(&game_, &Game::clearTrickLayout, this,
