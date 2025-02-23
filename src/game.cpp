@@ -51,13 +51,14 @@ bool Game::isCardValid(
     return true;
   }
 
+  const auto& firstCard = trick_.cards().front();
+  std::string requiredSuit = firstCard.suit();
+
   if (rule == Rule::Suit) {
-    const auto& firstCard = trick_.cards().front();
-    std::string requiredSuit = firstCard.suit();
     if (firstCard.rank() == "J") requiredSuit = trumpSuit_;
 
-    // If the first card is a Jack, the player must play either trumpSuit or "J"
-    if (firstCard.rank() == "J") {
+    // Case 1: First card is a Jack
+    if (firstCard.rank() == "J" || firstCard.suit() == trumpSuit_) {
       bool hasJackInHand =
           std::ranges::any_of(playerList_.front()->handdeck_.cards(),
                               [](const Card& c) { return c.rank() == "J"; });
@@ -66,60 +67,50 @@ bool Game::isCardValid(
           playerList_.front()->handdeck_.cards(),
           [this](const Card& c) { return c.suit() == trumpSuit_; });
 
-      // If the player has either a "J" or a trump card, they must play one of
-      // those
-      if (hasJackInHand || hasTrumpSuitInHand) {
+      // If the player has a Jack or a trump suit card, they must play one of
+      // them
+      if (hasJackInHand || hasTrumpSuitInHand)
         return card.rank() == "J" || card.suit() == trumpSuit_;
-      } else {
-        // If they don't have a "J" or a trump suit, they can play any card
-        return true;
-      }
+      else
+        return true;  // No Jacks or trump cards in hand, any card is valid
     }
 
-    // If the first card's suit is not the trump suit and the player has the
-    // required suit in hand, they cannot play a Jack with the same suit
-    if (requiredSuit != trumpSuit_) {
-      bool hasRequiredSuitInHand = std::ranges::any_of(
-          playerList_.front()->handdeck_.cards(),
-          [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
-
-      if (hasRequiredSuitInHand) {
-        if (card.rank() == "J" && card.suit() == requiredSuit) {
-          return false;  // If the player has the required suit, "J" with the
-                         // same suit is not allowed
-        }
-      }
-    }
-
-    // If the required suit is the trump suit, a "J" can always be played
-    if (requiredSuit == trumpSuit_) {
-      if (card.rank() == "J") {
-        return true;  // "J" can be played regardless of its suit
-      }
-    }
-
-    // If it's not a Jack and not the trump suit, proceed with checking if the
-    // player has the required suit
-    bool hasRequiredSuit = std::ranges::any_of(
+    // Case 2: First card is neither a Jack nor a trump suit card
+    bool hasRequiredSuitInHand = std::ranges::any_of(
         playerList_.front()->handdeck_.cards(),
         [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
 
-    if (!hasRequiredSuit) {
-      return true;
-    }
-
-    if (card.suit() == requiredSuit) {
-      return true;
-    }
+    // If the player has a card of the required suit, they must play them
+    if (hasRequiredSuitInHand)
+      return card.suit() == requiredSuit;
+    else
+      return true;  // No card of the required suit in hand, any card is valid
   }
 
-  else if (rule == Rule::Grand) {
+  else if (rule == Rule::Grand || rule == Rule::Ramsch) {
+    if (firstCard.rank() == "J") {
+      bool hasJackInHand =
+          std::ranges::any_of(playerList_.front()->handdeck_.cards(),
+                              [](const Card& c) { return c.rank() == "J"; });
+
+      // If the player has a Jack card, they must play them
+      if (hasJackInHand)
+        return card.rank() == "J";
+      else
+        return true;  // No Jacks or trump cards in hand, any card is valid
+    }
   }
 
   else if (rule == Rule::Null) {
-  }
+    bool hasRequiredSuitInHand = std::ranges::any_of(
+        playerList_.front()->handdeck_.cards(),
+        [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
 
-  else if (rule == Rule::Ramsch) {
+    // If the player has a card of the required suit, they must play it
+    if (hasRequiredSuitInHand)
+      return card.suit() == requiredSuit;
+    else
+      return true;
   }
 
   return false;
@@ -182,18 +173,11 @@ void Game::playCard(
     playerList_.front()->hasTrick_ = true;
     qDebug() << playerList_.front()->name() << " has the trick now!";
   }
-  // if (trick_.cards().size() == 1) {
-  //   playerList_.front()->hasTrick_ = true;
-  //   qDebug() << playerList_.front()->name() << " has the trick!";
-  // } else {
-  //   if (isCardGreater(card, rule_)) {
-  //     for (auto& player : playerList_) player->hasTrick_ = false;
-  //     playerList_.front()->hasTrick_ = true;
-  //     qDebug() << playerList_.front()->name() << " has the trick now!";
-  //   }
-  // }
 
-  // 5. Rotate turn order based on the number of cards in the trick
+  activateNextPlayer();
+}
+
+void Game::activateNextPlayer() {
   if (trick_.cards().size() == 3) {
     // Find the player who has the trick
     auto winner =
