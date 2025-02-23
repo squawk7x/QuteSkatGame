@@ -41,36 +41,114 @@ void Game::initGame() {
  */
 
 bool Game::isCardValid(
-    const Card& card) {
+    const Card& card, Rule rule) {
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
-    // return true;
   }
 
   if (trick_.cards().empty()) {
     return true;
   }
 
-  const auto& firstCard = trick_.cards().front();
-  std::string requiredSuit = firstCard.suit();
+  if (rule == Rule::Suit) {
+    const auto& firstCard = trick_.cards().front();
+    std::string requiredSuit = firstCard.suit();
+    if (firstCard.rank() == "J") requiredSuit = trumpSuit_;
 
-  // Wenn die erste Karte im Stich ein "J" ist und die Regel Rule::Suit gilt,
-  // dann setze requiredSuit auf trumpSuit_
-  if (firstCard.rank() == "J" && rule_ == Rule::Suit) {
-    requiredSuit = trumpSuit_;
+    // If the first card is a Jack, the player must play either trumpSuit or "J"
+    if (firstCard.rank() == "J") {
+      bool hasJackInHand =
+          std::ranges::any_of(playerList_.front()->handdeck_.cards(),
+                              [](const Card& c) { return c.rank() == "J"; });
+
+      bool hasTrumpSuitInHand = std::ranges::any_of(
+          playerList_.front()->handdeck_.cards(),
+          [this](const Card& c) { return c.suit() == trumpSuit_; });
+
+      // If the player has either a "J" or a trump card, they must play one of
+      // those
+      if (hasJackInHand || hasTrumpSuitInHand) {
+        return card.rank() == "J" || card.suit() == trumpSuit_;
+      } else {
+        // If they don't have a "J" or a trump suit, they can play any card
+        return true;
+      }
+    }
+
+    // If the first card's suit is not the trump suit and the player has the
+    // required suit in hand, they cannot play a Jack with the same suit
+    if (requiredSuit != trumpSuit_) {
+      bool hasRequiredSuitInHand = std::ranges::any_of(
+          playerList_.front()->handdeck_.cards(),
+          [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
+
+      if (hasRequiredSuitInHand) {
+        if (card.rank() == "J" && card.suit() == requiredSuit) {
+          return false;  // If the player has the required suit, "J" with the
+                         // same suit is not allowed
+        }
+      }
+    }
+
+    // If the required suit is the trump suit, a "J" can always be played
+    if (requiredSuit == trumpSuit_) {
+      if (card.rank() == "J") {
+        return true;  // "J" can be played regardless of its suit
+      }
+    }
+
+    // If it's not a Jack and not the trump suit, proceed with checking if the
+    // player has the required suit
+    bool hasRequiredSuit = std::ranges::any_of(
+        playerList_.front()->handdeck_.cards(),
+        [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
+
+    if (!hasRequiredSuit) {
+      return true;
+    }
+
+    if (card.suit() == requiredSuit) {
+      return true;
+    }
   }
 
-  bool hasRequiredSuit = std::ranges::any_of(
-      playerList_.front()->handdeck_.cards(),
-      [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
-
-  if (!hasRequiredSuit) {
-    return true;
+  else if (rule == Rule::Grand) {
   }
 
-  if (card.suit() == requiredSuit) {
-    return true;
+  else if (rule == Rule::Null) {
+  }
+
+  else if (rule == Rule::Ramsch) {
+  }
+
+  return false;
+}
+
+bool Game::isCardGreater(
+    const Card& card, Rule rule) {
+  if (rule == Rule::Suit) {
+    // Case 1: If the trick is empty, return true because any card is valid
+    if (trick_.cards().empty()) {
+      return true;
+    }
+
+    // Case 2: Compare the power of the card with all the previously played
+    // cards in the trick
+    return std::ranges::all_of(
+        std::ranges::subrange(trick_.cards().begin(),
+                              std::prev(trick_.cards().end())),
+        [&card, this](Card& trickCard) {
+          qDebug() << trickCard.power(trumpSuit_, rule_)
+                   << card.power(trumpSuit_, rule_);
+          return card.power(trumpSuit_, rule_) >
+                 trickCard.power(trumpSuit_, rule_);
+        });
+  }
+
+  else if (rule == Rule::Grand) {
+  } else if (rule == Rule::Null) {
+  } else if (rule == Rule::Ramsch) {
   }
 
   return false;
@@ -88,7 +166,7 @@ void Game::playCard(
   }
 
   // 2. Validate the card move
-  if (!isCardValid(card)) {
+  if (!isCardValid(card, rule_)) {
     return;
   }
 
@@ -96,30 +174,24 @@ void Game::playCard(
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
 
   // 4. Check if the card's power is greater than all cards in the trick
-  if (trick_.cards().size() == 1) {
-    playerList_.front()->hasTrick_ = true;
-    qDebug() << playerList_.front()->name() << " has the trick!";
-  } else {
-    bool isCardGreater =
-        (card.suit() == trick_.cards().front().suit() ||
-         card.suit() == trumpSuit_) &&
-        (trick_.cards().size() <= 1 ||
-         std::ranges::all_of(
-             std::ranges::subrange(trick_.cards().begin(),
-                                   std::prev(trick_.cards().end())),
-             [&card, this](Card& trickCard) {
-               qDebug() << trickCard.power(trumpSuit_, rule_)
-                        << card.power(trumpSuit_, rule_);
-               return card.power(trumpSuit_, rule_) >
-                      trickCard.power(trumpSuit_, rule_);
-             }));
+  if (isCardGreater(card, rule_)) {
+    // Reset the trick status for all players
+    for (auto& player : playerList_) player->hasTrick_ = false;
 
-    if (isCardGreater) {
-      for (auto& player : playerList_) player->hasTrick_ = false;
-      playerList_.front()->hasTrick_ = true;
-      qDebug() << playerList_.front()->name() << " has the trick now!";
-    }
+    // Mark the current player as having the trick
+    playerList_.front()->hasTrick_ = true;
+    qDebug() << playerList_.front()->name() << " has the trick now!";
   }
+  // if (trick_.cards().size() == 1) {
+  //   playerList_.front()->hasTrick_ = true;
+  //   qDebug() << playerList_.front()->name() << " has the trick!";
+  // } else {
+  //   if (isCardGreater(card, rule_)) {
+  //     for (auto& player : playerList_) player->hasTrick_ = false;
+  //     playerList_.front()->hasTrick_ = true;
+  //     qDebug() << playerList_.front()->name() << " has the trick now!";
+  //   }
+  // }
 
   // 5. Rotate turn order based on the number of cards in the trick
   if (trick_.cards().size() == 3) {
