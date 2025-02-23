@@ -88,6 +88,12 @@ void CardVec::sortCardsByPattern() {
   });
 }
 
+int CardVec::value() {
+  int sum{0};
+  for (Card card : cards_) sum += card.value();
+  return sum;
+}
+
 std::string CardVec::print() {
   std::string str;
   str.reserve(cards_.size() *

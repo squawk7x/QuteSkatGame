@@ -31,6 +31,7 @@ class CardVec {
 
   void shuffle();
   void sortCardsByPattern();
+  int value();
 
   // virtual void removeCard(Card card);
   // virtual std::string cardsAsString() const;

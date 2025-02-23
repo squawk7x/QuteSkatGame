@@ -84,7 +84,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     res/cards/queen_of_clubs.png
     res/cards/queen_of_diamonds.png
     res/cards/queen_of_hearts.png
-    res/cards/queen_of_spades.png)
+    res/cards/queen_of_spades.png
+    README.md)
 
   qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()

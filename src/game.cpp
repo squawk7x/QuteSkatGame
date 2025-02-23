@@ -29,6 +29,10 @@ void Game::initGame() {
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
 
   for (Player* player : playerList_) player->handdeck_.sortCardsByPattern();
+
+  // for testing
+  playerList_.front()->tricks_.push_back(skat_);
+  countRound();
 }
 
 bool Game::isCardInHand(
@@ -61,17 +65,19 @@ bool Game::isCardValid(
 
     // Case 1: First card is a Jack or trump
     if (firstCard.rank() == "J" || firstCard.suit() == trumpSuit_) {
-      bool hasJackInHand =
-          std::ranges::any_of(playerList_.front()->handdeck_.cards(),
-                              [](const Card& c) { return c.rank() == "J"; });
+      bool hasTrumpInHand = std::ranges::any_of(
+          playerList_.front()->handdeck_.cards(), [this](const Card& c) {
+            return c.suit() == trumpSuit_ || c.rank() == "J";
+          });
 
-      bool hasTrumpSuitInHand = std::ranges::any_of(
-          playerList_.front()->handdeck_.cards(),
-          [this](const Card& c) { return c.suit() == trumpSuit_; });
+      // bool hasTrumpSuitInHand = std::ranges::any_of(
+      //     playerList_.front()->handdeck_.cards(),
+      //     [this](const Card& c) { return c.suit() == trumpSuit_; });
 
       // If the player has a Jack or a trump suit card, they must play one of
       // them
-      if (hasJackInHand || hasTrumpSuitInHand)
+      // if (hasJackInHand || hasTrumpSuitInHand)
+      if (hasTrumpInHand)
         return card.rank() == "J" || card.suit() == trumpSuit_;
       else
         return true;  // No Jacks or trump cards in hand, any card is valid
@@ -79,12 +85,13 @@ bool Game::isCardValid(
 
     // Case 2: First card is neither a Jack nor a trump suit card
     bool hasRequiredSuitInHand = std::ranges::any_of(
-        playerList_.front()->handdeck_.cards(),
-        [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
+        playerList_.front()->handdeck_.cards(), [&requiredSuit](const Card& c) {
+          return (c.suit() == requiredSuit) && (c.rank() != "J");
+        });
 
     // If the player has a card of the required suit, they must play them
     if (hasRequiredSuitInHand)
-      return card.suit() == requiredSuit;
+      return (card.suit() == requiredSuit) && (card.rank() != "J");
     else
       return true;  // No card of the required suit in hand, any card is valid
   }
@@ -104,12 +111,13 @@ bool Game::isCardValid(
 
     // Case 2: First card is neither a Jack nor a trump suit card
     bool hasRequiredSuitInHand = std::ranges::any_of(
-        playerList_.front()->handdeck_.cards(),
-        [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
+        playerList_.front()->handdeck_.cards(), [&requiredSuit](const Card& c) {
+          return (c.suit() == requiredSuit) && (c.rank() != "J");
+        });
 
     // If the player has a card of the required suit, they must play them
     if (hasRequiredSuitInHand)
-      return card.suit() == requiredSuit;
+      return (card.suit() == requiredSuit) && (card.rank() != "J");
     else
       return true;  // No card of the required suit in hand, any card is valid
   }
@@ -200,15 +208,34 @@ void Game::activateNextPlayer() {
         std::find_if(playerList_.begin(), playerList_.end(),
                      [](const auto& player) { return player->hasTrick_; });
 
-    // Rotate the winner to the front
+    // Rotate the trickholder to the front
     if (trickholder != playerList_.end() && !playerList_.front()->hasTrick_) {
       std::rotate(playerList_.begin(), trickholder, playerList_.end());
     }
     qDebug() << "Rotating to: " << playerList_.front()->name();
+    // moving trick to players tricks
+    playerList_.front()->tricks_.push_back(trick_);
+    qDebug() << "Trick moved to Trickholder " << playerList_.front()->name();
+
   } else {
     // Rotate to the next player if the trick is not full
     std::rotate(playerList_.begin(), playerList_.begin() + 1,
                 playerList_.end());
     qDebug() << "Next player: " << playerList_.front()->name();
+  }
+  // count at end of round
+  // if (playerList_.front()->handdeck_.cards().empty()) {
+  countRound();
+  // }
+}
+
+void Game::countRound() {
+  int sum{0};
+  for (const auto& player : playerList_) {
+    for (CardVec& vec : player->tricks_) {
+      sum += vec.value();
+    }
+    qDebug() << player->name() << " - Total Points: " << sum;
+    sum = 0;
   }
 }

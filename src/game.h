@@ -28,6 +28,7 @@ class Game : public QObject {
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void activateNextPlayer();
+  void countRound();
 
  signals:
   void clearTrickLayout();

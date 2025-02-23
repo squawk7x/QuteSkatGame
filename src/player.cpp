@@ -11,7 +11,10 @@ Player::Player(
       score_(score),
       handdeck_(handdeck),
       skat_(skat),
-      hasTrick_(hasTrick) {}
+      hasTrick_(hasTrick) {
+  // max 10 tricks to collect, reserve space
+  tricks_.reserve(10);
+}
 
 // Operators
 bool operator<(
