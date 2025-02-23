@@ -15,7 +15,7 @@ const std::unordered_map<std::string, int> rankToPowerNull = {
     {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},
     {"J", 5}, {"Q", 6}, {"K", 7}, {"A", 8}};
 
-// power for trump and power for J are adjusted after 'Reizen'
+// power for trump and power for J are adjusted in int power(...) {...}
 const std::unordered_map<std::string, int> rankToPowerSuit = {
     {"7", 1}, {"8", 2}, {"9", 3}, {"10", 6},
     {"J", 8}, {"Q", 4}, {"K", 5}, {"A", 7}};
@@ -95,7 +95,7 @@ Card::Card(
       str_(std::move(other.str_)),
       name_(std::move(other.name_)),
       value_(other.value_),  // Copy primitive type
-      power_(other.power_)
+      power_(other.power_)   // Copy primitive type
 
 {
   // Leave 'other' in a valid state
@@ -170,7 +170,6 @@ void Card::initCard() {
   setStr();
   setName();
   setValue(rank_);
-  // setPower(rank_);
 }
 
 void Card::setSuitname(
@@ -210,6 +209,8 @@ void Card::setValue(
     value_ = 0;
   }
 }
+
+//
 
 int Card::power(
     const std::string& trumpSuit, Rule rule) const {

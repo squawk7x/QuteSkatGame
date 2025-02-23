@@ -24,6 +24,7 @@ class Game : public QObject {
   explicit Game(QObject* parent = nullptr);
 
   void initGame();
+  bool isCardInHand(const Card& card);
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void activateNextPlayer();

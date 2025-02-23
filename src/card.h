@@ -64,8 +64,6 @@ class Card {
   std::string name() const;
   int value() const;
   int power(const std::string& trumpSuit = "", Rule rule = Rule::Suit) const;
-  // void setPower(const std::string& rank, const std::string& trumpSuit = "",
-  //               Rule rule = Rule::Suit);
 
   // Setters
  private:
