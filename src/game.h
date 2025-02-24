@@ -17,9 +17,10 @@ class Game : public QObject {
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
+  std::string trump_{};
   Rule rule_{};
-  std::string trumpSuit_{};
   int spielwert_{};
+  int gereizt{};
   bool hand_{};
   bool ouvert_{};
   bool schneider_{};

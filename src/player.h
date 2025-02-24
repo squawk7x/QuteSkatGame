@@ -11,15 +11,16 @@ class Player : public QObject {
   int id_;
   std::string name_;
   bool isRobot_;
-  int points_;
-  int score_;
-  bool solo_;
+
+  bool solo_{};
+  int points_{};
+  int score_{};
 
  public:
-  CardVec handdeck_;
-  CardVec skat_;  // active player will get the 'Skat'
-  std::vector<CardVec> tricks_;
-  bool hasTrick_;
+  CardVec handdeck_ = CardVec(10);
+  CardVec skat_ = CardVec(2);  // active player will get the 'Skat'
+  bool hasTrick_ = false;
+  std::vector<CardVec> tricks_{};
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),

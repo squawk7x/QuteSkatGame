@@ -51,18 +51,18 @@ bool Game::isCardValid(
 
   // Farbenspiel "♣", "♥", "♠", "♦"
   if (rule == Rule::Suit) {
-    if (firstCard.rank() == "J") requiredSuit = trumpSuit_;
+    if (firstCard.rank() == "J") requiredSuit = trump_;
 
     // Case 1: First card is a Jack or trump
-    if (firstCard.rank() == "J" || firstCard.suit() == trumpSuit_) {
+    if (firstCard.rank() == "J" || firstCard.suit() == trump_) {
       bool hasTrumpInHand = std::ranges::any_of(
           playerList_.front()->handdeck_.cards(), [this](const Card& c) {
-            return c.suit() == trumpSuit_ || c.rank() == "J";
+            return c.suit() == trump_ || c.rank() == "J";
           });
 
       // if (hasJackInHand || hasTrumpSuitInHand)
       if (hasTrumpInHand)
-        return card.rank() == "J" || card.suit() == trumpSuit_;
+        return card.rank() == "J" || card.suit() == trump_;
       else
         return true;  // No Jacks or trump cards in hand, any card is valid
     }
@@ -136,29 +136,26 @@ bool Game::isCardGreater(
       trick_.cards().begin(), std::prev(trick_.cards().end()));
 
   if (rule == Rule::Suit) {
-    if (card.suit() == firstCard.suit() || card.suit() == trumpSuit_ ||
+    if (card.suit() == firstCard.suit() || card.suit() == trump_ ||
         card.rank() == "J") {
-      return std::ranges::all_of(trickWithoutLast,
-                                 [&card, this](const Card& trickCard) {
-                                   return card.power(trumpSuit_, rule_) >
-                                          trickCard.power(trumpSuit_, rule_);
-                                 });
+      return std::ranges::all_of(
+          trickWithoutLast, [&card, this](const Card& trickCard) {
+            return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
+          });
     }
   } else if (rule == Rule::Grand || rule == Rule::Ramsch) {
     if (card.suit() == firstCard.suit() || card.rank() == "J") {
-      return std::ranges::all_of(trickWithoutLast,
-                                 [&card, this](const Card& trickCard) {
-                                   return card.power(trumpSuit_, rule_) >
-                                          trickCard.power(trumpSuit_, rule_);
-                                 });
+      return std::ranges::all_of(
+          trickWithoutLast, [&card, this](const Card& trickCard) {
+            return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
+          });
     }
   } else if (rule == Rule::Null) {
     if (card.suit() == firstCard.suit()) {
-      return std::ranges::all_of(trickWithoutLast,
-                                 [&card, this](const Card& trickCard) {
-                                   return card.power(trumpSuit_, rule_) >
-                                          trickCard.power(trumpSuit_, rule_);
-                                 });
+      return std::ranges::all_of(
+          trickWithoutLast, [&card, this](const Card& trickCard) {
+            return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
+          });
     }
   }
 
