@@ -21,31 +21,18 @@ void Game::initGame() {
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (int i = 1; i <= 2; i++)
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
-  // blind_.moveTopCardTo(skat_);
-  // blind_.moveTopCardTo(skat_);
-  // for (int i = 1; i <= 4; i++)
-  //   for (Player* player : playerList_)
-  //   blind_.moveTopCardTo(player->handdeck_);
-  // for (int i = 1; i <= 3; i++)
-  //   for (Player* player : playerList_)
-  //   blind_.moveTopCardTo(player->handdeck_);
+  blind_.moveTopCardTo(skat_);
+  blind_.moveTopCardTo(skat_);
+  for (int i = 1; i <= 4; i++)
+    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  for (int i = 1; i <= 3; i++)
+    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
 
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 
   // for testing
   playerList_.front()->tricks_.push_back(skat_);
   showPoints();
-}
-
-bool Game::isCardInHand(
-    const Card& card) {
-  auto& hand = playerList_.front()->handdeck_.cards();
-
-  // 1. Check if the card is in the active player's hand, if not return
-  if (std::find(hand.begin(), hand.end(), card) < hand.end()) {
-    return true;
-  }
-  return false;
 }
 
 bool Game::isCardValid(
@@ -215,11 +202,6 @@ void Game::activateNextPlayer() {
     qDebug() << "Trick moved to Trickholder" << playerList_.front()->name();
 
     playerList_.front()->setPoints();
-    qDebug() << playerList_.front()->name() << "has "
-             << playerList_.front()->points() << "points";
-
-    qDebug() << "Handdeck size: "
-             << playerList_.front()->handdeck_.cards().size();
 
     if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
 
@@ -230,10 +212,6 @@ void Game::activateNextPlayer() {
     qDebug() << "Next player:" << playerList_.front()->name();
   }
 
-  // for (const std::string& suit : suits)
-  //   playerList_.front()->handdeck_.mitOhne(suit);
-
-  // count at end of round
   showPoints();
 }
 

@@ -25,6 +25,14 @@ void CardVec::shuffle() {
   std::ranges::shuffle(cards_, gen);
 }
 
+bool CardVec::isCardInside(
+    const Card& card) {
+  if (std::find(cards().begin(), cards().end(), card) < cards().end()) {
+    return true;
+  }
+  return false;
+}
+
 void CardVec::moveCardTo(
     const Card& card, CardVec& targetVec) {
   auto it = std::ranges::find(cards_, card);  // Find the card

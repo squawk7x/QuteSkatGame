@@ -19,31 +19,26 @@ class Game : public QObject {
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
   Rule rule_{};
   std::string trumpSuit_{};
-  bool ouvert_{};
+  int spielwert_{};
   bool hand_{};
+  bool ouvert_{};
   bool schneider_{};
   bool schwarz_{};
-  bool alleinspieler{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);
 
   // public methods
   void initGame();
-  bool isCardInHand(const Card& card);
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
+  void playCard(const Card& card);
   void activateNextPlayer();
   void showPoints();
   void finishRound();
 
  signals:
   void clearTrickLayout();
-  void setCardToPower(const std::string& suit, Rule rule);
-
-  // Slots
- public slots:
-  void playCard(const Card& card);
 };
 
 #endif  // GAME_H

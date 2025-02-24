@@ -27,6 +27,7 @@ class CardVec {
   // public methods
   std::vector<Card>& cards();
   void shuffle();
+  bool isCardInside(const Card& card);
   void moveCardTo(const Card& card, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
   void moveCardVecTo(std::vector<CardVec>& targetVec);

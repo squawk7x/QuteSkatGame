@@ -13,6 +13,7 @@ class Player : public QObject {
   bool isRobot_;
   int points_;
   int score_;
+  bool solo_;
 
  public:
   CardVec handdeck_;

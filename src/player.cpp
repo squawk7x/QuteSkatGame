@@ -8,6 +8,7 @@ Player::Player(
     : id_(id),
       name_(name),
       isRobot_(isRobot),
+      solo_{},
       points_{},
       score_(score),
       handdeck_(handdeck),
