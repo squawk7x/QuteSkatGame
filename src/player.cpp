@@ -8,6 +8,7 @@ Player::Player(
     : id_(id),
       name_(name),
       isRobot_(isRobot),
+      points_{},
       score_(score),
       handdeck_(handdeck),
       skat_(skat),
@@ -32,22 +33,7 @@ bool operator==(
   return lhs.score_ == rhs.score_;
 }
 
-// Getters
-int Player::id() const { return id_; }
-std::string Player::name() const { return name_; }
-bool Player::isRobot() const { return isRobot_; }
-int Player::score() const { return score_; }
-
-// Methods
-int Player::pointsOnHand() {
-  int pointsOnHand = 0;
-  for (const auto &card : std::as_const(handdeck_.cards())) {
-    pointsOnHand += card.value();
-  }
-  return pointsOnHand;
-}
-
-// Setters
+// private setters
 void Player::setName(
     const std::string &name) {
   name_ = name;
@@ -56,4 +42,18 @@ void Player::setName(
 void Player::setIsRobot(
     bool isRobot) {
   isRobot_ = isRobot;
+}
+
+// public getters
+int Player::id() const { return id_; }
+std::string Player::name() const { return name_; }
+bool Player::isRobot() const { return isRobot_; }
+int Player::score() const { return score_; }
+int Player::points() const { return points_; }
+// public class methods
+//
+void Player::setPoints() {
+  for (CardVec &vec : tricks_) {
+    points_ = vec.value();
+  }
 }

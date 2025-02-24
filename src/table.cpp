@@ -39,7 +39,7 @@ Table::Table(
           cardButton, &QPushButton::clicked, this,
           [this, cardButton, gbPlayer1Layout, gbTrickLayout, card]() {
             if (game_.playerList_.front()->id() == game_.player_1.id()) {
-              // ✅ First, check if the move is valid before doing anything
+              // ✅ First, check if card in hand and the move is valid
               if (!game_.isCardInHand(card) ||
                   !game_.isCardValid(card, game_.rule_)) {
                 qDebug() << "Move rejected: Invalid card choice.";
@@ -77,7 +77,7 @@ Table::Table(
           cardButton, &QPushButton::clicked, this,
           [this, cardButton, gbPlayer2Layout, gbTrickLayout, card]() {
             if (game_.playerList_.front()->id() == game_.player_2.id()) {
-              // ✅ First, check if the move is valid before doing anything
+              // ✅ First, check if card in hand and the move is valid
               if (!game_.isCardInHand(card) ||
                   !game_.isCardValid(card, game_.rule_)) {
                 qDebug() << "Move rejected: Invalid card choice.";
@@ -108,7 +108,7 @@ Table::Table(
           cardButton, &QPushButton::clicked, this,
           [this, cardButton, gbPlayer3Layout, gbTrickLayout, card]() {
             if (game_.playerList_.front()->id() == game_.player_3.id()) {
-              // ✅ First, check if the move is valid before doing anything
+              // ✅ First, check if card in hand and the move is valid
               if (!game_.isCardInHand(card) ||
                   !game_.isCardValid(card, game_.rule_)) {
                 qDebug() << "Move rejected: Invalid card choice.";

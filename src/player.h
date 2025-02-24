@@ -11,6 +11,7 @@ class Player : public QObject {
   int id_;
   std::string name_;
   bool isRobot_;
+  int points_;
   int score_;
 
  public:
@@ -24,22 +25,28 @@ class Player : public QObject {
                   CardVec skat = CardVec(2), bool hasTrick = false);
   ~Player() = default;
 
+  // operator overloading
   friend bool operator<(const Player &lhs, const Player &rhs);
   friend bool operator>(const Player &lhs, const Player &rhs);
   friend bool operator==(const Player &lhs, const Player &rhs);
 
-  // Getters
+ private:
+  // Setters
+  void setName(const std::string &name);
+  void setIsRobot(bool isRobot);
+
+ public:
+  // public setters
+  void setPoints();
+
+  // public getters
   int id() const;
   std::string name() const;
   bool isRobot() const;
   int score() const;
+  int points() const;
 
-  // Methods
-  int pointsOnHand();
-
-  // Setters
-  void setName(const std::string &name);
-  void setIsRobot(bool isRobot);
+  // public class methods
 
   // Slots
  public slots:

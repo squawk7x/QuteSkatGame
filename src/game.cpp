@@ -2,6 +2,8 @@
 
 #include <QDebug>
 
+#include "definitions.h"
+
 Game::Game(
     QObject *parent)
     : QObject{parent} {}
@@ -17,20 +19,22 @@ void Game::initGame() {
   blind_.shuffle();
 
   // Distribuite cards 3 - skat(2) - 4 - 3
-  for (int i = 1; i <= 3; i++)
+  for (int i = 1; i <= 2; i++)
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
-  blind_.moveTopCardTo(skat_);
-  blind_.moveTopCardTo(skat_);
-  for (int i = 1; i <= 4; i++)
-    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
-  for (int i = 1; i <= 3; i++)
-    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  // blind_.moveTopCardTo(skat_);
+  // blind_.moveTopCardTo(skat_);
+  // for (int i = 1; i <= 4; i++)
+  //   for (Player* player : playerList_)
+  //   blind_.moveTopCardTo(player->handdeck_);
+  // for (int i = 1; i <= 3; i++)
+  //   for (Player* player : playerList_)
+  //   blind_.moveTopCardTo(player->handdeck_);
 
-  for (Player* player : playerList_) player->handdeck_.sortCardsByPattern();
+  for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 
   // for testing
   playerList_.front()->tricks_.push_back(skat_);
-  countRound();
+  showPoints();
 }
 
 bool Game::isCardInHand(
@@ -189,7 +193,7 @@ void Game::playCard(
 
     // Mark the current player as having the trick
     playerList_.front()->hasTrick_ = true;
-    qDebug() << playerList_.front()->name() << " has the trick now!";
+    qDebug() << playerList_.front()->name() << "has the trick now!";
   }
 
   // Rotate playerlist
@@ -203,34 +207,46 @@ void Game::activateNextPlayer() {
         std::find_if(playerList_.begin(), playerList_.end(),
                      [](const auto& player) { return player->hasTrick_; });
 
-    // Rotate the trickholder to the front
-    if (trickholder != playerList_.end() && !playerList_.front()->hasTrick_) {
-      std::rotate(playerList_.begin(), trickholder, playerList_.end());
-    }
-    qDebug() << "Rotating to: " << playerList_.front()->name();
+    std::rotate(playerList_.begin(), trickholder, playerList_.end());
+    qDebug() << "Rotating to:" << playerList_.front()->name();
+
     // moving trick to players tricks
     playerList_.front()->tricks_.push_back(trick_);
-    qDebug() << "Trick moved to Trickholder " << playerList_.front()->name();
+    qDebug() << "Trick moved to Trickholder" << playerList_.front()->name();
+
+    playerList_.front()->setPoints();
+    qDebug() << playerList_.front()->name() << "has "
+             << playerList_.front()->points() << "points";
+
+    qDebug() << "Handdeck size: "
+             << playerList_.front()->handdeck_.cards().size();
+
+    if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
 
   } else {
     // Rotate to the next player if the trick is not full
     std::rotate(playerList_.begin(), playerList_.begin() + 1,
                 playerList_.end());
-    qDebug() << "Next player: " << playerList_.front()->name();
+    qDebug() << "Next player:" << playerList_.front()->name();
   }
+
+  // for (const std::string& suit : suits)
+  //   playerList_.front()->handdeck_.mitOhne(suit);
+
   // count at end of round
-  // if (playerList_.front()->handdeck_.cards().empty()) {
-  countRound();
-  // }
+  showPoints();
 }
 
-void Game::countRound() {
-  int sum{0};
+void Game::showPoints() {
   for (const auto& player : playerList_) {
-    for (CardVec& vec : player->tricks_) {
-      sum += vec.value();
-    }
-    qDebug() << player->name() << " - Total Points: " << sum;
-    sum = 0;
+    qDebug() << player->name() << " - Total Points: " << player->points();
+    qDebug() << "Handdeck size: "
+             << playerList_.front()->handdeck_.cards().size();
   }
+  qDebug() << "blind size: " << blind_.cards().size();
+}
+
+void Game::finishRound() {
+  qDebug() << "finishing round ...\n";
+  showPoints();
 }

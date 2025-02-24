@@ -198,8 +198,8 @@ int Card::value() const { return value_; }
 int Card::power(
     const std::string& trumpSuit, Rule rule) const {
   if (rule == Rule::Suit || rule == Rule::Grand || rule == Rule::Ramsch) {
-    auto it = rankToPowerSuit.find(rank_);
-    power_ = (it != rankToPowerSuit.end()) ? it->second : 0;
+    auto it = PowerPrioritySuit.find(rank_);
+    power_ = (it != PowerPrioritySuit.end()) ? it->second : 0;
 
     // Add 10 if the card belongs to the trump suit
     if (suit_ == trumpSuit) {
@@ -218,8 +218,8 @@ int Card::power(
     }
 
   } else if (rule == Rule::Null) {
-    auto it = rankToPowerNull.find(rank_);
-    power_ = (it != rankToPowerNull.end()) ? it->second : 0;
+    auto it = PowerPriorityNull.find(rank_);
+    power_ = (it != PowerPriorityNull.end()) ? it->second : 0;
   } else {
     power_ = 0;  // Default case if Rule is undefined
   }

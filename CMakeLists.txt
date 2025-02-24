@@ -12,10 +12,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
-
-set(TS_FILES res/quteSkatGame_en_US.ts res/quteSkatGame_en_US.ts)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 # Include the src directory for header files
 include_directories(src)
@@ -34,71 +33,57 @@ set(PROJECT_SOURCES
     src/cardvec.cpp
     src/player.h
     src/player.cpp
-    src/definitions.h
-    src/definitions.cpp
-    ${TS_FILES})
+    src/definitions.h)
 
 # Add main executable add_executable(skat src/skat.cpp src/card.cpp src/card.h
 # src/cardvec.cpp src/cardvec.h)
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-  qt_add_executable(
-    quteSkatGame
-    MANUAL_FINALIZATION
-    ${PROJECT_SOURCES}
-    src/main.cpp
-    src/game.h
-    src/game.cpp
-    res/cards/10_of_clubs.png
-    res/cards/10_of_diamonds.png
-    res/cards/10_of_hearts.png
-    res/cards/10_of_spades.png
-    res/cards/6_of_clubs.png
-    res/cards/6_of_diamonds.png
-    res/cards/6_of_hearts.png
-    res/cards/6_of_spades.png
-    res/cards/7_of_clubs.png
-    res/cards/7_of_diamonds.png
-    res/cards/7_of_hearts.png
-    res/cards/7_of_spades.png
-    res/cards/8_of_clubs.png
-    res/cards/8_of_diamonds.png
-    res/cards/8_of_hearts.png
-    res/cards/8_of_spades.png
-    res/cards/9_of_clubs.png
-    res/cards/9_of_diamonds.png
-    res/cards/9_of_hearts.png
-    res/cards/9_of_spades.png
-    res/cards/ace_of_clubs.png
-    res/cards/ace_of_diamonds.png
-    res/cards/ace_of_hearts.png
-    res/cards/ace_of_spades.png
-    res/cards/backside_blue.png
-    res/cards/backside_red.png
-    res/cards/jack_of_clubs.png
-    res/cards/jack_of_diamonds.png
-    res/cards/jack_of_hearts.png
-    res/cards/jack_of_spades.png
-    res/cards/king_of_clubs.png
-    res/cards/king_of_diamonds.png
-    res/cards/king_of_hearts.png
-    res/cards/king_of_spades.png
-    res/cards/queen_of_clubs.png
-    res/cards/queen_of_diamonds.png
-    res/cards/queen_of_hearts.png
-    res/cards/queen_of_spades.png
-    README.md)
-
-  qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
-else()
-  if(ANDROID)
-    add_library(quteSkatGame SHARED ${PROJECT_SOURCES})
-  else()
-    add_executable(quteSkatGame ${PROJECT_SOURCES})
-  endif()
-
-  qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
-endif()
+qt_add_executable(
+  quteSkatGame
+  MANUAL_FINALIZATION
+  ${PROJECT_SOURCES}
+  src/main.cpp
+  src/game.h
+  src/game.cpp
+  res/cards/10_of_clubs.png
+  res/cards/10_of_diamonds.png
+  res/cards/10_of_hearts.png
+  res/cards/10_of_spades.png
+  res/cards/6_of_clubs.png
+  res/cards/6_of_diamonds.png
+  res/cards/6_of_hearts.png
+  res/cards/6_of_spades.png
+  res/cards/7_of_clubs.png
+  res/cards/7_of_diamonds.png
+  res/cards/7_of_hearts.png
+  res/cards/7_of_spades.png
+  res/cards/8_of_clubs.png
+  res/cards/8_of_diamonds.png
+  res/cards/8_of_hearts.png
+  res/cards/8_of_spades.png
+  res/cards/9_of_clubs.png
+  res/cards/9_of_diamonds.png
+  res/cards/9_of_hearts.png
+  res/cards/9_of_spades.png
+  res/cards/ace_of_clubs.png
+  res/cards/ace_of_diamonds.png
+  res/cards/ace_of_hearts.png
+  res/cards/ace_of_spades.png
+  res/cards/backside_blue.png
+  res/cards/backside_red.png
+  res/cards/jack_of_clubs.png
+  res/cards/jack_of_diamonds.png
+  res/cards/jack_of_hearts.png
+  res/cards/jack_of_spades.png
+  res/cards/king_of_clubs.png
+  res/cards/king_of_diamonds.png
+  res/cards/king_of_hearts.png
+  res/cards/king_of_spades.png
+  res/cards/queen_of_clubs.png
+  res/cards/queen_of_diamonds.png
+  res/cards/queen_of_hearts.png
+  res/cards/queen_of_spades.png
+  README.md)
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 

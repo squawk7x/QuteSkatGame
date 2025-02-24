@@ -5,16 +5,16 @@
 // #include <QObject>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <vector>
+// #include <unordered_map>
+// #include <vector>
 
 // Definitions for th3e global card properties
-extern std::vector<std::string> suits;
-extern std::vector<std::string> ranks;
-extern std::vector<std::string> suitnames;
-extern std::vector<std::string> ranknames;
-extern const std::unordered_map<std::string, int> rankToPowerSuit;
-extern const std::unordered_map<std::string, int> rankToPowerNull;
+// extern std::vector<std::string> suits;
+// extern std::vector<std::string> ranks;
+// extern std::vector<std::string> suitnames;
+// extern std::vector<std::string> ranknames;
+// extern const std::unordered_map<std::string, int> PowerPrioritySuit;
+// extern const std::unordered_map<std::string, int> PowerPriorityNull;
 
 enum class Rule {
   Suit,   // Suit and J are trump

@@ -23,17 +23,19 @@ class Game : public QObject {
   bool hand_{};
   bool schneider_{};
   bool schwarz_{};
+  bool alleinspieler{};
 
-  int id_alleinspieler{};
-
+  // constructor
   explicit Game(QObject* parent = nullptr);
 
+  // public methods
   void initGame();
   bool isCardInHand(const Card& card);
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void activateNextPlayer();
-  void countRound();
+  void showPoints();
+  void finishRound();
 
  signals:
   void clearTrickLayout();

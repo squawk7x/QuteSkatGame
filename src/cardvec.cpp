@@ -1,8 +1,12 @@
 #include "cardvec.h"
 
+#include <QDebug>
 #include <algorithm>
 #include <random>
+#include <ranges>
 #include <unordered_map>
+
+#include "definitions.h"
 
 CardVec::CardVec(
     int length)
@@ -22,11 +26,11 @@ void CardVec::shuffle() {
 }
 
 void CardVec::moveCardTo(
-    const Card& card, CardVec& target) {
+    const Card& card, CardVec& targetVec) {
   auto it = std::ranges::find(cards_, card);  // Find the card
   if (it != cards_.end()) {
-    target.addCard(std::move(*it));     // Move to target
-    std::ranges::remove(cards_, card);  // Remove from source
+    targetVec.addCard(std::move(*it));  // Move to target
+    cards_.erase(it);                   // ✅ Properly remove it from source
   }
 }
 
@@ -40,36 +44,22 @@ void CardVec::moveTopCardTo(
 }
 
 void CardVec::moveCardVecTo(
-    std::vector<CardVec>& target) {}
+    std::vector<CardVec>& targetVec) {}
 
-void CardVec::sortCardsByPattern() {
-  static const std::vector<std::string> suit_order = {"♣", "♥", "♠", "♦"};
-  static const std::vector<std::string> rank_order = {"J", "A", "10", "K",
-                                                      "Q", "9", "8",  "7"};
-
-  // Suit priority for general sorting
-  static const std::unordered_map<std::string, int> suit_priority = {
-      {"♣", 0}, {"♥", 1}, {"♠", 2}, {"♦", 3}};
-
-  // Special suit priority for Jokers (J)
-  static const std::unordered_map<std::string, int> suit_priority_for_J = {
-      {"♣", 0}, {"♠", 1}, {"♥", 2}, {"♦", 3}};
-
-  // Rank priority for sorting within a suit
-  static const std::unordered_map<std::string, int> rank_priority = {
-      {"J", 0}, {"A", 1}, {"10", 2}, {"K", 3},
-      {"Q", 4}, {"9", 5}, {"8", 6},  {"7", 7}};
-
+void CardVec::sortByJandSuits() {
   // Step 1: Sort normally by suit and rank
   std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
-    if (suit_priority.at(a.suit()) != suit_priority.at(b.suit())) {
-      return suit_priority.at(a.suit()) < suit_priority.at(b.suit());
+    if (SortingPriorityForSuit.at(a.suit()) !=
+        SortingPriorityForSuit.at(b.suit())) {
+      return SortingPriorityForSuit.at(a.suit()) <
+             SortingPriorityForSuit.at(b.suit());
     }
-    return rank_priority.at(a.rank()) < rank_priority.at(b.rank());
+    return SortingPriorityForRank.at(a.rank()) <
+           SortingPriorityForRank.at(b.rank());
   });
 
   // Step 2: Move all 'J' cards to the front, sorting by suit using
-  // suit_priority_for_J
+  // SortingPriorityFor_J
   std::stable_partition(cards_.begin(), cards_.end(),
                         [](const Card& card) { return card.rank() == "J"; });
 
@@ -79,8 +69,96 @@ void CardVec::sortCardsByPattern() {
   });
 
   std::ranges::sort(cards_.begin(), j_end, [&](const Card& a, const Card& b) {
-    return suit_priority_for_J.at(a.suit()) < suit_priority_for_J.at(b.suit());
+    return SortingPriorityFor_J.at(a.suit()) <
+           SortingPriorityFor_J.at(b.suit());
   });
+}
+
+auto CardVec::filterJplusSuit(
+    const std::string& targetSuit) {
+  // Step 1: Filter all 'J' cards
+  auto j_cards = cards_ | std::ranges::views::filter([](const Card& card) {
+                   return card.rank() == "J";
+                 });
+
+  // Step 2: Filter cards of the specific suit (excluding 'J' cards)
+  auto suit_cards =
+      cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
+        return card.suit() == targetSuit && card.rank() != "J";
+      });
+
+  // Combine both parts into a new sequence (first all 'J' cards, then all suit
+  // cards)
+  std::vector<Card> result;
+  result.insert(result.end(), j_cards.begin(), j_cards.end());
+  result.insert(result.end(), suit_cards.begin(), suit_cards.end());
+
+  return result;
+}
+
+std::string CardVec::pattern(
+    const std::string& targetSuit) {
+  // Initialize the pattern to empty string
+  std::string pat = "";
+
+  // Step 1: Sort cards and filter Jacks and the specific suit (done by
+  // sortByJandSuits)
+  sortByJandSuits();
+  auto JplusSuits = filterJplusSuit(targetSuit);
+
+  // Step 2: Store the presence of Jacks for each suit
+  std::unordered_map<std::string, int> jackPresence;
+  for (const auto& card : JplusSuits) {
+    if (card.rank() == "J") {
+      jackPresence[card.suit()] = 1;
+    }
+  }
+
+  // Step 3: Store the presence of other ranks for the specific suit
+  std::unordered_map<std::string, int> rankPresence;
+  for (const auto& card : JplusSuits) {
+    if (card.rank() != "J" && card.suit() == targetSuit) {
+      rankPresence[card.rank()] = 1;
+    }
+  }
+
+  // Step 4: Append '1' or '0' to the pattern for Jacks (♣, ♠, ♥, ♦)
+  pat += jackPresence["♣"] == 1 ? '1' : '0';
+  pat += jackPresence["♠"] == 1 ? '1' : '0';
+  pat += jackPresence["♥"] == 1 ? '1' : '0';
+  pat += jackPresence["♦"] == 1 ? '1' : '0';
+
+  // Step 5: Append '1' or '0' for ranks (A, 10, K, Q, 9, 8, 7)
+  pat += rankPresence["A"] == 1 ? '1' : '0';
+  pat += rankPresence["10"] == 1 ? '1' : '0';
+  pat += rankPresence["K"] == 1 ? '1' : '0';
+  pat += rankPresence["Q"] == 1 ? '1' : '0';
+  pat += rankPresence["9"] == 1 ? '1' : '0';
+  pat += rankPresence["8"] == 1 ? '1' : '0';
+  pat += rankPresence["7"] == 1 ? '1' : '0';
+
+  // Output the pattern using qDebug()
+  qDebug() << QString::fromStdString(pat);
+
+  return pat;
+}
+
+int CardVec::mitOhne(
+    const std::string& targetSuit) {
+  // Get the pattern for the target suit
+  std::string pat = pattern(targetSuit);
+
+  // Count leading '0's using ranges
+  int count0 = std::ranges::distance(
+      pat | std::ranges::views::take_while([](char c) { return c == '0'; }));
+
+  // Count leading '1's using ranges
+  int count1 = std::ranges::distance(
+      pat | std::ranges::views::take_while([](char c) { return c == '1'; }));
+
+  // Return the maximum of leading '0's and leading '1's
+  qDebug() << "mitOhne " << std::max(count0, count1);
+  return std::max(count0, count1);
 }
 
 std::string CardVec::print() {
