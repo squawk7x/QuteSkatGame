@@ -10,14 +10,16 @@ CardVec::CardVec(
   cards_.reserve(length);
 }
 
-CardVec::~CardVec() { clearCards(); }
+CardVec::~CardVec() {}
 
-// cardVec.h:
-// template <typename T>
-// void addCard(
-//     T&& card) {
-//   cards_.push_back(std::forward<T>(card));
-// }
+// public class methods
+std::vector<Card>& CardVec::cards() { return cards_; }
+
+void CardVec::shuffle() {
+  std::random_device rd;
+  std::mt19937 gen(rd());  // New RNG instance with fresh seed
+  std::ranges::shuffle(cards_, gen);
+}
 
 void CardVec::moveCardTo(
     const Card& card, CardVec& target) {
@@ -39,13 +41,6 @@ void CardVec::moveTopCardTo(
 
 void CardVec::moveCardVecTo(
     std::vector<CardVec>& target) {}
-
-// Shuffle the cards
-void CardVec::shuffle() {
-  std::random_device rd;
-  std::mt19937 gen(rd());  // New RNG instance with fresh seed
-  std::ranges::shuffle(cards_, gen);
-}
 
 void CardVec::sortCardsByPattern() {
   static const std::vector<std::string> suit_order = {"♣", "♥", "♠", "♦"};
@@ -88,12 +83,6 @@ void CardVec::sortCardsByPattern() {
   });
 }
 
-int CardVec::value() {
-  int sum{0};
-  for (Card card : cards_) sum += card.value();
-  return sum;
-}
-
 std::string CardVec::print() {
   std::string str;
   str.reserve(cards_.size() *
@@ -106,8 +95,8 @@ std::string CardVec::print() {
   return str;
 }
 
-void CardVec::clearCards() { cards_.clear(); }
-
-
-std::vector<Card>& CardVec::cards() { return cards_; }
-
+int CardVec::value() {
+  int sum{0};
+  for (Card card : cards_) sum += card.value();
+  return sum;
+}

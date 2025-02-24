@@ -2,23 +2,8 @@
 
 #include <iostream>
 #include <memory>
-#include <unordered_map>
 
-// Definitions for global card properties
-std::vector<std::string> suits = {"♣", "♥", "♠", "♦"};
-std::vector<std::string> ranks = {"J", "A", "10", "K", "Q", "9", "8", "7"};
-std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
-                                      "queen", "9",   "8",  "7"};
-std::vector<std::string> suitnames = {"clubs", "hearts", "spades", "diamonds"};
-
-const std::unordered_map<std::string, int> rankToPowerNull = {
-    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},
-    {"J", 5}, {"Q", 6}, {"K", 7}, {"A", 8}};
-
-// power for trump and power for J are adjusted in int power(...) {...}
-const std::unordered_map<std::string, int> rankToPowerSuit = {
-    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 6},
-    {"J", 8}, {"Q", 4}, {"K", 5}, {"A", 7}};
+#include "definitions.h"
 
 // Constructor: Card("♥", "Q")
 Card::Card(
@@ -149,16 +134,6 @@ std::strong_ordering Card::operator<=>(
   return value_ <=> other.value_;
 }
 
-// Getters
-std::string Card::suit() const { return suit_; }
-std::string Card::rank() const { return rank_; }
-std::string Card::suitname() const { return suitname_; }
-std::string Card::rankname() const { return rankname_; }
-std::string Card::str() const { return str_; }
-std::string Card::name() const { return name_; }
-
-int Card::value() const { return value_; }
-
 // Private Methods
 void Card::initCard() {
   if (suit_.empty() || rank_.empty()) return;
@@ -172,6 +147,7 @@ void Card::initCard() {
   setValue(rank_);
 }
 
+// private setters
 void Card::setSuitname(
     const std::string& suit) {
   auto it = std::ranges::find(suits, suit);
@@ -189,7 +165,6 @@ void Card::setRankname(
 }
 
 void Card::setStr() { str_ = suit_ + rank_; }
-
 void Card::setName() { name_ = rankname_ + "_of_" + suitname_ /* + ".png"*/; }
 
 // Card values for german Skat game
@@ -210,8 +185,16 @@ void Card::setValue(
   }
 }
 
-//
+// public getters
+std::string Card::suit() const { return suit_; }
+std::string Card::rank() const { return rank_; }
+std::string Card::suitname() const { return suitname_; }
+std::string Card::rankname() const { return rankname_; }
+std::string Card::str() const { return str_; }
+std::string Card::name() const { return name_; }
+int Card::value() const { return value_; }
 
+// public methods
 int Card::power(
     const std::string& trumpSuit, Rule rule) const {
   if (rule == Rule::Suit || rule == Rule::Grand || rule == Rule::Ramsch) {
@@ -241,10 +224,4 @@ int Card::power(
     power_ = 0;  // Default case if Rule is undefined
   }
   return power_;
-}
-
-// SLOTS:
-void Card::onSetCardPower(
-    const std::string& suit, Rule rule) {
-  power(suit, rule);
 }

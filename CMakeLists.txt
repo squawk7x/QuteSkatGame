@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
     src/cardvec.cpp
     src/player.h
     src/player.cpp
+    src/definitions.h
+    src/definitions.cpp
     ${TS_FILES})
 
 # Add main executable add_executable(skat src/skat.cpp src/card.cpp src/card.h

@@ -6,6 +6,7 @@
 enum class CardFace { Open, Closed };
 
 class CardVec {
+ private:
   std::vector<Card> cards_;
   bool isCardFaceVisible_;
   CardFace cardFace_;
@@ -21,16 +22,14 @@ class CardVec {
     cards_.push_back(std::forward<T>(card));
   }
 
+  // public methods
+  std::vector<Card>& cards();
+  void shuffle();
   void moveCardTo(const Card& card, CardVec& target);
   void moveTopCardTo(CardVec& targetVec);
   void moveCardVecTo(std::vector<CardVec>& target);
-
-  std::string print();
-  void clearCards();
-  std::vector<Card>& cards();
-
-  void shuffle();
   void sortCardsByPattern();
+  std::string print();
   int value();
 
   // virtual void removeCard(Card card);
