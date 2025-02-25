@@ -118,16 +118,16 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QPushButton" name="pbPassen">
+          <widget class="QPushButton" name="pbPasse">
            <property name="text">
-            <string>passe</string>
+            <string>Passe</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pbReizen">
+          <widget class="QPushButton" name="pbAnsagen">
            <property name="text">
-            <string>18</string>
+            <string>Ansagen</string>
            </property>
           </widget>
          </item>

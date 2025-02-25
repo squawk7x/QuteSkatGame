@@ -35,6 +35,23 @@ void Game::initGame() {
   showPoints();
 }
 
+int Game::ansagen() {
+  static int counter = 0;
+
+  constexpr std::array<int, 57> skatGebote = {
+      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
+      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
+      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
+      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+
+  int index = std::min(
+      counter, static_cast<int>(skatGebote.size() -
+                                1));  // Verhindert Out-of-Bounds-Zugriff
+  counter++;                          // Zählt nur hoch, wenn nicht am Ende
+
+  return skatGebote[index];
+}
+
 bool Game::isCardValid(
     const Card& card, Rule rule) {
   if (trick_.cards().size() == 3) {

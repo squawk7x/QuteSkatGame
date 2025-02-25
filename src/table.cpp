@@ -9,7 +9,7 @@ Table::Table(
 
   game_.initGame();
 
-  // Setup Layout Players
+  // Setup Layout
   {
     QGroupBox *gbPlayer1 = findChild<QGroupBox *>("gbPlayer1");
     QGroupBox *gbPlayer2 = findChild<QGroupBox *>("gbPlayer2");
@@ -132,8 +132,10 @@ Table::Table(
     }
   }
 
-  // Pushbuttons
+  // Setup Pushbuttons
   {
+    QPushButton *pbAnsagen = findChild<QPushButton *>("pbAnsagen");
+    QPushButton *pbPasse = findChild<QPushButton *>("pbPasse");
     QPushButton *pbKaro = findChild<QPushButton *>("pbKaro");
     QPushButton *pbHerz = findChild<QPushButton *>("pbHerz");
     QPushButton *pbPik = findChild<QPushButton *>("pbPik");
@@ -148,40 +150,49 @@ Table::Table(
 
     // connect pushbuttons Spiel
     {
+      QObject::connect(pbAnsagen, &QPushButton::clicked, this,
+                       [this, pbAnsagen]() {
+                         game_.gereizt_ = game_.ansagen();
+                         pbAnsagen->setText(QString::number(game_.gereizt_));
+                         qDebug() << "gereizt_ set to" << game_.gereizt_;
+                       });
+      QObject::connect(pbPasse, &QPushButton::clicked, this, [this]() {
+        qDebug() << "" << QString::fromStdString(game_.trump_);
+      });
       QObject::connect(pbKaro, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "♦";
         game_.rule_ = Rule::Suit;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "♦";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbHerz, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "♥";
         game_.rule_ = Rule::Suit;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "♥";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbPik, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "♠";
         game_.rule_ = Rule::Suit;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "♠";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbKreuz, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "♣";
         game_.rule_ = Rule::Suit;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "♣";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbGrand, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "J";
         game_.rule_ = Rule::Grand;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "J";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbNull, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "";
         game_.rule_ = Rule::Null;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
       QObject::connect(pbRamsch, &QPushButton::clicked, this, [this]() {
-        game_.trump_ = "J";
         game_.rule_ = Rule::Ramsch;
-        qDebug() << "trump_ set to " << QString::fromStdString(game_.trump_);
+        game_.trump_ = "J";
+        qDebug() << "trump_ set to" << QString::fromStdString(game_.trump_);
       });
     }
 
@@ -189,23 +200,23 @@ Table::Table(
       QObject::connect(pbHand, &QPushButton::toggled, this,
                        [this](bool checked) {
                          game_.hand_ = checked;
-                         qDebug() << "hand_ set to " << game_.hand_;
+                         qDebug() << "hand_ set to" << game_.hand_;
                        });
 
       QObject::connect(pbOuvert, &QPushButton::toggled, this,
                        [this](bool checked) {
                          game_.ouvert_ = checked;
-                         qDebug() << "ouvert_ set to " << game_.ouvert_;
+                         qDebug() << "ouvert_ set to" << game_.ouvert_;
                        });
       QObject::connect(pbSchneider, &QPushButton::toggled, this,
                        [this](bool checked) {
                          game_.schneider_ = checked;
-                         qDebug() << "schneider_ set to " << game_.schneider_;
+                         qDebug() << "schneider_ set to" << game_.schneider_;
                        });
       QObject::connect(pbSchwarz, &QPushButton::toggled, this,
                        [this](bool checked) {
                          game_.schwarz_ = checked;
-                         qDebug() << "schwarz_ set to " << game_.schwarz_;
+                         qDebug() << "schwarz_ set to" << game_.schwarz_;
                        });
     }
   }

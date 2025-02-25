@@ -17,10 +17,10 @@ class Game : public QObject {
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
-  std::string trump_{};
   Rule rule_{};
+  std::string trump_{};
+  int gereizt_{};
   int spielwert_{};
-  int gereizt{};
   bool hand_{};
   bool ouvert_{};
   bool schneider_{};
@@ -31,6 +31,7 @@ class Game : public QObject {
 
   // public methods
   void initGame();
+  int ansagen();
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void playCard(const Card& card);

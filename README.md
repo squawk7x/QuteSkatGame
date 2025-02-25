@@ -3,4 +3,3 @@ UNDER CONSTRUCTION
 
 
 The Card Game "SKAT"
-

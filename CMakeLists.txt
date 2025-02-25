@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(
-  quteSkatGame
+  QuteSkatGame
   VERSION 0.1
   LANGUAGES CXX)
 
@@ -13,15 +13,13 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 # Include the src directory for header files
 include_directories(src)
 
 set(PROJECT_SOURCES
     src/main.cpp
-    # src/xmain.cpp
     src/table.cpp
     src/table.h
     src/table.ui
@@ -83,12 +81,13 @@ qt_add_executable(
   res/cards/queen_of_diamonds.png
   res/cards/queen_of_hearts.png
   res/cards/queen_of_spades.png
-  README.md)
+  README.md
+  res/Screenshot.png)
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Qt for iOS/macOS settings
-if(${QT_VERSION} VERSION_LESS 6.1.0)
+if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION_MINOR VERSION_LESS 1)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.quteSkatGame)
 endif()
 set_target_properties(
