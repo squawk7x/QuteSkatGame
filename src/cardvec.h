@@ -32,11 +32,11 @@ class CardVec {
   void moveTopCardTo(CardVec& targetVec);
   void moveCardVecTo(std::vector<CardVec>& targetVec);
   void sortByJandSuits();
-  std::string pattern(const std::string& targetSuit);
   auto filterJplusSuit(const std::string& targetSuit);
+  std::string pattern(const std::string& targetSuit);
   int mitOhne(const std::string& targetSuit);
-  std::string print();
   int value();
+  std::string print();
 
   // virtual void removeCard(Card card);
   // virtual std::string cardsAsString() const;

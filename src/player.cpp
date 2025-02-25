@@ -7,7 +7,7 @@ Player::Player(
     CardVec skat, bool hasTrick)
     : id_(id), name_(name), isRobot_(isRobot) {
   // max 10 tricks to collect, reserve space
-  tricks_.reserve(10);
+  tricks_.reserve(11);  // max: skat + 10 tricks
 }
 
 // Operators

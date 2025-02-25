@@ -5,7 +5,7 @@
 #include "definitions.h"
 
 Game::Game(
-    QObject *parent)
+    QObject* parent)
     : QObject{parent} {}
 
 void Game::initGame() {
@@ -19,7 +19,7 @@ void Game::initGame() {
   blind_.shuffle();
 
   // Distribuite cards 3 - skat(2) - 4 - 3
-  for (int i = 1; i <= 2; i++)
+  for (int i = 1; i <= 3; i++)
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
   blind_.moveTopCardTo(skat_);
   blind_.moveTopCardTo(skat_);
@@ -30,12 +30,41 @@ void Game::initGame() {
 
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 
+  // each player evaluate cards and max reizen
+
+  // player ghs_[2] starts
+  auto sager = std::ranges::find_if(playerList_, [this](const Player* player) {
+    return player->id() == ghs_[2];
+  });
+
+  auto hoerer = std::ranges::find_if(playerList_, [this](const Player* player) {
+    return player->id() == ghs_[1];
+  });
+
+  auto weitersager = std::ranges::find_if(
+      playerList_,
+      [this](const Player* player) { return player->id() == ghs_[0]; });
+
+  reizen();
   // for testing
-  playerList_.front()->tricks_.push_back(skat_);
-  showPoints();
+  // playerList_.front()->tricks_.push_back(skat_);
+  // showPoints();
 }
 
-int Game::ansagen() {
+void Game::reizen() {
+  qDebug() << "Emitting gesagt() from game instance:" << this;
+
+  emit gesagt();
+  qDebug() << "Emitted gesagt() signal!";
+  emit gesagt();
+  qDebug() << "Emitted gesagt() signal!";
+  emit gesagt();
+  qDebug() << "Emitted gesagt() signal!";
+
+  qDebug() << "Receivers for gesagt():" << receivers(SIGNAL(gesagt()));
+}
+
+int Game::sagen() {
   static int counter = 0;
 
   constexpr std::array<int, 57> skatGebote = {
@@ -52,11 +81,18 @@ int Game::ansagen() {
   return skatGebote[index];
 }
 
+void Game::hoeren(
+    int player_id) {}
+
+int Game::spielwert() { return 0; }
+
 bool Game::isCardValid(
     const Card& card, Rule rule) {
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
+    // qDebug() << "Receivers for gesagt():"
+    //          << receivers(SIGNAL(clearTrickLayout()));
   }
 
   if (trick_.cards().empty()) {

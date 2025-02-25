@@ -169,6 +169,12 @@ int CardVec::mitOhne(
   return std::max(count0, count1);
 }
 
+int CardVec::value() {
+  int sum{0};
+  for (Card card : cards_) sum += card.value();
+  return sum;
+}
+
 std::string CardVec::print() {
   std::string str;
   str.reserve(cards_.size() *
@@ -179,10 +185,4 @@ std::string CardVec::print() {
   }
 
   return str;
-}
-
-int CardVec::value() {
-  int sum{0};
-  for (Card card : cards_) sum += card.value();
-  return sum;
 }

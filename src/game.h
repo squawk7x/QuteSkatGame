@@ -17,6 +17,8 @@ class Game : public QObject {
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
+  std::vector<int> ghs_{1, 2, 3};  // ghs_{[0][1][2]} id für geben-hoeren-sagen
+  int soloSpieler_id{};
   Rule rule_{};
   std::string trump_{};
   int gereizt_{};
@@ -31,7 +33,12 @@ class Game : public QObject {
 
   // public methods
   void initGame();
-  int ansagen();
+
+  void reizen();
+  int sagen();
+  void hoeren(int player_id);
+  int spielwert();
+
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void playCard(const Card& card);
@@ -40,6 +47,7 @@ class Game : public QObject {
   void finishRound();
 
  signals:
+  void gesagt();
   void clearTrickLayout();
 };
 

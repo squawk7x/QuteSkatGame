@@ -2,6 +2,7 @@
 #define TABLE_H
 
 #include <qboxlayout.h>
+#include <qpushbutton.h>
 
 #include <QMainWindow>
 
@@ -18,7 +19,11 @@ class Table : public QMainWindow {
 
  private:
   Ui::Skattisch *ui;
-  Game game_{this};
+  Game *game_;
+  QPushButton *pbSagen_;
+  QPushButton *pbPassen_;
+
+  QHBoxLayout *gbTrickLayout_;
 
  public:
   Table(QWidget *parent = nullptr);
@@ -27,5 +32,6 @@ class Table : public QMainWindow {
   // Slots
  public slots:
   void onClearTrickLayout();
+  void onGesagt();
 };
 #endif  // TABLE_H

@@ -116,18 +116,18 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QPushButton" name="pbPasse">
+          <widget class="QPushButton" name="pbSagen">
            <property name="text">
-            <string>Passe</string>
+            <string>Sagen</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pbAnsagen">
+          <widget class="QPushButton" name="pbPassen">
            <property name="text">
-            <string>Ansagen</string>
+            <string>Passe</string>
            </property>
           </widget>
          </item>
@@ -357,32 +357,6 @@
         </property>
        </spacer>
       </item>
-      <item>
-       <widget class="QGroupBox" name="gbCards">
-        <property name="title">
-         <string>Karten</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QRadioButton" name="rbSmall">
-           <property name="text">
-            <string>klein</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbNormal">
-           <property name="text">
-            <string>normal</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
      </layout>
     </item>
     <item>
@@ -428,6 +402,32 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbCards">
+        <property name="title">
+         <string>Karten</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="rbSmall">
+           <property name="text">
+            <string>klein</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbNormal">
+           <property name="text">
+            <string>normal</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
