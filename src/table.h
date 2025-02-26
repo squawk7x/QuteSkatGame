@@ -20,10 +20,6 @@ class Table : public QMainWindow {
  private:
   Ui::Skattisch *ui;
   Game *game_;
-  QPushButton *pbSagen_;
-  QPushButton *pbPassen_;
-
-  QHBoxLayout *gbTrickLayout_;
 
  public:
   Table(QWidget *parent = nullptr);

@@ -10,53 +10,29 @@ Table::Table(
   ui->setupUi(this);
   game_->initGame();
 
-  // Setup Layout
-  QGroupBox *gbPlayer1 = findChild<QGroupBox *>("gbPlayer1");
-  QGroupBox *gbPlayer2 = findChild<QGroupBox *>("gbPlayer2");
-  QGroupBox *gbPlayer3 = findChild<QGroupBox *>("gbPlayer3");
-  QGroupBox *gbSkat = findChild<QGroupBox *>("gbSkat");
-  QGroupBox *gbTrick = findChild<QGroupBox *>("gbTrick");
-
-  QHBoxLayout *gbPlayer1Layout = new QHBoxLayout();
-  QHBoxLayout *gbPlayer2Layout = new QHBoxLayout();
-  QHBoxLayout *gbPlayer3Layout = new QHBoxLayout();
-  QHBoxLayout *gbSkatLayout = new QHBoxLayout();
-  gbTrickLayout_ = new QHBoxLayout();
-
-  gbPlayer1->setLayout(gbPlayer1Layout);
-  gbPlayer2->setLayout(gbPlayer2Layout);
-  gbPlayer3->setLayout(gbPlayer3Layout);
-  gbSkat->setLayout(gbSkatLayout);
-  gbTrick->setLayout(gbTrickLayout_);
-
   for (const Card &card : game_->player_1.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    gbPlayer1Layout->addWidget(cardButton);
+    ui->gbPlayer1Layout->addWidget(cardButton);
 
     // Optional: Connect button to an event (e.g., play card)
     QObject::connect(
-        cardButton, &QPushButton::clicked, this,
-        [this, cardButton, gbPlayer1Layout, card]() {
+        cardButton, &QPushButton::clicked, this, [&]() {
           if (game_->playerList_.front()->id() == game_->player_1.id()) {
-            // ✅ First, check if card in hand and the move is valid
+            // First, check if card in hand and the move is valid
             if (!game_->player_1.handdeck_.isCardInside(card) ||
                 !game_->isCardValid(card, game_->rule_)) {
               qDebug() << "Move rejected: Invalid card choice.";
               return;  // 🚨 Exit early if the move is not valid
             }
-
-            // ✅ Only remove the card if it's valid
-            gbPlayer1Layout->removeWidget(cardButton);
+            // Only remove the card if it's valid
+            ui->gbPlayer1Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-
-            // ✅ Play the card
+            // Play the card
             game_->playCard(card);
-
-            // ✅ Move card to trick only after it has been successfully
-            // played
-            gbTrickLayout_->addWidget(cardButton);
+            // Move card to trick only after it has been successfully played
+            ui->gbTrickLayout->addWidget(cardButton);
           }
         });
   }
@@ -64,34 +40,29 @@ Table::Table(
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    gbSkatLayout->addWidget(cardButton);
+    ui->gbSkatLayout->addWidget(cardButton);
   }
   for (const Card &card : game_->player_2.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    gbPlayer2Layout->addWidget(cardButton);
+    ui->gbPlayer2Layout->addWidget(cardButton);
     QObject::connect(
-        cardButton, &QPushButton::clicked, this,
-        [this, cardButton, gbPlayer2Layout, card]() {
+        cardButton, &QPushButton::clicked, this, [&]() {
           if (game_->playerList_.front()->id() == game_->player_2.id()) {
-            // ✅ First, check if card in hand and the move is valid
+            // First, check if card in hand and the move is valid
             if (!game_->player_2.handdeck_.isCardInside(card) ||
                 !game_->isCardValid(card, game_->rule_)) {
               qDebug() << "Move rejected: Invalid card choice.";
-              return;  // 🚨 Exit early if the move is not valid
+              return;  // Exit early if the move is not valid
             }
-
-            // ✅ Only remove the card if it's valid
-            gbPlayer2Layout->removeWidget(cardButton);
+            // Only remove the card if it's valid
+            ui->gbPlayer2Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-
-            // ✅ Play the card
+            // Play the card
             game_->playCard(card);
-
-            // ✅ Move card to trick only after it has been successfully
-            // played
-            gbTrickLayout_->addWidget(cardButton);
+            // Move card to trick only after it has been successfully played
+            ui->gbTrickLayout->addWidget(cardButton);
           }
         });
   }
@@ -99,107 +70,89 @@ Table::Table(
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
-    gbPlayer3Layout->addWidget(cardButton);
+    ui->gbPlayer3Layout->addWidget(cardButton);
     QObject::connect(
-        cardButton, &QPushButton::clicked, this,
-        [this, cardButton, gbPlayer3Layout, card]() {
+        cardButton, &QPushButton::clicked, this, [&]() {
           if (game_->playerList_.front()->id() == game_->player_3.id()) {
-            // ✅ First, check if card in hand and the move is valid
+            // First, check if card in hand and the move is valid
             if (!game_->player_3.handdeck_.isCardInside(card) ||
                 !game_->isCardValid(card, game_->rule_)) {
               qDebug() << "Move rejected: Invalid card choice.";
-              return;  // 🚨 Exit early if the move is not valid
+              return;  // Exit early if the move is not valid
             }
-
-            // ✅ Only remove the card if it's valid
-            gbPlayer3Layout->removeWidget(cardButton);
+            // Only remove the card if it's valid
+            ui->gbPlayer3Layout->removeWidget(cardButton);
             cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-
-            // ✅ Play the card
+            // Play the card
             game_->playCard(card);
-
-            // ✅ Move card to trick only after it has been successfully
-            // played
-            gbTrickLayout_->addWidget(cardButton);
+            // Move card to trick only after it has been successfully played
+            ui->gbTrickLayout->addWidget(cardButton);
           }
         });
   }
 
-  // Setup Pushbuttons
-  pbSagen_ = findChild<QPushButton *>("pbSagen");
-  pbPassen_ = findChild<QPushButton *>("pbPassen");
-  QPushButton *pbKaro = findChild<QPushButton *>("pbKaro");
-  QPushButton *pbHerz = findChild<QPushButton *>("pbHerz");
-  QPushButton *pbPik = findChild<QPushButton *>("pbPik");
-  QPushButton *pbKreuz = findChild<QPushButton *>("pbKreuz");
-  QPushButton *pbGrand = findChild<QPushButton *>("pbGrand");
-  QPushButton *pbNull = findChild<QPushButton *>("pbNull");
-  QPushButton *pbRamsch = findChild<QPushButton *>("pbRamsch");
-  QPushButton *pbOuvert = findChild<QPushButton *>("pbOuvert");
-  QPushButton *pbHand = findChild<QPushButton *>("pbHand");
-  QPushButton *pbSchneider = findChild<QPushButton *>("pbSchneider");
-  QPushButton *pbSchwarz = findChild<QPushButton *>("pbSchwarz");
-
   // connect pushbuttons
-  QObject::connect(pbSagen_, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
     game_->gereizt_ = game_->sagen();
-    pbSagen_->setText(QString::number(game_->gereizt_));
+    ui->pbSagen->setText(QString::number(game_->gereizt_));
     qDebug() << "gereizt_ set to" << game_->gereizt_;
   });
 
-  QObject::connect(pbPassen_, &QPushButton::clicked, this,
+  QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
                    [this]() { qDebug() << "" << QString::fromStdString(""); });
-  QObject::connect(pbKaro, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbKaro, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Suit;
     game_->trump_ = "♦";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbHerz, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbHerz, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Suit;
     game_->trump_ = "♥";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbPik, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbPik, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Suit;
     game_->trump_ = "♠";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbKreuz, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbKreuz, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Suit;
     game_->trump_ = "♣";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbGrand, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbGrand, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Grand;
     game_->trump_ = "J";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbNull, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbNull, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Null;
     game_->trump_ = "";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
-  QObject::connect(pbRamsch, &QPushButton::clicked, this, [this]() {
+  QObject::connect(ui->pbRamsch, &QPushButton::clicked, this, [this]() {
     game_->rule_ = Rule::Ramsch;
     game_->trump_ = "J";
     qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
   });
 
-  QObject::connect(pbHand, &QPushButton::toggled, this, [this](bool checked) {
-    game_->hand_ = checked;
-    qDebug() << "hand_ set to" << game_->hand_;
-  });
+  QObject::connect(ui->pbHand, &QPushButton::toggled, this,
+                   [this](bool checked) {
+                     game_->hand_ = checked;
+                     qDebug() << "hand_ set to" << game_->hand_;
+                   });
 
-  QObject::connect(pbOuvert, &QPushButton::toggled, this, [this](bool checked) {
-    game_->ouvert_ = checked;
-    qDebug() << "ouvert_ set to" << game_->ouvert_;
-  });
-  QObject::connect(pbSchneider, &QPushButton::toggled, this,
+  QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
+                   [this](bool checked) {
+                     game_->ouvert_ = checked;
+                     qDebug() << "ouvert_ set to" << game_->ouvert_;
+                   });
+  QObject::connect(ui->pbSchneider, &QPushButton::toggled, this,
                    [this](bool checked) {
                      game_->schneider_ = checked;
                      qDebug() << "schneider_ set to" << game_->schneider_;
                    });
-  QObject::connect(pbSchwarz, &QPushButton::toggled, this,
+  QObject::connect(ui->pbSchwarz, &QPushButton::toggled, this,
                    [this](bool checked) {
                      game_->schwarz_ = checked;
                      qDebug() << "schwarz_ set to" << game_->schwarz_;
@@ -214,7 +167,7 @@ Table::Table(
 }
 
 void Table::onClearTrickLayout() {
-  while (QLayoutItem *item = gbTrickLayout_->takeAt(0)) {
+  while (QLayoutItem *item = ui->gbTrickLayout->takeAt(0)) {
     if (QWidget *widget = item->widget()) {
       widget->deleteLater();  // Ensures safe deletion after event loop
     }
@@ -224,7 +177,7 @@ void Table::onClearTrickLayout() {
 
 void Table::onGesagt() {
   qDebug() << "pbSagen clicked";
-  pbSagen_->click();
+  ui->pbSagen->click();
 }
 
 Table::~Table() { delete ui; }

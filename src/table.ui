@@ -44,6 +44,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <layout class="QHBoxLayout" name="gbPlayer2Layout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -73,6 +78,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <layout class="QHBoxLayout" name="gbPlayer3Layout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -106,6 +116,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <layout class="QHBoxLayout" name="gbSkatLayout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -319,6 +334,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <layout class="QHBoxLayout" name="gbTrickLayout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -342,6 +362,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <layout class="QVBoxLayout" name="gpPunkteLayout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -388,6 +413,11 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <layout class="QHBoxLayout" name="gbPlayer1Layout"/>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
