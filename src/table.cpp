@@ -97,6 +97,8 @@ Table::Table(
     ui->pbSagen->setText(QString::number(game_->gereizt_));
     qDebug() << "gereizt_ set to" << game_->gereizt_;
   });
+  // Reizen
+  QObject::connect(game_, &Game::gesagt, ui->pbSagen, &QPushButton::click);
 
   QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
                    [this]() { qDebug() << "" << QString::fromStdString(""); });
@@ -161,9 +163,6 @@ Table::Table(
   // Connections
   QObject::connect(game_, &Game::clearTrickLayout, this,
                    &Table::onClearTrickLayout);
-
-  QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
-  // QObject::connect(game_, &Game::gesagt,this, &Table::onGesagt);
 }
 
 void Table::onClearTrickLayout() {
@@ -175,9 +174,6 @@ void Table::onClearTrickLayout() {
   }
 }
 
-void Table::onGesagt() {
-  qDebug() << "pbSagen clicked";
-  ui->pbSagen->click();
-}
+void Table::onGesagt() {}
 
 Table::~Table() { delete ui; }
