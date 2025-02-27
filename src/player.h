@@ -12,7 +12,6 @@ class Player : public QObject {
   std::string name_;
   bool isRobot_;
 
-  bool solo_{};
   int points_{};
   int score_{};
 
@@ -23,6 +22,7 @@ class Player : public QObject {
   std::vector<CardVec> tricks_{};
   int geboten_{0};
   int maxBieten_{};
+  bool solo_{};
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),

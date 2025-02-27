@@ -22,11 +22,11 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 0;
-  player_2.maxBieten_ = 24;
-  player_3.maxBieten_ = 0;
+  player_1.maxBieten_ = 40;
+  player_2.maxBieten_ = 30;
+  player_3.maxBieten_ = 20;
 
-  sagen();
+  reizen();
 }
 
 int Game::bieten() {
@@ -48,73 +48,100 @@ int Game::bieten() {
 
 void Game::geben() {
   // Distribuite cards 3 - skat(2) - 4 - 3
-  for (int i = 1; i <= 3; i++)
-    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  for (Player* player : playerList_)
+    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
   blind_.moveTopCardTo(skat_);
   blind_.moveTopCardTo(skat_);
-  for (int i = 1; i <= 4; i++)
-    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
-  for (int i = 1; i <= 3; i++)
-    for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
+  for (Player* player : playerList_)
+    for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
+  for (Player* player : playerList_)
+    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
 
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 }
 
 QString Game::hoeren(
-    int angesagt, int position) {
+    int hoererPos, int angesagt) {
   auto hoerer =
       std::ranges::find_if(playerList_, [&, this](const Player* player) {
-        return player->id() == ghs_[position];
+        return player->id() == ghs_[hoererPos];
       });
   if (angesagt <= (*hoerer)->maxBieten_) {
-    qDebug() << (*hoerer)->name() << "ja";
+    qDebug() << QString::fromStdString((*hoerer)->name()) << "ja";
+
     return "ja";
   } else {
-    qDebug() << (*hoerer)->name() << "weg";
+    qDebug() << QString::fromStdString((*hoerer)->name()) << "weg";
+
     return "weg";
   }
 }
 
-void Game::sagen() {
-  auto sager = std::ranges::find_if(playerList_, [this](const Player* player) {
-    return player->id() == ghs_[2];
-  });
+/* GHS    0   1   2
+ *        ---------
+ *
+ *        0   0   0   -> Ramsch
+ *        X   0   0   -> pos 0
+ *        X   Y   Z   -> pos 1  || pos 2  || pos 3
+ */
 
-  int meistBieter{};
+// Geber Hoerer Sager ghs_{0, 1, 2} initial condition
+// void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 0);
+void Game::reizen(
+    int sagerPos, int hoererPos, int ansagen) {
+  auto sager =
+      std::ranges::find_if(playerList_, [&, this](const Player* player) {
+        return player->id() == ghs_[sagerPos];
+      });
 
-  if ((*sager)->maxBieten_ == 0) {
-    meistBieter = 1;
-  } else
+  auto hoerer =
+      std::ranges::find_if(playerList_, [&, this](const Player* player) {
+        return player->id() == ghs_[hoererPos];
+      });
 
-  {
-    while (hoeren((*sager)->geboten_, 1) == "ja" &&
-           ((*sager)->geboten_ < (*sager)->maxBieten_)) {
-      (*sager)->geboten_ = bieten();
-      qDebug() << (*sager)->name() << "sagt" << (*sager)->geboten_;
-      gereizt_ = (*sager)->geboten_;
-      meistBieter = 2;
-      emit gesagt();
-    }
-    if (hoeren((*sager)->geboten_, 1) == "ja") meistBieter = 1;
-  }
-  weitersagen(meistBieter);
-}
-
-void Game::weitersagen(
-    int meistBieter) {
-  auto weitersager = std::ranges::find_if(
-      playerList_,
-      [this](const Player* player) { return player->id() == ghs_[0]; });
-
-  while (hoeren((*weitersager)->geboten_, meistBieter) == "ja" &&
-         ((*weitersager)->geboten_ < (*weitersager)->maxBieten_)) {
-    (*weitersager)->geboten_ = bieten();
-    qDebug() << (*weitersager)->name() << "sagt" << (*weitersager)->geboten_;
-    gereizt_ = (*weitersager)->geboten_;
+  // Start reizen: 2 ist sager - 1 ist hoerer
+  while (hoeren(hoererPos, (*sager)->geboten_) == "ja" &&
+         ((*sager)->geboten_ < (*sager)->maxBieten_)) {
+    (*sager)->geboten_ = bieten();
+    qDebug() << QString::fromStdString((*sager)->name()) << "sagt"
+             << (*sager)->geboten_;
+    gereizt_ = (*sager)->geboten_;
     emit gesagt();
   }
 
-  qDebug() << "gereizt bis:" << QString::number(gereizt_);
+  // wenn 2 weg sagt ist 1 der hoerer und 0 der sager
+  // wenn 1 weg sagt ist 2 der hoerer und 0 der sager
+  if (hoeren(hoererPos, (*sager)->geboten_) == "ja")
+    hoererPos = 1;
+  else
+    hoererPos = 2;
+
+  // 1 oder 2 ist hoerer
+  hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == ghs_[hoererPos];
+  });
+
+  // Spezialfall 2 hat weg gesagt und 0 sagt weg
+  // 0 ist sager
+  sagerPos = 0;
+  sager = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == ghs_[sagerPos];
+  });
+
+  // wenn 0 weg sagt und 2 auch weg gesasgt hat dann kann 1 noch 18 sagen
+  if ((*sager)->maxBieten_ == 0 && gereizt_ == 0) {
+    sagerPos = 1;
+    hoererPos = 0;  // oder 2
+    sager = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+      return player->id() == ghs_[sagerPos];
+    });
+    hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+      return player->id() == ghs_[hoererPos];
+    });
+  }
+
+  if ((*sager)->maxBieten_ <= gereizt_) return;
+  reizen(sagerPos, hoererPos, gereizt_);
 }
 
 int Game::spielwert() { return 0; }
@@ -261,7 +288,8 @@ void Game::playCard(
 
     // Mark the current player as having the trick
     playerList_.front()->hasTrick_ = true;
-    qDebug() << playerList_.front()->name() << "has the trick now!";
+    qDebug() << QString::fromStdString(playerList_.front()->name())
+             << "has the trick now!";
   }
 
   // Rotate playerlist
@@ -276,11 +304,13 @@ void Game::activateNextPlayer() {
                      [](const auto& player) { return player->hasTrick_; });
 
     std::rotate(playerList_.begin(), trickholder, playerList_.end());
-    qDebug() << "Rotating to:" << playerList_.front()->name();
+    qDebug() << "Rotating to:"
+             << QString::fromStdString(playerList_.front()->name());
 
     // moving trick to players tricks
     playerList_.front()->tricks_.push_back(trick_);
-    qDebug() << "Trick moved to Trickholder" << playerList_.front()->name();
+    qDebug() << "Trick moved to Trickholder"
+             << QString::fromStdString(playerList_.front()->name());
 
     playerList_.front()->setPoints();
 
@@ -290,7 +320,8 @@ void Game::activateNextPlayer() {
     // Rotate to the next player if the trick is not full
     std::rotate(playerList_.begin(), playerList_.begin() + 1,
                 playerList_.end());
-    qDebug() << "Next player:" << playerList_.front()->name();
+    qDebug() << "Next player:"
+             << QString::fromStdString(playerList_.front()->name());
   }
 
   showPoints();
@@ -298,7 +329,8 @@ void Game::activateNextPlayer() {
 
 void Game::showPoints() {
   for (const auto& player : playerList_) {
-    qDebug() << player->name() << " - Total Points: " << player->points();
+    qDebug() << QString::fromStdString(player->name())
+             << " - Total Points: " << player->points();
     qDebug() << "Handdeck size: "
              << playerList_.front()->handdeck_.cards().size();
   }

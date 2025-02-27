@@ -11,11 +11,11 @@ TEST(
   Card jackClub("♣", "J");
   Card aceDiamond("♦", "A");
 
-  jackDiamond.setPower("J", "♠", Rule::Null);
-  jackHeart.setPower("J", "♠", Rule::Null);
-  jackSpade.setPower("J", "♠", Rule::Null);
-  jackClub.setPower("J", "♠", Rule::Null);
-  aceDiamond.setPower("A", "♠", Rule::Null);
+  jackDiamond.power("♠", Rule::Null);
+  jackHeart.power("♠", Rule::Null);
+  jackSpade.power("♠", Rule::Null);
+  jackClub.power("♠", Rule::Null);
+  aceDiamond.power("♠", Rule::Null);
 
   EXPECT_EQ(jackDiamond.power(), 5);
   EXPECT_EQ(jackHeart.power(), 5);
@@ -32,10 +32,10 @@ TEST(
   Card jackSpade("♠", "J");
   Card queenHeart("♥", "Q");
 
-  aceSpade.setPower("A", trumpSuit, Rule::Suit);
-  tenSpade.setPower("10", trumpSuit, Rule::Suit);
-  jackSpade.setPower("J", trumpSuit, Rule::Suit);
-  queenHeart.setPower("Q", trumpSuit, Rule::Suit);
+  aceSpade.power(trumpSuit, Rule::Suit);
+  tenSpade.power(trumpSuit, Rule::Suit);
+  jackSpade.power(trumpSuit, Rule::Suit);
+  queenHeart.power(trumpSuit, Rule::Suit);
 
   EXPECT_EQ(aceSpade.power(), 7 + 10);  // 7 (base) + 10 (trump bonus)
   EXPECT_EQ(tenSpade.power(), 6 + 10);  // 6 (base) + 10 (trump bonus)
@@ -52,11 +52,11 @@ TEST(
   Card jackClub("♣", "J");
   Card kingSpade("♠", "K");
 
-  jackDiamond.setPower("J", trumpSuit = "", Rule::Grand);
-  jackHeart.setPower("J", trumpSuit = "", Rule::Grand);
-  jackSpade.setPower("J", trumpSuit = "", Rule::Grand);
-  jackClub.setPower("J", trumpSuit = "", Rule::Grand);
-  kingSpade.setPower("K", trumpSuit = "", Rule::Grand);
+  jackDiamond.power(trumpSuit = "J", Rule::Grand);
+  jackHeart.power(trumpSuit = "J", Rule::Grand);
+  jackSpade.power(trumpSuit = "J", Rule::Grand);
+  jackClub.power(trumpSuit = "J", Rule::Grand);
+  kingSpade.power(trumpSuit = "J", Rule::Grand);
 
   EXPECT_EQ(jackDiamond.power(), 21);  // Jacks always strong
   EXPECT_EQ(jackHeart.power(), 22);

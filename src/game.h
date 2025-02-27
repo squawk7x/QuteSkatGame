@@ -37,9 +37,8 @@ class Game : public QObject {
   void startGame();
   int bieten();
   void geben();
-  QString hoeren(int angesagt, int position);
-  void sagen();
-  void weitersagen(int meistBieter);
+  QString hoeren(int hoererPos = 1, int angesagt = 0);
+  void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 0);
   int spielwert();
 
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);

@@ -113,21 +113,24 @@ endif()
 # Enable testing
 enable_testing()
 
-# GoogleTest & GoogleMock Setup
+# Find GoogleTest and Qt6
 set(GTEST_DIR /usr/share/googletest)
 set(GMOCK_DIR /usr/share/googletest/googlemock)
+
+find_package(Qt6 REQUIRED COMPONENTS Core Test Widgets Gui)
 
 # Include GoogleTest and GoogleMock
 include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
 
-# Specify the binary directory for GoogleTest
+# Add GoogleTest
 add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
 
-# Add the test executable Add test executable
-add_executable(runTests tests/test_card.cpp src/card.cpp)
+# Define test executable
+add_executable(runTests tests/tst_reizen.cpp ${PROJECT_SOURCES})
 
-# Link GoogleTest properly
-target_link_libraries(runTests gtest gtest_main)
+# Link GoogleTest and Qt6
+target_link_libraries(runTests gtest gtest_main Qt6::Core Qt6::Test
+                      Qt6::Widgets)
 
 # Register the tests
 add_test(NAME CardTests COMMAND runTests)
