@@ -28,6 +28,5 @@ class Table : public QMainWindow {
   // Slots
  public slots:
   void onClearTrickLayout();
-  void onGesagt();
 };
 #endif  // TABLE_H

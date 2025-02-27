@@ -17,7 +17,36 @@ void Game::initGame() {
   });
 
   blind_.shuffle();
+  geben();
+}
 
+void Game::startGame() {
+  // Players have their cards and evaluate maxSagen
+  player_1.maxBieten_ = 0;
+  player_2.maxBieten_ = 24;
+  player_3.maxBieten_ = 0;
+
+  sagen();
+}
+
+int Game::bieten() {
+  static int counter = 0;
+
+  constexpr std::array<int, 57> gebote = {
+      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
+      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
+      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
+      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+
+  int index = std::min(
+      counter,
+      static_cast<int>(gebote.size() - 1));  // Verhindert Out-of-Bounds-Zugriff
+  counter++;  // Zählt nur hoch, wenn nicht am Ende
+
+  return gebote[index];
+}
+
+void Game::geben() {
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (int i = 1; i <= 3; i++)
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
@@ -29,60 +58,64 @@ void Game::initGame() {
     for (Player* player : playerList_) blind_.moveTopCardTo(player->handdeck_);
 
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
+}
 
-  // each player evaluate cards and max reizen
+QString Game::hoeren(
+    int angesagt, int position) {
+  auto hoerer =
+      std::ranges::find_if(playerList_, [&, this](const Player* player) {
+        return player->id() == ghs_[position];
+      });
+  if (angesagt <= (*hoerer)->maxBieten_) {
+    qDebug() << (*hoerer)->name() << "ja";
+    return "ja";
+  } else {
+    qDebug() << (*hoerer)->name() << "weg";
+    return "weg";
+  }
+}
 
-  // player ghs_[2] starts
+void Game::sagen() {
   auto sager = std::ranges::find_if(playerList_, [this](const Player* player) {
     return player->id() == ghs_[2];
   });
 
-  auto hoerer = std::ranges::find_if(playerList_, [this](const Player* player) {
-    return player->id() == ghs_[1];
-  });
+  int meistBieter{};
 
+  if ((*sager)->maxBieten_ == 0) {
+    meistBieter = 1;
+  } else
+
+  {
+    while (hoeren((*sager)->geboten_, 1) == "ja" &&
+           ((*sager)->geboten_ < (*sager)->maxBieten_)) {
+      (*sager)->geboten_ = bieten();
+      qDebug() << (*sager)->name() << "sagt" << (*sager)->geboten_;
+      gereizt_ = (*sager)->geboten_;
+      meistBieter = 2;
+      emit gesagt();
+    }
+    if (hoeren((*sager)->geboten_, 1) == "ja") meistBieter = 1;
+  }
+  weitersagen(meistBieter);
+}
+
+void Game::weitersagen(
+    int meistBieter) {
   auto weitersager = std::ranges::find_if(
       playerList_,
       [this](const Player* player) { return player->id() == ghs_[0]; });
 
-  reizen();
-  // for testing
-  // playerList_.front()->tricks_.push_back(skat_);
-  // showPoints();
+  while (hoeren((*weitersager)->geboten_, meistBieter) == "ja" &&
+         ((*weitersager)->geboten_ < (*weitersager)->maxBieten_)) {
+    (*weitersager)->geboten_ = bieten();
+    qDebug() << (*weitersager)->name() << "sagt" << (*weitersager)->geboten_;
+    gereizt_ = (*weitersager)->geboten_;
+    emit gesagt();
+  }
+
+  qDebug() << "gereizt bis:" << QString::number(gereizt_);
 }
-
-void Game::reizen() {
-  qDebug() << "Emitting gesagt() from game instance:" << this;
-
-  emit gesagt();
-  qDebug() << "Emitted gesagt() signal!";
-  emit gesagt();
-  qDebug() << "Emitted gesagt() signal!";
-  emit gesagt();
-  qDebug() << "Emitted gesagt() signal!";
-
-  qDebug() << "Receivers for gesagt():" << receivers(SIGNAL(gesagt()));
-}
-
-int Game::sagen() {
-  static int counter = 0;
-
-  constexpr std::array<int, 57> skatGebote = {
-      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
-      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
-      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
-      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
-
-  int index = std::min(
-      counter, static_cast<int>(skatGebote.size() -
-                                1));  // Verhindert Out-of-Bounds-Zugriff
-  counter++;                          // Zählt nur hoch, wenn nicht am Ende
-
-  return skatGebote[index];
-}
-
-void Game::hoeren(
-    int player_id) {}
 
 int Game::spielwert() { return 0; }
 
@@ -91,8 +124,6 @@ bool Game::isCardValid(
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
-    // qDebug() << "Receivers for gesagt():"
-    //          << receivers(SIGNAL(clearTrickLayout()));
   }
 
   if (trick_.cards().empty()) {

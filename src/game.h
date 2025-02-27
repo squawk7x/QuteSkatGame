@@ -34,9 +34,12 @@ class Game : public QObject {
   // public methods
   void initGame();
 
-  void reizen();
-  int sagen();
-  void hoeren(int player_id);
+  void startGame();
+  int bieten();
+  void geben();
+  QString hoeren(int angesagt, int position);
+  void sagen();
+  void weitersagen(int meistBieter);
   int spielwert();
 
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
