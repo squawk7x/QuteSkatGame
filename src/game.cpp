@@ -22,9 +22,9 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 40;
+  player_1.maxBieten_ = 30;
   player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 20;
+  player_3.maxBieten_ = 30;
 
   reizen();
 }
@@ -99,7 +99,13 @@ void Game::reizen(
         return player->id() == ghs_[hoererPos];
       });
 
-  // Start reizen: 2 ist sager - 1 ist hoerer
+  // Base case: If both sager and hoerer can't bid anymore, stop recursion
+  if ((*sager)->maxBieten_ <= gereizt_ && (*hoerer)->maxBieten_ <= gereizt_) {
+    qDebug() << "Bidding complete. Highest bid:" << gereizt_;
+    return;
+  }
+
+  // Start bidding process
   while (hoeren(hoererPos, (*sager)->geboten_) == "ja" &&
          ((*sager)->geboten_ < (*sager)->maxBieten_)) {
     (*sager)->geboten_ = bieten();
@@ -109,38 +115,30 @@ void Game::reizen(
     emit gesagt();
   }
 
-  // wenn 2 weg sagt ist 1 der hoerer und 0 der sager
-  // wenn 1 weg sagt ist 2 der hoerer und 0 der sager
-  if (hoeren(hoererPos, (*sager)->geboten_) == "ja")
-    hoererPos = 1;
-  else
-    hoererPos = 2;
+  // Stop recursion if bidding is finished
+  if (hoeren(hoererPos, (*sager)->geboten_) == "weg") return;
 
-  // 1 oder 2 ist hoerer
-  hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-    return player->id() == ghs_[hoererPos];
-  });
+  // Update the new hoerer
+  hoererPos = (hoeren(hoererPos, (*sager)->geboten_) == "ja") ? 1 : 2;
 
-  // Spezialfall 2 hat weg gesagt und 0 sagt weg
-  // 0 ist sager
+  // Update sager position
   sagerPos = 0;
+
   sager = std::ranges::find_if(playerList_, [&, this](const Player* player) {
     return player->id() == ghs_[sagerPos];
   });
 
-  // wenn 0 weg sagt und 2 auch weg gesasgt hat dann kann 1 noch 18 sagen
-  if ((*sager)->maxBieten_ == 0 && gereizt_ == 0) {
-    sagerPos = 1;
-    hoererPos = 0;  // oder 2
-    sager = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-      return player->id() == ghs_[sagerPos];
-    });
-    hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-      return player->id() == ghs_[hoererPos];
-    });
+  hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == ghs_[hoererPos];
+  });
+
+  // Stop recursion if no one else can bid
+  if ((*sager)->maxBieten_ <= gereizt_ || (*hoerer)->maxBieten_ <= gereizt_) {
+    qDebug() << "Bidding complete. Final bid:" << gereizt_;
+    return;
   }
 
-  if ((*sager)->maxBieten_ <= gereizt_) return;
+  // Recurse safely with termination checks
   reizen(sagerPos, hoererPos, gereizt_);
 }
 
