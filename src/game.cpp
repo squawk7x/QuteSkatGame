@@ -22,11 +22,29 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 30;
+  player_1.maxBieten_ = 40;
   player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 30;
+  player_3.maxBieten_ = 33;
 
   reizen();
+}
+
+// playerList_ toggles at each move
+// ghs_ toggles at next round
+// first round ghs_{0, 1, 2}, second round ghs_{1, 2, 0}, ...
+// returns the player at ghs_[pos] position
+Player& Game::getPlayerByPos(
+    int pos) {
+  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == ghs_[pos];
+  });
+
+  if (it != playerList_.end()) {
+    return **it;  // Dereference the iterator**
+  } else {
+    throw std::runtime_error("Player not found at position " +
+                             std::to_string(pos));
+  }
 }
 
 int Game::bieten() {
@@ -67,12 +85,12 @@ QString Game::hoeren(
         return player->id() == ghs_[hoererPos];
       });
   if (angesagt <= (*hoerer)->maxBieten_) {
-    qDebug() << QString::fromStdString((*hoerer)->name()) << "ja";
-
+    (*hoerer)->solo_ = true;
+    qDebug() << QString::fromStdString((*hoerer)->name()) << "ja" << "solo";
     return "ja";
   } else {
+    (*hoerer)->solo_ = false;
     qDebug() << QString::fromStdString((*hoerer)->name()) << "weg";
-
     return "weg";
   }
 }
@@ -116,7 +134,13 @@ void Game::reizen(
   }
 
   // Stop recursion if bidding is finished
-  if (hoeren(hoererPos, (*sager)->geboten_) == "weg") return;
+  if (hoeren(hoererPos, (*sager)->geboten_) == "weg") {
+    // (*hoerer)->solo_ = false;
+    (*sager)->solo_ = true;
+    qDebug() << QString::fromStdString((*sager)->name()) << (*sager)->geboten_
+             << "solo";
+    return;
+  }
 
   // Update the new hoerer
   hoererPos = (hoeren(hoererPos, (*sager)->geboten_) == "ja") ? 1 : 2;

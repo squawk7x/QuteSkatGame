@@ -35,6 +35,7 @@ class Game : public QObject {
   void initGame();
 
   void startGame();
+  Player& getPlayerByPos(int pos);
   int bieten();
   void geben();
   QString hoeren(int hoererPos = 1, int angesagt = 0);

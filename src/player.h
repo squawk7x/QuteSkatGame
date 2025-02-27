@@ -45,6 +45,7 @@ class Player : public QObject {
 
   // public getters
   int id() const;
+  Player &getPlayerById(int id);
   std::string name() const;
   bool isRobot() const;
   int score() const;
