@@ -10,85 +10,75 @@ Table::Table(
   ui->setupUi(this);
   game_->initGame();
 
+  // Player 1 Cards
   for (const Card &card : game_->player_1.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
     cardButton->setText(
         QString::fromStdString(card.str()));  // UTF-8 compatible
     ui->gbPlayer1Layout->addWidget(cardButton);
 
-    // Optional: Connect button to an event (e.g., play card)
-    QObject::connect(
-        cardButton, &QPushButton::clicked, this, [&]() {
-          if (game_->playerList_.front()->id() == game_->player_1.id()) {
-            // First, check if card in hand and the move is valid
-            if (!game_->player_1.handdeck_.isCardInside(card) ||
-                !game_->isCardValid(card, game_->rule_)) {
-              qDebug() << "Move rejected: Invalid card choice.";
-              return;  // 🚨 Exit early if the move is not valid
-            }
-            // Only remove the card if it's valid
-            ui->gbPlayer1Layout->removeWidget(cardButton);
-            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-            // Play the card
-            game_->playCard(card);
-            // Move card to trick only after it has been successfully played
-            ui->gbTrickLayout->addWidget(cardButton);
-          }
-        });
+    QObject::connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+      if (game_->playerList_.front()->id() == game_->player_1.id()) {
+        if (!game_->player_1.handdeck_.isCardInside(card) ||
+            !game_->isCardValid(card, game_->rule_)) {
+          qDebug() << "Move rejected: Invalid card choice.";
+          return;
+        }
+        ui->gbPlayer1Layout->removeWidget(cardButton);
+        cardButton->setParent(nullptr);
+        game_->playCard(card);
+        ui->gbTrickLayout->addWidget(cardButton);
+      }
+    });
   }
+
+  // Skat Cards
   for (const Card &card : game_->skat_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(
-        QString::fromStdString(card.str()));  // UTF-8 compatible
+    cardButton->setText(QString::fromStdString(card.str()));
     ui->gbSkatLayout->addWidget(cardButton);
   }
+
+  // Player 2 Cards
   for (const Card &card : game_->player_2.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(
-        QString::fromStdString(card.str()));  // UTF-8 compatible
+    cardButton->setText(QString::fromStdString(card.str()));
     ui->gbPlayer2Layout->addWidget(cardButton);
-    QObject::connect(
-        cardButton, &QPushButton::clicked, this, [&]() {
-          if (game_->playerList_.front()->id() == game_->player_2.id()) {
-            // First, check if card in hand and the move is valid
-            if (!game_->player_2.handdeck_.isCardInside(card) ||
-                !game_->isCardValid(card, game_->rule_)) {
-              qDebug() << "Move rejected: Invalid card choice.";
-              return;  // Exit early if the move is not valid
-            }
-            // Only remove the card if it's valid
-            ui->gbPlayer2Layout->removeWidget(cardButton);
-            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-            // Play the card
-            game_->playCard(card);
-            // Move card to trick only after it has been successfully played
-            ui->gbTrickLayout->addWidget(cardButton);
-          }
-        });
+
+    QObject::connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+      if (game_->playerList_.front()->id() == game_->player_2.id()) {
+        if (!game_->player_2.handdeck_.isCardInside(card) ||
+            !game_->isCardValid(card, game_->rule_)) {
+          qDebug() << "Move rejected: Invalid card choice.";
+          return;
+        }
+        ui->gbPlayer2Layout->removeWidget(cardButton);
+        cardButton->setParent(nullptr);
+        game_->playCard(card);
+        ui->gbTrickLayout->addWidget(cardButton);
+      }
+    });
   }
+
+  // Player 3 Cards
   for (const Card &card : game_->player_3.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(
-        QString::fromStdString(card.str()));  // UTF-8 compatible
+    cardButton->setText(QString::fromStdString(card.str()));
     ui->gbPlayer3Layout->addWidget(cardButton);
-    QObject::connect(
-        cardButton, &QPushButton::clicked, this, [&]() {
-          if (game_->playerList_.front()->id() == game_->player_3.id()) {
-            // First, check if card in hand and the move is valid
-            if (!game_->player_3.handdeck_.isCardInside(card) ||
-                !game_->isCardValid(card, game_->rule_)) {
-              qDebug() << "Move rejected: Invalid card choice.";
-              return;  // Exit early if the move is not valid
-            }
-            // Only remove the card if it's valid
-            ui->gbPlayer3Layout->removeWidget(cardButton);
-            cardButton->setParent(nullptr);  // Remove parent to avoid conflicts
-            // Play the card
-            game_->playCard(card);
-            // Move card to trick only after it has been successfully played
-            ui->gbTrickLayout->addWidget(cardButton);
-          }
-        });
+
+    QObject::connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+      if (game_->playerList_.front()->id() == game_->player_3.id()) {
+        if (!game_->player_3.handdeck_.isCardInside(card) ||
+            !game_->isCardValid(card, game_->rule_)) {
+          qDebug() << "Move rejected: Invalid card choice.";
+          return;
+        }
+        ui->gbPlayer3Layout->removeWidget(cardButton);
+        cardButton->setParent(nullptr);
+        game_->playCard(card);
+        ui->gbTrickLayout->addWidget(cardButton);
+      }
+    });
   }
 
   // connect pushbuttons

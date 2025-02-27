@@ -29,6 +29,9 @@ set(PROJECT_SOURCES
     src/card.cpp
     src/cardvec.h
     src/cardvec.cpp
+    src/game.h
+    src/game.cpp
+    src/main.cpp
     src/player.h
     src/player.cpp
     src/definitions.h)
@@ -40,9 +43,6 @@ qt_add_executable(
   quteSkatGame
   MANUAL_FINALIZATION
   ${PROJECT_SOURCES}
-  src/main.cpp
-  src/game.h
-  src/game.cpp
   res/cards/10_of_clubs.png
   res/cards/10_of_diamonds.png
   res/cards/10_of_hearts.png
@@ -81,8 +81,7 @@ qt_add_executable(
   res/cards/queen_of_diamonds.png
   res/cards/queen_of_hearts.png
   res/cards/queen_of_spades.png
-  README.md
-  res/Screenshot.png)
+  README.md)
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
