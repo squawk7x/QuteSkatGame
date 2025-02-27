@@ -20,7 +20,6 @@ class Player : public QObject {
   CardVec skat_ = CardVec(2);  // active player will get the 'Skat'
   bool hasTrick_ = false;
   std::vector<CardVec> tricks_{};
-  int geboten_{0};
   int maxBieten_{};
   bool solo_{};
 

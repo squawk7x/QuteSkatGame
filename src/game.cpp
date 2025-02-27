@@ -22,11 +22,11 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 40;
-  player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 33;
+  player_1.maxBieten_ = 0;
+  player_2.maxBieten_ = 20;
+  player_3.maxBieten_ = 0;
 
-  reizen();
+  sagen();
 }
 
 // playerList_ toggles at each move
@@ -47,23 +47,6 @@ Player& Game::getPlayerByPos(
   }
 }
 
-int Game::bieten() {
-  static int counter = 0;
-
-  constexpr std::array<int, 57> gebote = {
-      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
-      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
-      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
-      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
-
-  int index = std::min(
-      counter,
-      static_cast<int>(gebote.size() - 1));  // Verhindert Out-of-Bounds-Zugriff
-  counter++;  // Zählt nur hoch, wenn nicht am Ende
-
-  return gebote[index];
-}
-
 void Game::geben() {
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_)
@@ -78,92 +61,105 @@ void Game::geben() {
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 }
 
-QString Game::hoeren(
-    int hoererPos, int angesagt) {
-  auto hoerer =
-      std::ranges::find_if(playerList_, [&, this](const Player* player) {
-        return player->id() == ghs_[hoererPos];
-      });
-  if (angesagt <= (*hoerer)->maxBieten_) {
-    (*hoerer)->solo_ = true;
-    qDebug() << QString::fromStdString((*hoerer)->name()) << "ja" << "solo";
-    return "ja";
-  } else {
-    (*hoerer)->solo_ = false;
-    qDebug() << QString::fromStdString((*hoerer)->name()) << "weg";
-    return "weg";
-  }
+int Game::bieten() {
+  static int counter = 0;
+
+  constexpr std::array<int, 57> gebote = {
+      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
+      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
+      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
+      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+
+  int index = std::min(
+      counter,
+      static_cast<int>(gebote.size() - 1));  // Verhindert Out-of-Bounds-Zugriff
+  counter++;  // Zählt nur hoch, wenn nicht am Ende
+
+  // emit geboten();
+  return gebote[index];
 }
 
-/* GHS    0   1   2
+bool Game::hoeren(
+    int hoererPos) {
+  Player& hoerer = getPlayerByPos(hoererPos);
+
+  if (gereizt_ <= hoerer.maxBieten_) {
+    hoerer.solo_ = true;
+  } else {
+    hoerer.solo_ = false;
+  }
+  return hoerer.solo_;
+}
+
+/*        G   H   S
+ *        0   1   2
  *        ---------
  *
- *        0   0   0   -> Ramsch
- *        X   0   0   -> pos 0
- *        X   Y   Z   -> pos 1  || pos 2  || pos 3
+ *        0   0   0   ->        Ramsch
+ *        X   0   0   -> pos 0    18
+ *        0   X   0   -> pos 1    18
+ *        0   0   X   -> pos 2    18
+ *        X   X   X
+ *
  */
 
-// Geber Hoerer Sager ghs_{0, 1, 2} initial condition
-// void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 0);
-void Game::reizen(
-    int sagerPos, int hoererPos, int ansagen) {
-  auto sager =
-      std::ranges::find_if(playerList_, [&, this](const Player* player) {
-        return player->id() == ghs_[sagerPos];
-      });
-
-  auto hoerer =
-      std::ranges::find_if(playerList_, [&, this](const Player* player) {
-        return player->id() == ghs_[hoererPos];
-      });
-
-  // Base case: If both sager and hoerer can't bid anymore, stop recursion
-  if ((*sager)->maxBieten_ <= gereizt_ && (*hoerer)->maxBieten_ <= gereizt_) {
-    qDebug() << "Bidding complete. Highest bid:" << gereizt_;
-    return;
-  }
+// Geber Hoerer Sager ghs_{1, 2, 3} initial condition
+// ghs_[0] == 1,  ghs_[1] == 2, ghs_[2] == 3,
+// void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 1);
+void Game::sagen(
+    int geberPos, int hoererPos, int sagerPos) {
+  Player& geber = getPlayerByPos(geberPos);
+  Player& hoerer = getPlayerByPos(hoererPos);
+  Player& sager = getPlayerByPos(sagerPos);
 
   // Start bidding process
-  while (hoeren(hoererPos, (*sager)->geboten_) == "ja" &&
-         ((*sager)->geboten_ < (*sager)->maxBieten_)) {
-    (*sager)->geboten_ = bieten();
-    qDebug() << QString::fromStdString((*sager)->name()) << "sagt"
-             << (*sager)->geboten_;
-    gereizt_ = (*sager)->geboten_;
-    emit gesagt();
+  while (gereizt_ < sager.maxBieten_ && hoeren(hoererPos)) {
+    gereizt_ = bieten();
+    emit geboten();
+    qDebug() << QString::fromStdString(sager.name()) << "sagt" << gereizt_;
   }
 
   // Stop recursion if bidding is finished
-  if (hoeren(hoererPos, (*sager)->geboten_) == "weg") {
-    // (*hoerer)->solo_ = false;
-    (*sager)->solo_ = true;
-    qDebug() << QString::fromStdString((*sager)->name()) << (*sager)->geboten_
-             << "solo";
-    return;
+  if (!hoeren(hoererPos)) {
+    sager.solo_ = true;
+    hoerer.solo_ = false;
   }
 
-  // Update the new hoerer
-  hoererPos = (hoeren(hoererPos, (*sager)->geboten_) == "ja") ? 1 : 2;
+  Player& weitersager = geber;
 
-  // Update sager position
-  sagerPos = 0;
+  // Update the hoerer
+  hoererPos = (hoeren(hoererPos)) ? 1 : 2;
+  Player& weiterhoerer = getPlayerByPos(hoererPos);
 
-  sager = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-    return player->id() == ghs_[sagerPos];
-  });
-
-  hoerer = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-    return player->id() == ghs_[hoererPos];
-  });
-
-  // Stop recursion if no one else can bid
-  if ((*sager)->maxBieten_ <= gereizt_ || (*hoerer)->maxBieten_ <= gereizt_) {
-    qDebug() << "Bidding complete. Final bid:" << gereizt_;
-    return;
+  while (gereizt_ < weitersager.maxBieten_ && hoeren(hoererPos)) {
+    gereizt_ = bieten();
+    emit geboten();
+    qDebug() << QString::fromStdString(weitersager.name()) << "sagt"
+             << gereizt_;
   }
 
-  // Recurse safely with termination checks
-  reizen(sagerPos, hoererPos, gereizt_);
+  if (!hoeren(hoererPos)) {
+    weitersager.solo_ = true;
+    weiterhoerer.solo_ = false;
+  }
+
+  if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
+      weiterhoerer.maxBieten_ == 0) {
+    weiterhoerer.solo_ = false;
+  }
+
+  if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
+      weiterhoerer.maxBieten_ >= 18) {
+    gereizt_ = bieten();
+    emit geboten();
+    weiterhoerer.solo_ = true;
+  }
+
+  qDebug() << "gereizt bis:" << gereizt_;
+
+  for (auto& player : playerList_) {
+    qDebug() << player->name() << player->solo_;
+  }
 }
 
 int Game::spielwert() { return 0; }

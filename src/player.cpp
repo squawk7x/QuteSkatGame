@@ -43,8 +43,8 @@ std::string Player::name() const { return name_; }
 bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
 int Player::points() const { return points_; }
+
 // public class methods
-//
 void Player::setPoints() {
   for (CardVec &vec : tricks_) {
     points_ = vec.value();

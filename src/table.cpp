@@ -92,7 +92,7 @@ Table::Table(
       // qDebug() << "gereizt_ set to" << game_->gereizt_;
     });
     // Reizen
-    QObject::connect(game_, &Game::gesagt, ui->pbSagen, &QPushButton::click);
+    QObject::connect(game_, &Game::geboten, ui->pbSagen, &QPushButton::click);
 
     QObject::connect(ui->pbPassen, &QPushButton::clicked, this, [this]() {
       qDebug() << "" << QString::fromStdString("");

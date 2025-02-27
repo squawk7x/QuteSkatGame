@@ -38,8 +38,8 @@ class Game : public QObject {
   Player& getPlayerByPos(int pos);
   int bieten();
   void geben();
-  QString hoeren(int hoererPos = 1, int angesagt = 0);
-  void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 0);
+  bool hoeren(int hoererPos);
+  void sagen(int geberPos = 0, int hoererPos = 1, int sagerPos = 2);
   int spielwert();
 
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);
@@ -50,7 +50,7 @@ class Game : public QObject {
   void finishRound();
 
  signals:
-  void gesagt();
+  void geboten();
   void clearTrickLayout();
 };
 
