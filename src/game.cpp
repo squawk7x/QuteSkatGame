@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include <QDebug>
+#include <QThread>
 
 #include "definitions.h"
 
@@ -22,9 +23,9 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 0;
+  player_1.maxBieten_ = 33;
   player_2.maxBieten_ = 20;
-  player_3.maxBieten_ = 0;
+  player_3.maxBieten_ = 27;
 
   sagen();
 }
@@ -91,18 +92,6 @@ bool Game::hoeren(
   return hoerer.solo_;
 }
 
-/*        G   H   S
- *        0   1   2
- *        ---------
- *
- *        0   0   0   ->        Ramsch
- *        X   0   0   -> pos 0    18
- *        0   X   0   -> pos 1    18
- *        0   0   X   -> pos 2    18
- *        X   X   X
- *
- */
-
 // Geber Hoerer Sager ghs_{1, 2, 3} initial condition
 // ghs_[0] == 1,  ghs_[1] == 2, ghs_[2] == 3,
 // void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 1);
@@ -136,11 +125,12 @@ void Game::sagen(
     emit geboten();
     qDebug() << QString::fromStdString(weitersager.name()) << "sagt"
              << gereizt_;
+    QThread::msleep(100);
   }
 
   if (!hoeren(hoererPos)) {
-    weitersager.solo_ = true;
     weiterhoerer.solo_ = false;
+    weitersager.solo_ = true;
   }
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
@@ -158,7 +148,7 @@ void Game::sagen(
   qDebug() << "gereizt bis:" << gereizt_;
 
   for (auto& player : playerList_) {
-    qDebug() << player->name() << player->solo_;
+    qDebug() << QString::fromStdString(player->name()) << player->solo_;
   }
 }
 

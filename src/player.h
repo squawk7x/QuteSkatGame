@@ -1,5 +1,5 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef player_H
+#define player_H
 
 #include <QObject>
 #include "cardvec.h"
@@ -57,4 +57,4 @@ class Player : public QObject {
   // void onCountPoints();
 };
 
-#endif  // PLAYER_H
+#endif  // game_->player_H

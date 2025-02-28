@@ -89,7 +89,6 @@ Table::Table(
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
       // game_->gereizt_ = game_->bieten();
       ui->pbSagen->setText(QString::number(game_->gereizt_));
-      // qDebug() << "gereizt_ set to" << game_->gereizt_;
     });
     // Reizen
     QObject::connect(game_, &Game::geboten, ui->pbSagen, &QPushButton::click);

@@ -1,38 +1,79 @@
 #include <gtest/gtest.h>
 
-#include "game.h"
+#include "../src/game.h"
+#include "../src/player.h"
 
-class GameTest : public ::testing::Test {
+class BiddingTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    game = new Game();
-
-    game->player_1.maxBieten_ = 24;
-    game->player_2.maxBieten_ = 24;
-    game->player_3.maxBieten_ = 24;
-
-    // game->playerList_.push_back(&game->player_1);
-    // game->playerList_.push_back(&game->player_2);
-    // game->playerList_.push_back(&game->player_3);
+    // Create Players
+    game_ = new Game();
   }
 
-  // void TearDown() override { delete game; }
+  void TearDown() override { delete game_; }
 
-  Game* game;
+  Game* game_;
 };
 
+// Test case 1: game_->player_1 (40), game_->player_2 (30), game_->player_3 (20)
+// -> max bid 33, winner: game_->player_1
 TEST_F(
-    GameTest, BiddingStopsCorrectly) {
-  game->player_1.maxBieten_ = 24;
-  game->player_2.maxBieten_ = 24;
-  game->player_3.maxBieten_ = 24;
+    BiddingTest, Scenario1) {
+  game_->player_1.maxBieten_ = 40;
+  game_->player_2.maxBieten_ = 30;
+  game_->player_3.maxBieten_ = 20;
 
-  game->sagen(0, 1, 18);  // Player 1 starts, Player 2 is the first responder
+  game_->sagen();
 
-  // Ensure no player bid higher than their max
-  EXPECT_LE(game->gereizt_, game->player_1.maxBieten_);
-  EXPECT_LE(game->gereizt_, game->player_2.maxBieten_);
-  EXPECT_LE(game->gereizt_, game->player_3.maxBieten_);
+  EXPECT_EQ(game_->gereizt_, 33);
+}
 
-  // Check that the highest bid is correctly stored
+// Test case 2: game_->player_1 (20), game_->player_2 (30), game_->player_3 (40)
+// -> max bid 33, winner: game_->player_3
+TEST_F(
+    BiddingTest, Scenario2) {
+  game_->player_1.maxBieten_ = 20;
+  game_->player_2.maxBieten_ = 30;
+  game_->player_3.maxBieten_ = 40;
+
+  game_->sagen();
+
+  EXPECT_EQ(game_->gereizt_, 33);
+}
+
+// Test case 3: game_->player_1 (30), game_->player_2 (40), game_->player_3 (20)
+// -> max bid 30, winner: game_->player_2
+TEST_F(
+    BiddingTest, Scenario3) {
+  game_->player_1.maxBieten_ = 30;
+  game_->player_2.maxBieten_ = 40;
+  game_->player_3.maxBieten_ = 20;
+
+  game_->sagen();
+
+  EXPECT_EQ(game_->gereizt_, 30);
+}
+
+// Test case 4: game_->player_1 (0), game_->player_2 (20), game_->player_3 (0)
+// -> max bid 18, winner: game_->player_2
+TEST_F(
+    BiddingTest, Scenario4) {
+  game_->player_1.maxBieten_ = 0;
+  game_->player_2.maxBieten_ = 20;
+  game_->player_3.maxBieten_ = 0;
+
+  game_->sagen();
+  EXPECT_EQ(game_->gereizt_, 18);
+}
+
+// Test case 5: All players maxBieten_ = 0 -> max bid 0, no winner
+TEST_F(
+    BiddingTest, Scenario5) {
+  game_->player_1.maxBieten_ = 0;
+  game_->player_2.maxBieten_ = 0;
+  game_->player_3.maxBieten_ = 0;
+
+  game_->sagen();
+
+  EXPECT_EQ(game_->gereizt_, 0);
 }

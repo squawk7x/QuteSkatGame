@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef gameH
+#define gameH
 
 #include <QObject>
 
@@ -54,4 +54,4 @@ class Game : public QObject {
   void clearTrickLayout();
 };
 
-#endif  // GAME_H
+#endif  // gameH
