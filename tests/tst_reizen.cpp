@@ -5,31 +5,26 @@
 
 class BiddingTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    // Create Players
-    game_ = new Game();
-  }
+  void SetUp() override { game_ = new Game(); }
 
   void TearDown() override { delete game_; }
 
   Game* game_;
 };
 
-// Test case 1: game_->player_1 (40), game_->player_2 (30), game_->player_3 (20)
-// -> max bid 33, winner: game_->player_1
+// Test case 1: Player 1 wins with 33
 TEST_F(
     BiddingTest, Scenario1) {
   game_->player_1.maxBieten_ = 40;
   game_->player_2.maxBieten_ = 30;
   game_->player_3.maxBieten_ = 20;
 
-  game_->sagen();
+  game_->sagen(0, 1, 2);
 
   EXPECT_EQ(game_->gereizt_, 33);
 }
 
-// Test case 2: game_->player_1 (20), game_->player_2 (30), game_->player_3 (40)
-// -> max bid 33, winner: game_->player_3
+// Test case 2: Player 3 wins with 33
 TEST_F(
     BiddingTest, Scenario2) {
   game_->player_1.maxBieten_ = 20;
@@ -41,8 +36,7 @@ TEST_F(
   EXPECT_EQ(game_->gereizt_, 33);
 }
 
-// Test case 3: game_->player_1 (30), game_->player_2 (40), game_->player_3 (20)
-// -> max bid 30, winner: game_->player_2
+// Test case 3: Player 2 wins with 30
 TEST_F(
     BiddingTest, Scenario3) {
   game_->player_1.maxBieten_ = 30;
@@ -54,8 +48,7 @@ TEST_F(
   EXPECT_EQ(game_->gereizt_, 30);
 }
 
-// Test case 4: game_->player_1 (0), game_->player_2 (20), game_->player_3 (0)
-// -> max bid 18, winner: game_->player_2
+// Test case 4: Player 2 wins with 18
 TEST_F(
     BiddingTest, Scenario4) {
   game_->player_1.maxBieten_ = 0;
@@ -63,10 +56,11 @@ TEST_F(
   game_->player_3.maxBieten_ = 0;
 
   game_->sagen();
+
   EXPECT_EQ(game_->gereizt_, 18);
 }
 
-// Test case 5: All players maxBieten_ = 0 -> max bid 0, no winner
+// Test case 5: No player bids
 TEST_F(
     BiddingTest, Scenario5) {
   game_->player_1.maxBieten_ = 0;

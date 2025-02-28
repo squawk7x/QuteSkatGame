@@ -23,9 +23,9 @@ void Game::initGame() {
 
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 33;
-  player_2.maxBieten_ = 20;
-  player_3.maxBieten_ = 27;
+  player_1.maxBieten_ = 20;
+  player_2.maxBieten_ = 30;
+  player_3.maxBieten_ = 40;
 
   sagen();
 }
