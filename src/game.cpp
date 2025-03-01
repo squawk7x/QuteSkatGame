@@ -9,6 +9,7 @@ Game::Game(
     QObject* parent)
     : QObject{parent} {}
 
+// started by Table constructor
 void Game::initGame() {
   std::ranges::for_each(suits, [&](const std::string& suit) {
     std::ranges::for_each(ranks, [&](const std::string& rank) {
@@ -21,14 +22,15 @@ void Game::initGame() {
   geben();
 }
 
+// started by Table constructor
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 20;
+  player_1.maxBieten_ = 40;
   player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 40;
+  player_3.maxBieten_ = 20;
 
   sagen();
-  druecken();
+  // druecken();
 }
 
 Player& Game::getPlayerById(
@@ -63,7 +65,7 @@ Player& Game::getPlayerByPos(
   }
 }
 
-Player* Game::getPlayerSolo() {
+Player* Game::getPlayerByIsSolo() {
   auto it = std::ranges::find_if(
       playerList_, [this](const Player* player) { return player->isSolo_; });
 
@@ -174,11 +176,8 @@ void Game::sagen(
   }
 }
 
-void Game::druecken() {
-  // for (Player *player : playerList_) {
-  //   playerId=
-  // }
-}
+void Game::druecken(
+    int playerId) {}
 
 int Game::spielwert() { return 0; }
 
@@ -312,6 +311,7 @@ bool Game::isCardGreater(
 // Slots:
 void Game::playCard(
     const Card& card) {
+  qDebug() << "card played" << card.str();
   // Card Validation in table.cpp connect (...)
 
   // Move the card from hand to trick

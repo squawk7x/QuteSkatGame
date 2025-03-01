@@ -3,6 +3,7 @@
 #define CARD_H
 
 // #include <QObject>
+#include <QPushButton>
 #include <memory>
 #include <string>
 // #include <unordered_map>
@@ -23,7 +24,9 @@ enum class Rule {
   Ramsch  // No trump - card power as Grand
 };
 
-class Card {
+class Card : public QPushButton {
+  Q_OBJECT
+
  private:
   // class member fields
   std::pair<std::string, std::string> pair_;
