@@ -33,13 +33,17 @@ class Game : public QObject {
 
   // public methods
   void initGame();
-
   void startGame();
+
+  Player& getPlayerById(int pos);
   Player& getPlayerByPos(int pos);
+  Player* getPlayerSolo();
+
   int bieten();
   void geben();
   bool hoeren(int hoererPos);
   void sagen(int geberPos = 0, int hoererPos = 1, int sagerPos = 2);
+  void druecken();
   int spielwert();
 
   bool isCardValid(const Card& card, Rule rule = Rule::Suit);

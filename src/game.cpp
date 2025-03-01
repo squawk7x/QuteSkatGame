@@ -28,12 +28,27 @@ void Game::startGame() {
   player_3.maxBieten_ = 40;
 
   sagen();
+  druecken();
+}
+
+Player& Game::getPlayerById(
+    int id) {
+  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == id;
+  });
+
+  if (it != playerList_.end()) {
+    return **it;  // Dereference the iterator**
+  } else {
+    throw std::runtime_error("Player not found at position " +
+                             std::to_string(id));
+  }
 }
 
 // playerList_ toggles at each move
-// ghs_ toggles at next round
+// ghs_ toggles at each round
 // first round ghs_{0, 1, 2}, second round ghs_{1, 2, 0}, ...
-// returns the player at ghs_[pos] position
+// returns the player at ghs_[pos]
 Player& Game::getPlayerByPos(
     int pos) {
   auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
@@ -46,6 +61,13 @@ Player& Game::getPlayerByPos(
     throw std::runtime_error("Player not found at position " +
                              std::to_string(pos));
   }
+}
+
+Player* Game::getPlayerSolo() {
+  auto it = std::ranges::find_if(
+      playerList_, [this](const Player* player) { return player->isSolo_; });
+
+  return (it != playerList_.end()) ? *it : nullptr;
 }
 
 void Game::geben() {
@@ -85,11 +107,11 @@ bool Game::hoeren(
   Player& hoerer = getPlayerByPos(hoererPos);
 
   if (gereizt_ <= hoerer.maxBieten_) {
-    hoerer.solo_ = true;
+    hoerer.isSolo_ = true;
   } else {
-    hoerer.solo_ = false;
+    hoerer.isSolo_ = false;
   }
-  return hoerer.solo_;
+  return hoerer.isSolo_;
 }
 
 // Geber Hoerer Sager ghs_{1, 2, 3} initial condition
@@ -110,8 +132,8 @@ void Game::sagen(
 
   // Stop recursion if bidding is finished
   if (!hoeren(hoererPos)) {
-    sager.solo_ = true;
-    hoerer.solo_ = false;
+    sager.isSolo_ = true;
+    hoerer.isSolo_ = false;
   }
 
   Player& weitersager = geber;
@@ -129,27 +151,33 @@ void Game::sagen(
   }
 
   if (!hoeren(hoererPos)) {
-    weiterhoerer.solo_ = false;
-    weitersager.solo_ = true;
+    weiterhoerer.isSolo_ = false;
+    weitersager.isSolo_ = true;
   }
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
       weiterhoerer.maxBieten_ == 0) {
-    weiterhoerer.solo_ = false;
+    weiterhoerer.isSolo_ = false;
   }
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
       weiterhoerer.maxBieten_ >= 18) {
     gereizt_ = bieten();
     emit geboten();
-    weiterhoerer.solo_ = true;
+    weiterhoerer.isSolo_ = true;
   }
 
   qDebug() << "gereizt bis:" << gereizt_;
 
   for (auto& player : playerList_) {
-    qDebug() << QString::fromStdString(player->name()) << player->solo_;
+    qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
+}
+
+void Game::druecken() {
+  // for (Player *player : playerList_) {
+  //   playerId=
+  // }
 }
 
 int Game::spielwert() { return 0; }
@@ -337,12 +365,9 @@ void Game::activateNextPlayer() {
 
 void Game::showPoints() {
   for (const auto& player : playerList_) {
-    qDebug() << QString::fromStdString(player->name())
-             << " - Total Points: " << player->points();
-    qDebug() << "Handdeck size: "
-             << playerList_.front()->handdeck_.cards().size();
+    qDebug() << QString::fromStdString(player->name()) << " - Total Points: "
+             << player->sumTricks() + skat_.value() * player->isSolo_;
   }
-  qDebug() << "blind size: " << blind_.cards().size();
 }
 
 void Game::finishRound() {

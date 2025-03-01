@@ -24,6 +24,12 @@ class CardVec {
     cards_.push_back(std::forward<T>(card));
   }
 
+  // auto begin() { return cards_.begin(); }
+  // auto end() { return cards_.end(); }
+  // auto begin() const { return cards_.begin(); }
+  // auto end() const { return cards_.end(); }
+  // const std::vector<Card>& cards() const { return cards_; }
+
   // public methods
   std::vector<Card>& cards();
   void shuffle();

@@ -44,6 +44,17 @@ bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
 int Player::points() const { return points_; }
 
+int Player::sumTricks() {
+  int totalSum = 0;
+
+  // Iterate over each inner vector and sum its elements
+  for (CardVec &trick :
+       tricks_) {  // Pass by reference to avoid unnecessary copies
+    totalSum += trick.value();
+  }
+  return totalSum;
+}
+
 // public class methods
 void Player::setPoints() {
   for (CardVec &vec : tricks_) {
