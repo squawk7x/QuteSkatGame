@@ -25,9 +25,14 @@ class Table : public QMainWindow {
   Table(QWidget *parent = nullptr);
   ~Table();
 
+  // void addCardsToLayout(int layoutId);
+
   void addCardsToLayout(int layoutId);
-  // void connectCardSignals(int playerId);
+  void updatePlayerHanddeckLayout();
+  void addSkatCardsToLayout();
+  void addPlayerCardsToLayout(Player *player, QLayout *layout, int layoutId);
  public slots:
+  void onUpdateSkat();
   void onClearTrickLayout();
 };
 #endif  // TABLE_H

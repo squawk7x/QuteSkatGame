@@ -92,43 +92,43 @@ Table::Table(
 
 void Table::addCardsToLayout(
     int layoutId) {
-  // Get the player by playerId
-  Player *player = nullptr;
   QLayout *layout = nullptr;
-
-  // Determine which player we're working with and their layout
+  Player *player = nullptr;
 
   if (layoutId == 0) {
-    // Skat cards handled separately
-    for (const Card &card : game_->skat_.cards()) {
-      QPushButton *cardButton = new QPushButton(this);
-      cardButton->setText(QString::fromStdString(card.str()));
-      ui->gbSkatLayout->addWidget(cardButton);
-    }
-    return;
-
-  } else if (layoutId == 1) {
-    player = &game_->player_1;
-    layout = ui->gbPlayer1Layout;
-  } else if (layoutId == 2) {
-    player = &game_->player_2;
-    layout = ui->gbPlayer2Layout;
-  } else if (layoutId == 3) {
-    player = &game_->player_3;
-    layout = ui->gbPlayer3Layout;
-  } else {
-    qDebug() << "Invalid layoutID!";
+    addSkatCardsToLayout();
     return;
   }
 
+  switch (layoutId) {
+    case 1:
+      player = &game_->player_1;
+      layout = ui->gbPlayer1Layout;
+      break;
+    case 2:
+      player = &game_->player_2;
+      layout = ui->gbPlayer2Layout;
+      break;
+    case 3:
+      player = &game_->player_3;
+      layout = ui->gbPlayer3Layout;
+      break;
+    default:
+      qDebug() << "Invalid layoutID!";
+      return;
+  }
+
+  addPlayerCardsToLayout(player, layout, layoutId);
+}
+
+void Table::addPlayerCardsToLayout(
+    Player *player, QLayout *layout, int layoutId) {
   for (const Card &card : player->handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(
-        QString::fromStdString(card.str()));  // Set card text (UTF-8)
+    cardButton->setText(QString::fromStdString(card.str()));
     layout->addWidget(cardButton);
 
-    // Connect the QPushButton clicked signal to the corresponding lambda slot
-    QObject::connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+    connect(cardButton, &QPushButton::clicked, this, [=, this]() {
       if (game_->playerList_.front()->id() == layoutId) {
         if (!player->handdeck_.isCardInside(card) ||
             !game_->isCardValid(card, game_->rule_)) {
@@ -136,16 +136,78 @@ void Table::addCardsToLayout(
           return;
         }
         layout->removeWidget(cardButton);
-        cardButton->setParent(nullptr);  // Disconnect it from the layout
+        cardButton->setParent(nullptr);
         game_->playCard(card);
         ui->gbTrickLayout->addWidget(cardButton);
       }
     });
-    // qDebug() << "Connected cardButton for card:" << card.str().c_str();
   }
 }
 
+void Table::addSkatCardsToLayout() {
+  QLayoutItem *item;
+
+  while ((item = ui->gbSkatLayout->takeAt(0)) != nullptr) {
+    if (item->widget()) {
+      delete item->widget();  // Delete the widget (if it exists)
+    }
+    delete item;  // Delete the layout item
+  }
+  for (const Card &card : game_->skat_.cards()) {
+    QPushButton *cardButton = new QPushButton(this);
+    cardButton->setText(QString::fromStdString(card.str()));
+    ui->gbSkatLayout->addWidget(cardButton);
+
+    connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+      game_->skat_.moveCardTo(card, game_->getPlayerByIsSolo()->handdeck_);
+      qDebug() << game_->getPlayerByIsSolo()->handdeck_.cards().size();
+      ui->gbSkatLayout->removeWidget(cardButton);
+      cardButton->setParent(nullptr);
+      updatePlayerHanddeckLayout();
+    });
+  }
+}
+
+void Table::updatePlayerHanddeckLayout() {
+  Player *player = game_->getPlayerByIsSolo();
+  int playerId = player->id();
+
+  // Clear the existing layout by removing all widgets
+  QLayout *layout;
+  if (playerId == 1) layout = ui->gbPlayer1Layout;
+  if (playerId == 2) layout = ui->gbPlayer2Layout;
+  if (playerId == 3) layout = ui->gbPlayer3Layout;
+  QLayoutItem *item;
+
+  // Loop through all items in the layout and remove them
+  while ((item = layout->takeAt(0)) != nullptr) {
+    if (item->widget()) {
+      delete item->widget();  // Delete the widget (if it exists)
+    }
+    delete item;  // Delete the layout item
+  }
+
+  // Add the cards to the player's layout
+  for (const Card &card : player->handdeck_.cards()) {
+    QPushButton *cardButton = new QPushButton(this);
+    cardButton->setText(QString::fromStdString(card.str()));
+    layout->addWidget(cardButton);
+
+    // Connect the card button to the necessary slot, if needed
+    connect(cardButton, &QPushButton::clicked, this, [=, this]() {
+      if (game_->skat_.cards().size() < 2) {
+        layout->removeWidget(cardButton);
+        cardButton->setParent(nullptr);
+        player->handdeck_.moveCardTo(card, game_->skat_);
+        // ui->gbSkatLayout->addWidget(cardButton);
+        addSkatCardsToLayout();
+      }
+    });
+  }
+}
+void Table::onUpdateSkat() { qDebug() << "updating Skat...!"; }
 // Slots
+
 void Table::onClearTrickLayout() {
   while (QLayoutItem *item = ui->gbTrickLayout->takeAt(0)) {
     if (QWidget *widget = item->widget()) {
