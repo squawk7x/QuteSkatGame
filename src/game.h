@@ -55,7 +55,7 @@ class Game : public QObject {
 
  signals:
   void geboten();
-  void updateSkat();
+  // void updateSkat();
   void clearTrickLayout();
 };
 

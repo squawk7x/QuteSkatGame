@@ -28,11 +28,11 @@ class Table : public QMainWindow {
   // void addCardsToLayout(int layoutId);
 
   void addCardsToLayout(int layoutId);
-  void updatePlayerHanddeckLayout();
   void addSkatCardsToLayout();
-  void addPlayerCardsToLayout(Player *player, QLayout *layout, int layoutId);
+  void addPlayerCardsToLayout(int playerId, bool final = false);
+  void updatePlayerLayout();
+  void updateSkatLayout();
  public slots:
-  void onUpdateSkat();
   void onClearTrickLayout();
 };
 #endif  // TABLE_H
