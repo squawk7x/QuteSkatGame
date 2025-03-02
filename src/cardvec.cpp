@@ -38,7 +38,7 @@ void CardVec::moveCardTo(
   auto it = std::ranges::find(cards_, card);  // Find the card
   if (it != cards_.end()) {
     targetVec.addCard(std::move(*it));  // Move to target
-    cards_.erase(it);                   // ✅ Properly remove it from source
+    cards_.erase(it);                   // Properly remove it from source
   }
 }
 

@@ -25,13 +25,10 @@ class Table : public QMainWindow {
   Table(QWidget *parent = nullptr);
   ~Table();
 
-  // void addCardsToLayout(int layoutId);
-
-  void addCardsToLayout(int layoutId);
-  void addSkatCardsToLayout();
-  void addPlayerCardsToLayout(int playerId, bool final = false);
-  void updatePlayerLayout();
-  void updateSkatLayout();
+  void updateSkatLayout(bool open = false);
+  void updatePlayerLayout(int playerId, int dest = 0);
+  // void addSkatCardsToLayout(bool closed=true);
+  // void addPlayerCardsToLayout(int playerId, int dest=0);
  public slots:
   void onClearTrickLayout();
 };

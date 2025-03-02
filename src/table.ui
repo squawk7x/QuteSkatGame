@@ -354,11 +354,17 @@
       </item>
       <item>
        <widget class="QGroupBox" name="gbTrick">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="title">
          <string>Ausgespielt</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>

@@ -215,7 +215,7 @@ bool Game::isCardValid(
 
     // Case 2: First card is neither a Jack nor a trump suit card
     bool hasRequiredSuitInHand = std::ranges::any_of(
-        playerList_.front()->handdeck_.cards(), [&requiredSuit](const Card& c) {
+        playerList_.front()->handdeck_.cards(), [&](const Card& c) {
           return (c.suit() == requiredSuit) && (c.rank() != "J");
         });
 
@@ -242,7 +242,7 @@ bool Game::isCardValid(
 
     // Case 2: First card is neither a Jack nor a trump suit card
     bool hasRequiredSuitInHand = std::ranges::any_of(
-        playerList_.front()->handdeck_.cards(), [&requiredSuit](const Card& c) {
+        playerList_.front()->handdeck_.cards(), [&](const Card& c) {
           return (c.suit() == requiredSuit) && (c.rank() != "J");
         });
 
@@ -257,7 +257,7 @@ bool Game::isCardValid(
   else if (rule == Rule::Null) {
     bool hasRequiredSuitInHand = std::ranges::any_of(
         playerList_.front()->handdeck_.cards(),
-        [&requiredSuit](const Card& c) { return c.suit() == requiredSuit; });
+        [&](const Card& c) { return c.suit() == requiredSuit; });
 
     // If the player has a card of the required suit, they must play it
     if (hasRequiredSuitInHand)
