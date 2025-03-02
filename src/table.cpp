@@ -179,7 +179,8 @@ void Table::updatePlayerLayout(
     // connect to trick
     if (dest == 2) {
       connect(cardButton, &QPushButton::clicked, this,
-              [&, this, playerId, layout,
+              [&, this, card, playerId,
+               layout,          // Bugfix w/o card card mismatch in layout
                cardButton]() {  // Bugfix: program crashed w/o playerId, layout,
                                 // cardButton
                 if (game_->playerList_.front()->id() == playerId) {

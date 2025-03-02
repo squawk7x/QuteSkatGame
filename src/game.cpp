@@ -272,6 +272,7 @@ bool Game::isCardValid(
 bool Game::isCardGreater(
     const Card& card, Rule rule) {
   if (trick_.cards().empty()) {
+    qDebug() << "first Card always greater";
     return true;  // Erste gespielte Karte ist immer "größer"
   }
 
@@ -284,6 +285,9 @@ bool Game::isCardGreater(
   if (rule == Rule::Suit) {
     if (card.suit() == firstCard.suit() || card.suit() == trump_ ||
         card.rank() == "J") {
+      qDebug() << "first Card:" << QString::fromStdString(firstCard.str());
+      qDebug() << "card:" << QString::fromStdString(card.str());
+      qDebug() << "trump_" << QString::fromStdString(trump_);
       return std::ranges::all_of(
           trickWithoutLast, [&card, this](const Card& trickCard) {
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
@@ -311,7 +315,7 @@ bool Game::isCardGreater(
 // Slots:
 void Game::playCard(
     const Card& card) {
-  qDebug() << "card played" << card.str();
+  qDebug() << "card played" << QString::fromStdString(card.str());
   // Card Validation in table.cpp connect (...)
 
   // Move the card from hand to trick

@@ -27,8 +27,6 @@ class Table : public QMainWindow {
 
   void updateSkatLayout(bool open = false);
   void updatePlayerLayout(int playerId, int dest = 0);
-  // void addSkatCardsToLayout(bool closed=true);
-  // void addPlayerCardsToLayout(int playerId, int dest=0);
  public slots:
   void onClearTrickLayout();
 };
