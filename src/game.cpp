@@ -25,9 +25,9 @@ void Game::initGame() {
 // started by Table constructor
 void Game::startGame() {
   // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 40;
-  player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 20;
+  player_1.maxBieten_ = 20;
+  player_2.maxBieten_ = 40;
+  player_3.maxBieten_ = 30;
 
   sagen();
   // druecken();
@@ -182,11 +182,17 @@ void Game::druecken(
 int Game::spielwert() { return 0; }
 
 bool Game::isCardValid(
-    const Card& card, Rule rule) {
+    const Card& card) {
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
   }
+
+  // if (rule_ != Rule::Suit || rule_ != Rule::Grand || rule_ != Rule::Ramsch ||
+  //     rule_ != Rule::Null) {
+  //   qDebug() << "Rule not set";
+  //   return false;
+  // }
 
   if (trick_.cards().empty()) {
     return true;
@@ -196,7 +202,7 @@ bool Game::isCardValid(
   std::string requiredSuit = firstCard.suit();
 
   // Farbenspiel "♣", "♥", "♠", "♦"
-  if (rule == Rule::Suit) {
+  if (rule_ == Rule::Suit) {
     if (firstCard.rank() == "J") requiredSuit = trump_;
 
     // Case 1: First card is a Jack or trump
@@ -227,7 +233,7 @@ bool Game::isCardValid(
   }
 
   // Grand oder Ramsch
-  else if (rule == Rule::Grand || rule == Rule::Ramsch) {
+  else if (rule_ == Rule::Grand || rule_ == Rule::Ramsch) {
     if (firstCard.rank() == "J") {
       bool hasJackInHand =
           std::ranges::any_of(playerList_.front()->handdeck_.cards(),
@@ -254,7 +260,7 @@ bool Game::isCardValid(
   }
 
   // Null
-  else if (rule == Rule::Null) {
+  else if (rule_ == Rule::Null) {
     bool hasRequiredSuitInHand = std::ranges::any_of(
         playerList_.front()->handdeck_.cards(),
         [&](const Card& c) { return c.suit() == requiredSuit; });

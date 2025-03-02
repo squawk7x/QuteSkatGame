@@ -366,9 +366,16 @@
         <property name="checkable">
          <bool>false</bool>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <layout class="QHBoxLayout" name="gbTrickLayout"/>
+        <layout class="QGridLayout" name="gridLayout_6" columnminimumwidth="0">
+         <property name="sizeConstraint">
+          <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+         </property>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gbTrickLayout" columnstretch="0" columnminimumwidth="0">
+           <property name="sizeConstraint">
+            <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+           </property>
+          </layout>
          </item>
         </layout>
        </widget>

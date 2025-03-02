@@ -46,7 +46,7 @@ class Game : public QObject {
   void druecken(int playerId);
   int spielwert();
 
-  bool isCardValid(const Card& card, Rule rule = Rule::Suit);
+  bool isCardValid(const Card& card);
   bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
   void playCard(const Card& card);
   void activateNextPlayer();

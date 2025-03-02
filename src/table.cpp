@@ -32,14 +32,14 @@ Table::Table(
       game_->trump_ = "♣";
       qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
     });
-    QObject::connect(ui->pbGrand, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Grand;
-      game_->trump_ = "J";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
     QObject::connect(ui->pbNull, &QPushButton::clicked, this, [this]() {
       game_->rule_ = Rule::Null;
       game_->trump_ = "";
+      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+    });
+    QObject::connect(ui->pbGrand, &QPushButton::clicked, this, [this]() {
+      game_->rule_ = Rule::Grand;
+      game_->trump_ = "J";
       qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
     });
     QObject::connect(ui->pbRamsch, &QPushButton::clicked, this, [this]() {
@@ -80,8 +80,7 @@ Table::Table(
     });
 
     // Reizen
-    // QObject::connect(game_, &Game::geboten, ui->pbSagen,
-    // &QPushButton::click);
+    QObject::connect(game_, &Game::geboten, ui->pbSagen, &QPushButton::click);
 
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
@@ -179,20 +178,24 @@ void Table::updatePlayerLayout(
     // connect to trick
     if (dest == 2) {
       connect(cardButton, &QPushButton::clicked, this,
-              [&, this, card, playerId,
-               layout,          // Bugfix w/o card card mismatch in layout
-               cardButton]() {  // Bugfix: program crashed w/o playerId, layout,
-                                // cardButton
+              [&, this, card, playerId, layout, cardButton]() {
                 if (game_->playerList_.front()->id() == playerId) {
                   if (!player.handdeck_.isCardInside(card) ||
-                      !game_->isCardValid(card, game_->rule_)) {
+                      !game_->isCardValid(card)) {
                     qDebug() << "Move rejected: Invalid card choice.";
                     return;
                   }
                   layout->removeWidget(cardButton);
                   cardButton->setParent(nullptr);
                   game_->playCard(card);
-                  ui->gbTrickLayout->addWidget(cardButton);
+
+                  // Insert the card button at the correct position
+                  if (playerId == 1)
+                    ui->gbTrickLayout->addWidget(cardButton, 0, 1);
+                  if (playerId == 2)
+                    ui->gbTrickLayout->addWidget(cardButton, 0, 0);
+                  if (playerId == 3)
+                    ui->gbTrickLayout->addWidget(cardButton, 0, 2);
                 }
               });
     }
