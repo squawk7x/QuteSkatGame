@@ -8,13 +8,13 @@
 
 #include "definitions.h"
 
-CardVec::CardVec(
-    int length)
-    : cards_{}, isCardFaceVisible_{false}, cardFace_{CardFace::Closed} {
-  cards_.reserve(length);
-}
+// CardVec::CardVec(
+//     int length)
+//     : cards_{}, isCardFaceVisible_{false}, cardFace_{CardFace::Closed} {
+//   cards_.reserve(length);
+// }
 
-CardVec::~CardVec() {}
+// CardVec::~CardVec() {}
 
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
@@ -34,13 +34,28 @@ bool CardVec::isCardInside(
 }
 
 void CardVec::moveCardTo(
-    const Card& card, CardVec& targetVec) {
-  auto it = std::ranges::find(cards_, card);  // Find the card
+    Card&& card, CardVec& targetVec) {
+  auto it = std::ranges::find(cards_, card);
   if (it != cards_.end()) {
-    targetVec.addCard(std::move(*it));  // Move to target
-    cards_.erase(it);                   // Properly remove it from source
+    // Move the card to the target vector using std::move
+    targetVec.addCard(std::move(*it));  // Move card from the source vector
+
+    // Remove the card from the source vector
+    cards_.erase(it);
   }
 }
+// void CardVec::moveCardTo(
+//     const Card& card, CardVec& targetVec) {
+//   // Find the card in the current vector
+//   auto it = std::ranges::find(cards_, card);
+//   if (it != cards_.end()) {
+//     // Move the card to the target vector
+//     targetVec.addCard(std::move(*it));  // Move card from the source vector
+
+//     // Remove the card from the source vector
+//     cards_.erase(it);
+//   }
+// }
 
 void CardVec::moveTopCardTo(
     CardVec& targetVec) {
@@ -50,9 +65,6 @@ void CardVec::moveTopCardTo(
     cards_.pop_back();              // Remove it from the original vector
   }
 }
-
-void CardVec::moveCardVecTo(
-    std::vector<CardVec>& targetVec) {}
 
 void CardVec::sortByJandSuits() {
   // Step 1: Sort normally by suit and rank
@@ -175,13 +187,14 @@ int CardVec::value() {
   return sum;
 }
 
-std::string CardVec::print() {
-  std::string str;
+QString CardVec::print() {
+  QString str;
   str.reserve(cards_.size() *
               3);  // Optimize memory allocation (assuming ~3 bytes per card)
 
   for (const Card& card : cards_) {
-    str += card.str() + " ";  // Add a space for readability
+    str += QString::fromStdString(card.str()) +
+           " ";  // Add a space for readability
   }
 
   return str;

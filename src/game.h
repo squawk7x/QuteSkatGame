@@ -17,7 +17,8 @@ class Game : public QObject {
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
-  std::vector<int> ghs_{1, 2, 3};  // ghs_{[0][1][2]} id für geben-hoeren-sagen
+  std::vector<int> geberHoererSagerPos_{
+      3, 1, 2};  // geberHoererSagerPos_{[0][1][2]} id für geben-hoeren-sagen
   int soloSpieler_id{};
   Rule rule_{};
   std::string trump_{};
@@ -32,30 +33,34 @@ class Game : public QObject {
   explicit Game(QObject* parent = nullptr);
 
   // public methods
-  void initGame();
-  void startGame();
+  void init();
+  // void startGame();
+  void start();
+
+  int ansagen();
+  void geben();
+  bool hoeren(int hoererPos);
+  void sagen(int gesagt = 0);
+  void druecken(int playerId);
+  int spielwert();
+
+  bool isCardValid(const Card& card);
+  bool isCardGreater(const Card& card);
+  void playCard(Card& card);
+  void activateNextPlayer();
 
   Player& getPlayerById(int id);
   Player& getPlayerByPos(int pos);
   Player* getPlayerByIsSolo();
 
-  int bieten();
-  void geben();
-  bool hoeren(int hoererPos);
-  void sagen(int geberPos = 0, int hoererPos = 1, int sagerPos = 2);
-  void druecken(int playerId);
-  int spielwert();
-
-  bool isCardValid(const Card& card);
-  bool isCardGreater(const Card& card, Rule rule = Rule::Suit);
-  void playCard(const Card& card);
-  void activateNextPlayer();
   void showPoints();
   void finishRound();
+  // void newRound();
 
  signals:
-  void geboten();
-  // void updateSkat();
+  void started();
+  void bieten(int idSager, int idHoerer);
+  void gehoert(int idHoerer, QString antwort);
   void clearTrickLayout();
 };
 

@@ -19,7 +19,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 30;
   game_->player_3.maxBieten_ = 20;
 
-  game_->sagen(0, 1, 2);
+  game_->sagen();
 
   EXPECT_EQ(game_->gereizt_, 33);
 }

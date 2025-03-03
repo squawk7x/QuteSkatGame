@@ -10,69 +10,76 @@ Game::Game(
     : QObject{parent} {}
 
 // started by Table constructor
-void Game::initGame() {
+void Game::init() {
+  // provide the blind
   std::ranges::for_each(suits, [&](const std::string& suit) {
     std::ranges::for_each(ranks, [&](const std::string& rank) {
       Card card = Card(suit, rank);
       blind_.addCard(std::move(card));
     });
   });
-
-  blind_.shuffle();
-  geben();
 }
 
 // started by Table constructor
-void Game::startGame() {
-  // Players have their cards and evaluate maxSagen
-  player_1.maxBieten_ = 20;
-  player_2.maxBieten_ = 40;
+void Game::start() {
+  // for testing:
+  player_1.isRobot_ = false;
+  player_1.maxBieten_ = 59;
+  player_2.maxBieten_ = 23;
   player_3.maxBieten_ = 30;
 
+  // Bugfix: Do not iterate over a modified container!
+  // trick to blind_
+  std::vector<Card> cardsToMove = trick_.cards();
+  for (Card& card : cardsToMove) {
+    trick_.moveCardTo(std::move(card), blind_);
+  }
+  cardsToMove = {};
+  qDebug() << trick_.print();
+
+  // players tricks to blind_
+  for (Player* player : playerList_) {
+    for (CardVec& trick : player->tricks_) {
+      std::vector<Card> cardsToMove = trick.cards();  // Copy cards first
+
+      for (Card& card : cardsToMove) {
+        trick.moveCardTo(std::move(card), blind_);
+      }
+      qDebug() << trick.print();
+    }
+  }
+
+  // handdecks to blind_
+  for (Player* player : playerList_) {
+    std::vector<Card> cardsToMove =
+        player->handdeck_.cards();  // Copy cards first
+
+    for (Card& card : cardsToMove) {
+      player->handdeck_.moveCardTo(std::move(card), blind_);
+    }
+    qDebug() << player->handdeck_.print();
+  }
+
+  // skat to blind
+  cardsToMove = skat_.cards();
+  for (Card& card : cardsToMove) {
+    skat_.moveCardTo(std::move(card), blind_);
+  }
+  cardsToMove = {};
+  qDebug() << skat_.print();
+
+  std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
+
+  geben();
+  emit started();
   sagen();
+  // emit geboten();
   // druecken();
 }
 
-Player& Game::getPlayerById(
-    int id) {
-  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-    return player->id() == id;
-  });
-
-  if (it != playerList_.end()) {
-    return **it;  // Dereference the iterator**
-  } else {
-    throw std::runtime_error("Player not found at position " +
-                             std::to_string(id));
-  }
-}
-
-// playerList_ toggles at each move
-// ghs_ toggles at each round
-// first round ghs_{0, 1, 2}, second round ghs_{1, 2, 0}, ...
-// returns the player at ghs_[pos]
-Player& Game::getPlayerByPos(
-    int pos) {
-  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
-    return player->id() == ghs_[pos];
-  });
-
-  if (it != playerList_.end()) {
-    return **it;  // Dereference the iterator**
-  } else {
-    throw std::runtime_error("Player not found at position " +
-                             std::to_string(pos));
-  }
-}
-
-Player* Game::getPlayerByIsSolo() {
-  auto it = std::ranges::find_if(
-      playerList_, [this](const Player* player) { return player->isSolo_; });
-
-  return (it != playerList_.end()) ? *it : nullptr;
-}
-
 void Game::geben() {
+  blind_.shuffle();
+  // qDebug() << "Blind size after shuffling:" << blind_.cards().size();
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_)
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
@@ -84,24 +91,30 @@ void Game::geben() {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
 
   for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
+
+  qDebug() << "blind" << blind_.cards().size();
+  qDebug() << "skat" << skat_.cards().size();
+  for (Player* player : playerList_)
+    qDebug() << player->name() << player->handdeck_.cards().size();
 }
 
-int Game::bieten() {
+int Game::ansagen() {
   static int counter = 0;
 
-  constexpr std::array<int, 57> gebote = {
+  constexpr std::array<int, 57> angesagt = {
       18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
       55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
       100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
       156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
 
-  int index = std::min(
-      counter,
-      static_cast<int>(gebote.size() - 1));  // Verhindert Out-of-Bounds-Zugriff
+  int index =
+      std::min(counter,
+               static_cast<int>(angesagt.size() -
+                                1));  // Verhindert Out-of-Bounds-Zugriff
   counter++;  // Zählt nur hoch, wenn nicht am Ende
 
   // emit geboten();
-  return gebote[index];
+  return angesagt[index];
 }
 
 bool Game::hoeren(
@@ -110,27 +123,38 @@ bool Game::hoeren(
 
   if (gereizt_ <= hoerer.maxBieten_) {
     hoerer.isSolo_ = true;
+    qDebug() << hoerer.name() << "Höre";
+    emit gehoert(getPlayerByPos(hoererPos).id(), "Höre");
   } else {
     hoerer.isSolo_ = false;
+    qDebug() << hoerer.name() << "Passe";
+    emit gehoert(getPlayerByPos(hoererPos).id(), "Passe");
   }
   return hoerer.isSolo_;
 }
 
-// Geber Hoerer Sager ghs_{1, 2, 3} initial condition
-// ghs_[0] == 1,  ghs_[1] == 2, ghs_[2] == 3,
-// void reizen(int sagerPos = 2, int hoererPos = 1, int ansagen = 1);
+// Geber Hoerer Sager geberHoererSagerPos_{1, 2, 3} initial condition
+// geberHoererSagerPos_[0] == 1 == player_1.id()
+// geberHoererSagerPos_[1] == 2
+// geberHoererSagerPos_[2] == 3
 void Game::sagen(
-    int geberPos, int hoererPos, int sagerPos) {
-  Player& geber = getPlayerByPos(geberPos);
-  Player& hoerer = getPlayerByPos(hoererPos);
-  Player& sager = getPlayerByPos(sagerPos);
+    int gesagt) {
+  Player& geber = getPlayerById(geberHoererSagerPos_[0]);
+  Player& hoerer = getPlayerById(geberHoererSagerPos_[1]);
+  Player& sager = getPlayerById(geberHoererSagerPos_[2]);
 
-  // Start bidding process
-  while (gereizt_ < sager.maxBieten_ && hoeren(hoererPos)) {
-    gereizt_ = bieten();
-    emit geboten();
-    qDebug() << QString::fromStdString(sager.name()) << "sagt" << gereizt_;
+  // int geberPos = 0;
+  int hoererPos = 1;
+  // int sagerPos = 2;
+
+  if (!sager.isRobot_ && gesagt <= sager.maxBieten_ && hoeren(hoererPos)) {
+    return;
   }
+  // Start bidding process
+  while (sager.isRobot_ && gereizt_ < sager.maxBieten_ && hoeren(hoererPos)) {
+    emit bieten(sager.id(), hoerer.id());
+  }
+  qDebug() << QString::fromStdString(sager.name()) << "sagt" << gereizt_;
 
   // Stop recursion if bidding is finished
   if (!hoeren(hoererPos)) {
@@ -144,13 +168,16 @@ void Game::sagen(
   hoererPos = (hoeren(hoererPos)) ? 1 : 2;
   Player& weiterhoerer = getPlayerByPos(hoererPos);
 
-  while (gereizt_ < weitersager.maxBieten_ && hoeren(hoererPos)) {
-    gereizt_ = bieten();
-    emit geboten();
-    qDebug() << QString::fromStdString(weitersager.name()) << "sagt"
-             << gereizt_;
-    QThread::msleep(100);
+  if (!weitersager.isRobot_ && gesagt <= weitersager.maxBieten_ &&
+      hoeren(hoererPos)) {
+    return;
   }
+  while (weitersager.isRobot_ && gereizt_ < weitersager.maxBieten_ &&
+         hoeren(hoererPos)) {
+    emit bieten(sager.id(), hoerer.id());
+    // QThread::msleep(1000);
+  }
+  qDebug() << QString::fromStdString(weitersager.name()) << "sagt" << gereizt_;
 
   if (!hoeren(hoererPos)) {
     weiterhoerer.isSolo_ = false;
@@ -164,9 +191,9 @@ void Game::sagen(
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
       weiterhoerer.maxBieten_ >= 18) {
-    gereizt_ = bieten();
-    emit geboten();
     weiterhoerer.isSolo_ = true;
+    emit bieten(sager.id(), hoerer.id());
+    // QThread::msleep(1000);
   }
 
   qDebug() << "gereizt bis:" << gereizt_;
@@ -276,7 +303,7 @@ bool Game::isCardValid(
 }
 
 bool Game::isCardGreater(
-    const Card& card, Rule rule) {
+    const Card& card) {
   if (trick_.cards().empty()) {
     qDebug() << "first Card always greater";
     return true;  // Erste gespielte Karte ist immer "größer"
@@ -288,7 +315,7 @@ bool Game::isCardGreater(
   auto trickWithoutLast = std::ranges::subrange(
       trick_.cards().begin(), std::prev(trick_.cards().end()));
 
-  if (rule == Rule::Suit) {
+  if (rule_ == Rule::Suit) {
     if (card.suit() == firstCard.suit() || card.suit() == trump_ ||
         card.rank() == "J") {
       qDebug() << "first Card:" << QString::fromStdString(firstCard.str());
@@ -299,14 +326,14 @@ bool Game::isCardGreater(
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
           });
     }
-  } else if (rule == Rule::Grand || rule == Rule::Ramsch) {
+  } else if (rule_ == Rule::Grand || rule_ == Rule::Ramsch) {
     if (card.suit() == firstCard.suit() || card.rank() == "J") {
       return std::ranges::all_of(
           trickWithoutLast, [&card, this](const Card& trickCard) {
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
           });
     }
-  } else if (rule == Rule::Null) {
+  } else if (rule_ == Rule::Null) {
     if (card.suit() == firstCard.suit()) {
       return std::ranges::all_of(
           trickWithoutLast, [&card, this](const Card& trickCard) {
@@ -320,15 +347,16 @@ bool Game::isCardGreater(
 
 // Slots:
 void Game::playCard(
-    const Card& card) {
+    Card& card) {
   qDebug() << "card played" << QString::fromStdString(card.str());
   // Card Validation in table.cpp connect (...)
 
   // Move the card from hand to trick
-  playerList_.front()->handdeck_.moveCardTo(card, trick_);
+  // playerList_.front()->handdeck_.moveCardTo(std::move(card), trick_);
+  playerList_.front()->handdeck_.moveCardTo(std::move(card), trick_);
 
   //  Check if the card's power is greater than all cards in the trick
-  if (isCardGreater(card, rule_)) {
+  if (isCardGreater(card)) {
     // Reset the trick status for all players
     for (auto& player : playerList_) player->hasTrick_ = false;
 
@@ -370,7 +398,47 @@ void Game::activateNextPlayer() {
              << QString::fromStdString(playerList_.front()->name());
   }
 
-  showPoints();
+  // showPoints();
+}
+
+Player& Game::getPlayerById(
+    int id) {
+  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == id;
+  });
+
+  if (it != playerList_.end()) {
+    return **it;  // Dereference the iterator**
+  } else {
+    throw std::runtime_error("Player not found at position " +
+                             std::to_string(id));
+  }
+}
+
+// playerList_ toggles at each move
+// geberHoererSagerPos_ toggles at each round
+// first round geberHoererSagerPos_{0, 1, 2}, second round
+// geberHoererSagerPos_{1, 2, 0}, ... returns the player at
+// geberHoererSagerPos_[pos]
+Player& Game::getPlayerByPos(
+    int pos) {
+  auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
+    return player->id() == geberHoererSagerPos_[pos];
+  });
+
+  if (it != playerList_.end()) {
+    return **it;  // Dereference the iterator**
+  } else {
+    throw std::runtime_error("Player not found at position " +
+                             std::to_string(pos));
+  }
+}
+
+Player* Game::getPlayerByIsSolo() {
+  auto it = std::ranges::find_if(
+      playerList_, [this](const Player* player) { return player->isSolo_; });
+
+  return (it != playerList_.end()) ? *it : nullptr;
 }
 
 void Game::showPoints() {

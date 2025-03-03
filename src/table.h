@@ -25,9 +25,15 @@ class Table : public QMainWindow {
   Table(QWidget *parent = nullptr);
   ~Table();
 
+  void start();
   void updateSkatLayout(bool open = false);
   void updatePlayerLayout(int playerId, int dest = 0);
+  void updateTrickLayout();
+
  public slots:
+  void onStarted();
+  void onBieten(int idSager, int idHoerer);
+  void onGehoert(int idHoerer, QString antwort);
   void onClearTrickLayout();
 };
 #endif  // TABLE_H

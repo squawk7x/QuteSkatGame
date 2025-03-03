@@ -145,6 +145,10 @@ void Card::initCard() {
   setStr();
   setName();
   setValue(rank_);
+
+  // setStyleSheet(
+  //     "QPushButton { padding: 2px; font-size: 18px; border-radius: 5px; }");
+  // adjustSize();
 }
 
 // private setters

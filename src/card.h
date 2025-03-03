@@ -50,6 +50,7 @@ class Card : public QPushButton {
 
  public:
   // Constructors
+  // Card() = default;  // Default constructor
   explicit Card(const std::string& suit, const std::string& rank);
   explicit Card(const std::string& cardStr);
   explicit Card(const std::pair<std::string, std::string>& pair);

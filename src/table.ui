@@ -44,9 +44,16 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <layout class="QHBoxLayout" name="gbPlayer2Layout"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelPlayer2">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -78,9 +85,16 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_12">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <layout class="QHBoxLayout" name="gbPlayer3Layout"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelPlayer3">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -308,17 +322,17 @@
           <layout class="QGridLayout" name="gridLayout">
            <item row="2" column="0">
             <layout class="QGridLayout" name="gridLayout_3">
-             <item row="1" column="0">
-              <widget class="QPushButton" name="pbSagen">
-               <property name="text">
-                <string>Sagen</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
+             <item row="2" column="1">
               <widget class="QPushButton" name="pbPassen">
                <property name="text">
                 <string>Passe</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="pbSagen">
+               <property name="text">
+                <string>18</string>
                </property>
               </widget>
              </item>
@@ -326,6 +340,13 @@
               <widget class="QPushButton" name="pbDruecken">
                <property name="text">
                 <string>Drücken</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QPushButton" name="pbStart">
+               <property name="text">
+                <string>Start</string>
                </property>
               </widget>
              </item>

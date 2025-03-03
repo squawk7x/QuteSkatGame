@@ -10,12 +10,12 @@ class Player : public QObject {
  private:
   int id_;
   std::string name_;
-  bool isRobot_;
 
   int points_{};
   int score_{};
 
  public:
+  bool isRobot_;
   CardVec handdeck_ = CardVec(10);
   CardVec skat_ = CardVec(2);  // active player will get the 'Skat'
   bool hasTrick_{};
