@@ -17,8 +17,9 @@ class Game : public QObject {
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
+  // geberHoererSagerPos_[0][1][2] == id für Geber-Hörer-Sager
   std::vector<int> geberHoererSagerPos_{
-      3, 1, 2};  // geberHoererSagerPos_{[0][1][2]} id für geben-hoeren-sagen
+      1, 2, 3};  // first rotation before round starts
   int soloSpieler_id{};
   Rule rule_{};
   std::string trump_{};
@@ -40,7 +41,7 @@ class Game : public QObject {
   int ansagen();
   void geben();
   bool hoeren(int hoererPos);
-  void sagen(int gesagt = 0);
+  void sagen(int angesagt = 0);
   void druecken(int playerId);
   int spielwert();
 
@@ -60,6 +61,7 @@ class Game : public QObject {
  signals:
   void started();
   void bieten(int idSager, int idHoerer);
+  void gesagt(int idSager, int idHoerer);
   void gehoert(int idHoerer, QString antwort);
   void clearTrickLayout();
 };

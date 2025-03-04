@@ -33,6 +33,7 @@ class Table : public QMainWindow {
  public slots:
   void onStarted();
   void onBieten(int idSager, int idHoerer);
+  void onGesagt(int idSager, int idHoerer);
   void onGehoert(int idHoerer, QString antwort);
   void onClearTrickLayout();
 };

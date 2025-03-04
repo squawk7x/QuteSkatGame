@@ -73,6 +73,7 @@ Table::Table(
 
     // Reizen
     QObject::connect(game_, &Game::bieten, this, &Table::onBieten);
+    QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
     QObject::connect(game_, &Game::gehoert, this, &Table::onGehoert);
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
@@ -247,20 +248,22 @@ void Table::onStarted() {
 void Table::onBieten(
     int idSager, int idHoerer) {
   ui->pbSagen->click();
+  onGesagt(idSager, idHoerer);
+}
+
+void Table::onGesagt(
+    int idSager, int idHoerer) {
   // if (idSager == 1)
   //   ui->labelPlayer1->setText(QString::number(game_->gereizt_));
-  if (idSager == 1)
-    ui->pbSagen->setText(QString::number(game_->gereizt_));
-  else
-    ui->pbSagen->setText("");
-  if (idSager == 2)
-    ui->labelPlayer2->setText(QString::number(game_->gereizt_));
-  else
-    ui->labelPlayer2->setText("");
-  if (idSager == 3)
-    ui->labelPlayer3->setText(QString::number(game_->gereizt_));
-  else
-    ui->labelPlayer3->setText("");
+  if (idSager == 1) ui->pbSagen->setText(QString::number(game_->gereizt_));
+  // else
+  //   ui->pbSagen->setText("");
+  if (idSager == 2) ui->labelPlayer2->setText(QString::number(game_->gereizt_));
+  // else
+  //   ui->labelPlayer2->setText("");
+  if (idSager == 3) ui->labelPlayer3->setText(QString::number(game_->gereizt_));
+  // else
+  //   ui->labelPlayer3->setText("");
   // QThread::msleep(1000);
 }
 
