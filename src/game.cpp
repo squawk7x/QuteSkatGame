@@ -25,7 +25,7 @@ void Game::start() {
   // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 40;
-  player_2.maxBieten_ = 60;
+  player_2.maxBieten_ = 24;
   player_3.maxBieten_ = 30;
 
   // Bugfix: Do not iterate over a modified container!
@@ -117,20 +117,31 @@ int Game::ansagen() {
   return angesagt[index];
 }
 
+// bool Game::hoeren(
+//     int hoererPos) {
+//   Player& hoerer = getPlayerByPos(hoererPos);
+
+//   if (gereizt_ >= 18 && gereizt_ <= hoerer.maxBieten_) {
+//     hoerer.isSolo_ = true;
+//     emit gehoert(hoerer.id(), "Höre");
+//     qDebug() << hoerer.name() << "Höre";
+//   } else {
+//     hoerer.isSolo_ = false;
+//     emit gehoert(hoerer.id(), "Passe");
+//     qDebug() << hoerer.name() << "Passe";
+//   }
+//   return hoerer.isSolo_;
+// }
+
 bool Game::hoeren(
     int hoererPos) {
   Player& hoerer = getPlayerByPos(hoererPos);
+  bool accepted = (gereizt_ <= hoerer.maxBieten_);
 
-  if (gereizt_ <= hoerer.maxBieten_) {
-    hoerer.isSolo_ = true;
-    qDebug() << hoerer.name() << "Höre";
-    emit gehoert(hoerer.id(), "Höre");
-  } else {
-    hoerer.isSolo_ = false;
-    qDebug() << hoerer.name() << "Passe";
-    emit gehoert(hoerer.id(), "Passe");
-  }
-  return hoerer.isSolo_;
+  qDebug() << hoerer.name() << (accepted ? "Höre" : "Passe");
+  emit gehoert(hoerer.id(), accepted ? "Höre" : "Passe");
+
+  return accepted;  // Return whether the player accepted or not.
 }
 
 void Game::sagen(
@@ -147,9 +158,8 @@ void Game::sagen(
     emit gesagt(sager.id(), hoerer.id());
     return;
   }
-
   // Start bidding process
-  while (sager.isRobot_ && gereizt_ < sager.maxBieten_ && hoeren(hoererPos)) {
+  if (sager.isRobot_ && gereizt_ < sager.maxBieten_ && hoeren(hoererPos)) {
     qDebug() << QString::fromStdString(sager.name()) << "sagt" << gereizt_;
     emit bieten(sager.id(), hoerer.id());
   }
@@ -158,22 +168,23 @@ void Game::sagen(
   if (!hoeren(hoererPos)) {
     sager.isSolo_ = true;
     hoerer.isSolo_ = false;
+    hoererPos = 2;
   }
 
-  Player& weitersager = geber;
-
-  // Update the hoerer
-  hoererPos = (hoeren(hoererPos)) ? 1 : 2;
+  // hoererPos = (hoeren(hoererPos)) ? 1 : 2;
   Player& weiterhoerer = getPlayerByPos(hoererPos);
+  Player& weitersager = geber;
 
   if (!weitersager.isRobot_ && angesagt <= weitersager.maxBieten_ &&
       hoeren(hoererPos)) {
     emit gesagt(weitersager.id(), weiterhoerer.id());
-    // return;
+    qDebug() << QString::fromStdString(weitersager.name()) << "sagt"
+             << gereizt_;
+    return;
   }
-  while (weitersager.isRobot_ && gereizt_ < weitersager.maxBieten_ &&
-         hoeren(hoererPos)) {
-    emit bieten(sager.id(), hoerer.id());
+  if (weitersager.isRobot_ && gereizt_ < weitersager.maxBieten_ &&
+      hoeren(hoererPos)) {
+    emit bieten(weitersager.id(), weiterhoerer.id());
     // QThread::msleep(1000);
     qDebug() << QString::fromStdString(weitersager.name()) << "sagt"
              << gereizt_;
