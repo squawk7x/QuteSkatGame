@@ -32,7 +32,8 @@ class Table : public QMainWindow {
 
  public slots:
   void onStarted();
-  void onGesagt(int idSager, int idHoerer, QString antwort);
+  void onGesagt(int idSager, int idHoerer, QString antwortSager,
+                QString antwortHoerer);
   // void onGehoert(int idHoerer, QString antwort);
   void onClearTrickLayout();
 };

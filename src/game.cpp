@@ -30,17 +30,16 @@ void Game::start() {
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 30;
   player_2.maxBieten_ = 40;
-  player_3.maxBieten_ = 20;
+  player_3.maxBieten_ = 24;
 
   // Bugfix: Do not iterate over a modified container!
   // trick to blind_
   std::vector<Card> cardsToMove = trick_.cards();
+
   for (Card& card : cardsToMove) {
     trick_.moveCardTo(std::move(card), blind_);
   }
-
   cardsToMove = {};
-  qDebug() << trick_.print();
 
   // players tricks to blind_
   for (Player* player : playerList_) {
@@ -50,7 +49,6 @@ void Game::start() {
       for (Card& card : cardsToMove) {
         trick.moveCardTo(std::move(card), blind_);
       }
-      qDebug() << trick.print();
     }
   }
 
@@ -62,7 +60,6 @@ void Game::start() {
     for (Card& card : cardsToMove) {
       player->handdeck_.moveCardTo(std::move(card), blind_);
     }
-    qDebug() << player->handdeck_.print();
   }
 
   // skat to blind
@@ -71,14 +68,13 @@ void Game::start() {
     skat_.moveCardTo(std::move(card), blind_);
   }
   cardsToMove = {};
-  qDebug() << skat_.print();
 
   // rotate geberHoererSager
   std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
 
   geben();
   emit started();
-  sagen();
+  // sagen();
   // druecken();
 }
 
@@ -113,7 +109,7 @@ int Game::ansagen(
   }
 
   constexpr std::array<int, 58> angesagt = {
-      0,   18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,
+      -1,  18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,
       50,  55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,
       99,  100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150,
       153, 156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
@@ -127,86 +123,122 @@ int Game::ansagen(
 bool Game::hoeren(
     int hoererPos) {
   Player& hoerer = getPlayerByPos(hoererPos);
-  bool accepted = (gereizt_ <= hoerer.maxBieten_);
 
-  qDebug() << hoerer.name() << (accepted ? "ja" : "passe");
+  if (!hoerer.isRobot()) {
+    qDebug() << hoerer.name() << "höre";
+    return true;  // human decides himself
+  }
+  bool accepted = (gereizt_ <= hoerer.maxBieten_);
+  qDebug() << hoerer.name() << (accepted ? "höre" : "passe");
+
   return accepted;
 }
 
-void Game::sagen(
-    int angesagt) {
+void Game::sagen() {
   Player& geber = getPlayerByPos(0);
   Player& hoerer = getPlayerByPos(1);
   Player& sager = getPlayerByPos(2);
 
-  QString antwort;
   int hoererPos = 1;
 
+  QString antwortSager;
+  QString antwortHoerer;
+
   // Human player bids
-  bool hoererAccepted = hoeren(hoererPos);
-  if (!sager.isRobot_ && angesagt <= sager.maxBieten_ && hoererAccepted) {
+  if (!sager.isRobot_ && hoeren(hoererPos)) {
+    if (gereizt_ == -1) return;
     gereizt_ = ansagen();
-    antwort = hoererAccepted ? "ja" : "passe";
-    emit gesagt(sager.id(), hoerer.id(), antwort);
+    antwortSager = QString::number(gereizt_);  // human decides himself
+    antwortHoerer = hoeren(hoererPos) ? "höre" : "passe";
+    emit gesagt(sager.id(), hoerer.id(), antwortSager, antwortHoerer);
     return;
   }
 
   // Robot player bids
-  while (sager.isRobot_ && gereizt_ < sager.maxBieten_ && hoererAccepted) {
+  while (sager.isRobot_ && hoeren(hoererPos)) {
+    if (gereizt_ == -1) return;
+
+    if (gereizt_ >= sager.maxBieten_) {
+      antwortSager = "weg";
+      antwortHoerer = "höre";
+      emit gesagt(sager.id(), hoerer.id(), antwortSager, antwortHoerer);
+      break;
+    }
     gereizt_ = ansagen();
-    hoererAccepted = hoeren(hoererPos);
-    antwort = hoererAccepted ? "ja" : "passe";
-    emit gesagt(sager.id(), hoerer.id(), antwort);
-    QThread::msleep(300);  // Prevent fast infinite loop
+    antwortSager = QString::number(gereizt_);
+    antwortHoerer = hoeren(hoererPos) ? "höre" : "passe";
+    emit gesagt(sager.id(), hoerer.id(), antwortSager, antwortHoerer);
   }
 
   // Determine solo player after bidding ends
-  if (!hoererAccepted) {
+  if (!hoeren(hoererPos)) {
     sager.isSolo_ = true;
     hoerer.isSolo_ = false;
     hoererPos = 2;
+  } else {
+    sager.isSolo_ = false;
+    hoerer.isSolo_ = true;
   }
 
   Player& weiterhoerer = getPlayerByPos(hoererPos);
   Player& weitersager = geber;
-  bool weiterhoererAccepted = hoeren(hoererPos);
+  // bool weiterhoererAccepted = hoeren(hoererPos);
 
   // Second bidding round
-  while (!weitersager.isRobot_ && angesagt <= weitersager.maxBieten_ &&
-         weiterhoererAccepted) {
+  if (!weitersager.isRobot_ && hoeren(hoererPos)) {
+    if (gereizt_ == -1) return;
     gereizt_ = ansagen();
-    weiterhoererAccepted = hoeren(hoererPos);
-    antwort = weiterhoererAccepted ? "ja" : "passe";
-    emit gesagt(weitersager.id(), weiterhoerer.id(), antwort);
+    antwortSager = QString::number(gereizt_);  // or by pushbutton
+    antwortHoerer = hoeren(hoererPos) ? "höre" : "passe";
+    emit gesagt(weitersager.id(), weiterhoerer.id(), antwortSager,
+                antwortHoerer);
     return;
   }
 
-  while (weitersager.isRobot_ && gereizt_ < weitersager.maxBieten_ &&
-         weiterhoererAccepted) {
+  // Robot player bids
+  while (weitersager.isRobot_ && hoeren(hoererPos)) {
+    if (gereizt_ == -1) return;
+
+    if (gereizt_ >= weitersager.maxBieten_) {
+      antwortSager = "weg";
+      antwortHoerer = "höre";
+      emit gesagt(weitersager.id(), weiterhoerer.id(), antwortSager,
+                  antwortHoerer);
+      break;
+    }
     gereizt_ = ansagen();
-    weiterhoererAccepted = hoeren(hoererPos);
-    antwort = weiterhoererAccepted ? "ja" : "passe";
-    emit gesagt(weitersager.id(), weiterhoerer.id(), antwort);
-    QThread::msleep(300);  // Prevent fast infinite loop
+    antwortSager = QString::number(gereizt_);
+    antwortHoerer = hoeren(hoererPos) ? "höre" : "passe";
+    emit gesagt(weitersager.id(), weiterhoerer.id(), antwortSager,
+                antwortHoerer);
   }
 
   // Final decision on solo player
-  if (!weiterhoererAccepted) {
+  if (!hoeren(hoererPos)) {
     weiterhoerer.isSolo_ = false;
     weitersager.isSolo_ = true;
+  } else {
+    weiterhoerer.isSolo_ = true;
+    weitersager.isSolo_ = false;
   }
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
       weiterhoerer.maxBieten_ == 0) {
+    antwortSager = "weg";
+    antwortHoerer = "weg";
+    emit gesagt(weitersager.id(), weiterhoerer.id(), antwortSager,
+                antwortHoerer);
     weiterhoerer.isSolo_ = false;
   }
 
   if (sager.maxBieten_ == 0 && weitersager.maxBieten_ == 0 &&
       weiterhoerer.maxBieten_ >= 18) {
-    weiterhoerer.isSolo_ = true;
     gereizt_ = ansagen();
-    antwort = hoeren(hoererPos) ? "ja" : "passe";
-    emit gesagt(weitersager.id(), weiterhoerer.id(), antwort);
+    antwortSager = QString::number(gereizt_);
+    antwortHoerer = "weg";
+    emit gesagt(weitersager.id(), weiterhoerer.id(), antwortSager,
+                antwortHoerer);
+    weiterhoerer.isSolo_ = true;
   }
 
   qDebug() << "gereizt bis:" << gereizt_;
@@ -227,7 +259,8 @@ bool Game::isCardValid(
     emit clearTrickLayout();
   }
 
-  // if (rule_ != Rule::Suit || rule_ != Rule::Grand || rule_ != Rule::Ramsch ||
+  // if (rule_ != Rule::Suit || rule_ != Rule::Grand || rule_ != Rule::Ramsch
+  // ||
   //     rule_ != Rule::Null) {
   //   qDebug() << "Rule not set";
   //   return false;
