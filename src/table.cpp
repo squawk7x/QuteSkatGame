@@ -246,29 +246,14 @@ void Table::onStarted() {
     updatePlayerLayout(playerId);
 }
 
-// void Table::onGesagt(
-//     int idSager, int idHoerer) {
-//   qDebug() << "Player" << idSager << "said" << game_->gereizt_ << "to "
-//            << idHoerer;
-
-//   // Set the UI text only for the correct player
-//   switch (idSager) {
-//     case 1:
-//       ui->pbSagen->setText(QString::number(game_->gereizt_));
-//       break;
-//     case 2:
-//       ui->labelPlayer2->setText(QString::number(game_->gereizt_));
-//       break;
-//     case 3:
-//       ui->labelPlayer3->setText(QString::number(game_->gereizt_));
-//       break;
-//   }
-// }
-
 void Table::onGesagt(
     int idSager, int idHoerer, QString antwort) {
   qDebug() << "Player" << idSager << "sagt" << game_->gereizt_ << "to"
            << idHoerer;
+
+  ui->pbSagen->setText("");
+  ui->labelPlayer2->setText("");
+  ui->labelPlayer3->setText("");
 
   QString gereizt = QString::number(game_->gereizt_);
 
@@ -278,29 +263,25 @@ void Table::onGesagt(
       break;
     case 2:
       ui->labelPlayer2->setText(gereizt);
-      ui->labelPlayer3->setText("");  // Clear other label
+      // ui->labelPlayer3->setText("");  // Clear other label
       break;
     case 3:
       ui->labelPlayer3->setText(gereizt);
-      ui->labelPlayer2->setText("");  // Clear other label
+      // ui->labelPlayer2->setText("");  // Clear other label
+      break;
+  }
+
+  switch (idHoerer) {
+    case 1:
+      ui->pbSagen->setText(antwort);
+      break;
+    case 2:
+      ui->labelPlayer2->setText(antwort);
+      break;
+    case 3:
+      ui->labelPlayer3->setText(antwort);
       break;
   }
 }
-
-// void Table::onGehoert(
-//     int idHoerer, QString antwort) {
-//   if (idHoerer == 1)
-//     ui->pbSagen->setText("Höre");
-//   else
-//     ui->pbSagen->setText(QString::number(game_->gereizt_));
-//   if (idHoerer == 2) {
-//     ui->labelPlayer2->setText(antwort);
-//     ui->labelPlayer3->setText("");
-//   }
-//   if (idHoerer == 3) {
-//     ui->labelPlayer3->setText(antwort);
-//     ui->labelPlayer2->setText("");
-//   }
-// }
 
 Table::~Table() { delete ui; }
