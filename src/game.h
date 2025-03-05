@@ -38,7 +38,7 @@ class Game : public QObject {
   // void startGame();
   void start();
 
-  int ansagen();
+  int ansagen(bool reset = false);
   void geben();
   bool hoeren(int hoererPos);
   void sagen(int angesagt = 0);
@@ -60,8 +60,8 @@ class Game : public QObject {
 
  signals:
   void started();
-  void bieten(int idSager, int idHoerer);
-  void gesagt(int idSager, int idHoerer);
+  // void bieten(int idSager, int idHoerer);
+  void gesagt(int idSager, int idHoerer, QString antwort);
   void gehoert(int idHoerer, QString antwort);
   void clearTrickLayout();
 };
