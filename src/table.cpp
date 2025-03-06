@@ -76,8 +76,10 @@ Table::Table(
     QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
     // QObject::connect(game_, &Game::gehoert, this, &Table::onGehoert);
 
-    QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
-      game_->sagen();
+    QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
+      Player *player = &game_->getPlayerById(1);
+      // if (!player->isRobot()) game_->gereizt_ = game_->reizen();
+      game_->bieten();
       // Bugfix getPlayerByIsSolo
       // if (game_->gereizt_ >= 18) updateSkatLayout(true);
     });
@@ -248,16 +250,16 @@ void Table::onStarted() {
 
 void Table::onGesagt(
     int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
-  qDebug() << "Spieler" << idSager << "sagt" << game_->gereizt_ << "an"
-           << idHoerer;
+  qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
+  qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
 
-  ui->pbSagen->setText("");
+  ui->pbBieten->setText("");
   ui->labelPlayer2->setText("");
   ui->labelPlayer3->setText("");
 
   switch (idSager) {
     case 1:
-      ui->pbSagen->setText(antwortSager);
+      ui->pbBieten->setText(antwortSager);
       break;
     case 2:
       ui->labelPlayer2->setText(antwortSager);
@@ -265,11 +267,13 @@ void Table::onGesagt(
     case 3:
       ui->labelPlayer3->setText(antwortSager);
       break;
+      // default:
+      //   ui->pbBieten->setText("?");
   }
 
   switch (idHoerer) {
     case 1:
-      ui->pbSagen->setText(antwortHoerer);
+      ui->pbBieten->setText(antwortHoerer);
       break;
     case 2:
       ui->labelPlayer2->setText(antwortHoerer);

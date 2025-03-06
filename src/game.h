@@ -38,10 +38,11 @@ class Game : public QObject {
   // void startGame();
   void start();
 
-  int ansagen(bool reset = false);
+  int reizen(bool reset = false, int dec = 0);
   void geben();
   bool hoeren(int hoererPos);
-  void sagen(/*int angesagt = 0*/);
+  bool sagen(int sagerPos);
+  void bieten(/*int angesagt = 0*/);
   void druecken(int playerId);
   int spielwert();
 

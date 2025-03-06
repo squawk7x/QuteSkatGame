@@ -19,7 +19,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 30;
   game_->player_3.maxBieten_ = 20;
 
-  game_->sagen();
+  game_->bieten();
 
   EXPECT_EQ(game_->gereizt_, 33);
 }
@@ -31,7 +31,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 30;
   game_->player_3.maxBieten_ = 40;
 
-  game_->sagen();
+  game_->bieten();
 
   EXPECT_EQ(game_->gereizt_, 33);
 }
@@ -43,7 +43,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 40;
   game_->player_3.maxBieten_ = 20;
 
-  game_->sagen();
+  game_->bieten();
 
   EXPECT_EQ(game_->gereizt_, 30);
 }
@@ -55,7 +55,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 20;
   game_->player_3.maxBieten_ = 0;
 
-  game_->sagen();
+  game_->bieten();
 
   EXPECT_EQ(game_->gereizt_, 18);
 }
@@ -67,7 +67,7 @@ TEST_F(
   game_->player_2.maxBieten_ = 0;
   game_->player_3.maxBieten_ = 0;
 
-  game_->sagen();
+  game_->bieten();
 
   EXPECT_EQ(game_->gereizt_, 0);
 }

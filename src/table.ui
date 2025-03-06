@@ -427,12 +427,12 @@
                 </font>
                </property>
                <property name="text">
-                <string>Passe</string>
+                <string/>
                </property>
               </widget>
              </item>
              <item row="2" column="0">
-              <widget class="QPushButton" name="pbSagen">
+              <widget class="QPushButton" name="pbBieten">
                <property name="font">
                 <font>
                  <family>Noto Sans Mono</family>
@@ -440,7 +440,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>18</string>
+                <string/>
                </property>
               </widget>
              </item>
