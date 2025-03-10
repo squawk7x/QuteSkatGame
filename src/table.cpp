@@ -76,7 +76,7 @@ Table::Table(
     QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
     // QObject::connect(game_, &Game::gehoert, this, &Table::onGehoert);
 
-    QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
+    QObject::connect(ui->pbBieten1, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
       // if (!player->isRobot()) game_->gereizt_ = game_->reizen();
       game_->bieten();
@@ -84,7 +84,9 @@ Table::Table(
       // if (game_->gereizt_ >= 18) updateSkatLayout(true);
     });
 
-    QObject::connect(ui->pbPassen, &QPushButton::clicked, this, [this]() {
+    QObject::connect(ui->pbPassen1, &QPushButton::clicked, this, [this]() {
+      game_->bieten(true);  // bieten (bool passe)
+      // ui->pbBieten->setDisabled(true);
       qDebug() << "" << QString::fromStdString("");
     });
 
@@ -92,8 +94,7 @@ Table::Table(
       if (game_->skat_.cards().size() == 2) {
         // disconnect skat
         if (game_->rule_ != Rule::Ramsch)
-          game_->getPlayerByIsSolo()->tricks_.push_back(
-              std::move(game_->skat_));
+          game_->getPlayerByIsSolo().tricks_.push_back(std::move(game_->skat_));
         // connect all players to stick
         for (int playerId = 1; playerId <= 3; playerId++)
           updatePlayerLayout(playerId, 2);
@@ -132,17 +133,17 @@ void Table::updateSkatLayout(
 
     if (open) {
       // Bug when isSolo not set
-      Player *player = game_->getPlayerByIsSolo();
-      int playerId = player->id();
+      Player &player = game_->getPlayerByIsSolo();
+      int playerId = player.id();
       connect(
           cardButton, &QPushButton::clicked, this,
           [&, this, cardButton, playerId]() {
             ui->gbSkatLayout->removeWidget(cardButton);
             cardButton->setParent(nullptr);
             game_->skat_.moveCardTo(std::move(card),
-                                    game_->getPlayerByIsSolo()->handdeck_);
+                                    game_->getPlayerByIsSolo().handdeck_);
             qDebug() << game_->skat_.cards().size();
-            qDebug() << game_->getPlayerByIsSolo()->handdeck_.cards().size();
+            qDebug() << game_->getPlayerByIsSolo().handdeck_.cards().size();
             updatePlayerLayout(playerId, 1);
           });
     }
@@ -253,35 +254,42 @@ void Table::onGesagt(
   qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
   qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
 
-  ui->pbBieten->setText("");
-  ui->labelPlayer2->setText("");
-  ui->labelPlayer3->setText("");
+  ui->pbBieten1->setText("");
+  ui->pbBieten2->setText("");
+  ui->pbBieten3->setText("");
 
   switch (idSager) {
     case 1:
-      ui->pbBieten->setText(antwortSager);
+      ui->pbBieten1->setText(antwortSager);
       break;
     case 2:
-      ui->labelPlayer2->setText(antwortSager);
+      ui->pbBieten2->setText(antwortSager);
+      ui->pbBieten2->animateClick();
       break;
     case 3:
-      ui->labelPlayer3->setText(antwortSager);
+      ui->pbBieten3->setText(antwortSager);
+      ui->pbBieten3->animateClick();
       break;
-      // default:
-      //   ui->pbBieten->setText("?");
   }
 
   switch (idHoerer) {
     case 1:
-      ui->pbBieten->setText(antwortHoerer);
+      ui->pbBieten1->setText(antwortHoerer);
       break;
     case 2:
-      ui->labelPlayer2->setText(antwortHoerer);
+      ui->pbBieten2->setText(antwortHoerer);
+      ui->pbBieten2->animateClick();
       break;
     case 3:
-      ui->labelPlayer3->setText(antwortHoerer);
+      ui->pbBieten3->setText(antwortHoerer);
+      ui->pbBieten3->animateClick();
       break;
   }
+
+  if (idSager == 1 || idHoerer == 1)
+    ui->pbPassen1->setText("passe");
+  else
+    ui->pbPassen1->setText("");
 }
 
 Table::~Table() { delete ui; }

@@ -130,8 +130,8 @@ set(TEST_SOURCES ${PROJECT_SOURCES})
 list(REMOVE_ITEM TEST_SOURCES src/main.cpp)
 
 # Define test executable
-add_executable(runTests tests/tst_reizen.cpp #[[tests/tst_card.cpp
-                        tests/tst_cardpower.cpp]] ${TEST_SOURCES})
+add_executable(runTests tests/tst_reizen.cpp tests/tst_bieten.cpp
+                        ${TEST_SOURCES})
 
 # Link GoogleTest and Qt6
 target_link_libraries(runTests gtest gtest_main Qt6::Core Qt6::Test

@@ -100,37 +100,31 @@ void Game::geben() {
 }
 
 int Game::reizen(
-    bool reset, int dec) {
+    bool reset) {
   static int counter = 0;
+  static int lastValue = 0;
 
-  // Reset when starting a new round
+  constexpr std::array<int, 58> angesagt = {
+      0,   18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,
+      50,  55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,
+      99,  100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150,
+      153, 156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+
   if (reset) {
     counter = 0;
-    return counter;
+    return angesagt[counter];
   }
 
-  constexpr std::array<int, 57> angesagt = {
-      18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,  50,
-      55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,  99,
-      100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150, 153,
-      156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+  if (counter < angesagt.size() - 1) {
+    counter++;
+  }
 
-  // Adjust counter within valid range
-  counter = std::max(0, counter - dec);
-  int index = std::min(counter, static_cast<int>(angesagt.size() - 1));
-
-  counter++;  // Increase counter unless at the end
-  return angesagt[index];
+  return angesagt[counter];
 }
 
 bool Game::hoeren(
     int hoererPos) {
   Player& hoerer = getPlayerByPos(hoererPos);
-
-  // player_1.maxBieten = 216
-  // if (!hoerer.isRobot()) {
-  //   return true;  // human decides himself
-  // }
 
   bool accepted = (gereizt_ <= hoerer.maxBieten_);
 
@@ -141,43 +135,52 @@ bool Game::sagen(
     int sagerPos) {
   Player& sager = getPlayerByPos(sagerPos);
 
-  // player_1.maxBieten = 216
-  // if (!sager.isRobot()) {
-  //   return true;  // human decides himself
-  // }
-
   bool accepted = (gereizt_ < sager.maxBieten_);
 
   return accepted;
 }
 
-void Game::bieten() {
-  Player* geber = &getPlayerByPos(0);
-  Player* hoerer = &getPlayerByPos(1);
-  Player* sager = &getPlayerByPos(2);
-
+void Game::bieten(
+    bool passe) {
   int hoererPos = 1;
   int sagerPos = 2;
+
+  Player* hoerer = &getPlayerByPos(hoererPos);
+  Player* sager = &getPlayerByPos(sagerPos);
 
   QString antwortSager;
   QString antwortHoerer;
 
   while (hoeren(hoererPos) && sagen(sagerPos)) {
-    /*if (sager->isRobot()) */
-    gereizt_ = reizen();
-
-    antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
-
-    if (gereizt_ <= sager->maxBieten_)
-      antwortSager = QString::number(gereizt_);
-    else
+    if (!sager->isRobot() && passe == true) {
+      sager->maxBieten_ = 0;
       antwortSager = "weg";
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+      break;
+    };
+
+    if (!hoerer->isRobot() && passe == true) {
+      hoerer->maxBieten_ = 0;
+      antwortSager = QString::number(gereizt_);
+      antwortHoerer = "passe";
+      break;
+    };
+
+    gereizt_ = reizen();
+    if (gereizt_ <= sager->maxBieten_) {
+      antwortSager = QString::number(gereizt_);
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+    } else {
+      antwortSager = "weg";
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+      break;
+    }
 
     emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
-
-    // if (!sager->isRobot_ || !hoerer->isRobot_) return;
     return;
   }
+  // for break case:
+  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
   // isSolo nach sagen
   if (!hoeren(hoererPos)) {
@@ -187,54 +190,74 @@ void Game::bieten() {
   } else {
     hoerer->isSolo_ = true;
     sager->isSolo_ = false;
+    hoererPos = 1;  // hoerer bleibt weiterhoerer
   }
+  hoerer = &getPlayerByPos(hoererPos);
 
   // weitersagen
-  hoerer = &getPlayerByPos(hoererPos);
   sagerPos = 0;
-  sager = geber;
+  sager = &getPlayerByPos(sagerPos);
 
   while (hoeren(hoererPos) && sagen(sagerPos)) {
-    /*if (sager->isRobot())*/
-    gereizt_ = reizen();
-
-    antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
-
-    if (gereizt_ <= sager->maxBieten_)
-      antwortSager = QString::number(gereizt_);
-    else
+    if (!sager->isRobot() && passe == true) {
+      sager->maxBieten_ = 0;
       antwortSager = "weg";
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+      break;
+    };
+
+    if (!hoerer->isRobot() && passe == true) {
+      hoerer->maxBieten_ = 0;
+      antwortSager = QString::number(gereizt_);
+      antwortHoerer = "passe";
+      break;
+    };
+
+    gereizt_ = reizen();
+    if (gereizt_ <= sager->maxBieten_) {
+      antwortSager = QString::number(gereizt_);
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+    } else {
+      antwortSager = "weg";
+      antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
+      break;
+    }
 
     emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
-
-    // if (!sager->isRobot_ || !hoerer->isRobot_) return;
     return;
   }
+  // for break case:
+  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
   // Final decision on solo player
   if (!hoeren(hoererPos)) {
     hoerer->isSolo_ = false;
     sager->isSolo_ = true;
+    antwortHoerer = "weg";
+    antwortSager = QString::number(gereizt_);
+    // emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
   } else {
     hoerer->isSolo_ = true;
     sager->isSolo_ = false;
-    emit gesagt(sager->id(), 0, "weg", "");
+    antwortSager = "weg";
+    antwortHoerer = QString::number(gereizt_);
   }
 
   if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
+    // or all players isSolo = true
+    hoerer->isSolo_ = false;
     antwortSager = "weg";
     antwortHoerer = "weg";
-    emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
-    hoerer->isSolo_ = false;
   }
 
   if (gereizt_ == 0 && hoerer->maxBieten_ >= 18) {
+    hoerer->isSolo_ = true;
     gereizt_ = reizen();
     antwortSager = QString::number(gereizt_);
     antwortHoerer = "weg";
-    emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
-    hoerer->isSolo_ = true;
   }
+
+  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
   qDebug() << "gereizt bis:" << gereizt_;
   for (auto& player : playerList_) {
@@ -474,11 +497,15 @@ Player& Game::getPlayerByPos(
   }
 }
 
-Player* Game::getPlayerByIsSolo() {
+Player& Game::getPlayerByIsSolo() {
   auto it = std::ranges::find_if(
       playerList_, [this](const Player* player) { return player->isSolo_; });
 
-  return (it != playerList_.end()) ? *it : nullptr;
+  if (it != playerList_.end())
+    return **it;
+  else {
+    throw std::runtime_error("Solo player not found at position");
+  }
 }
 
 void Game::showPoints() {

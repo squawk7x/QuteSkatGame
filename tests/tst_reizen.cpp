@@ -1,73 +1,42 @@
 #include <gtest/gtest.h>
 
-#include "../src/game.h"
-#include "../src/player.h"
+#include "game.h"
 
-class BiddingTest : public ::testing::Test {
+class ReizenTest : public ::testing::Test {
  protected:
-  void SetUp() override { game_ = new Game(); }
+  void SetUp() override {
+    game_ = new Game();
+    game_->reizen(true);
+  }
 
   void TearDown() override { delete game_; }
 
   Game* game_;
 };
 
-// Test case 1: Player 1 wins with 33
 TEST_F(
-    BiddingTest, Scenario1) {
-  game_->player_1.maxBieten_ = 40;
-  game_->player_2.maxBieten_ = 30;
-  game_->player_3.maxBieten_ = 20;
-
-  game_->bieten();
-
-  EXPECT_EQ(game_->gereizt_, 33);
+    ReizenTest, ResetTest) {
+  EXPECT_EQ(game_->reizen(true), 0);
 }
 
-// Test case 2: Player 3 wins with 33
 TEST_F(
-    BiddingTest, Scenario2) {
-  game_->player_1.maxBieten_ = 20;
-  game_->player_2.maxBieten_ = 30;
-  game_->player_3.maxBieten_ = 40;
-
-  game_->bieten();
-
-  EXPECT_EQ(game_->gereizt_, 33);
+    ReizenTest, IncrementTest) {
+  EXPECT_EQ(game_->reizen(), 18);
+  EXPECT_EQ(game_->reizen(), 20);
+  EXPECT_EQ(game_->reizen(), 22);
+  EXPECT_EQ(game_->reizen(), 23);
 }
 
-// Test case 3: Player 2 wins with 30
 TEST_F(
-    BiddingTest, Scenario3) {
-  game_->player_1.maxBieten_ = 30;
-  game_->player_2.maxBieten_ = 40;
-  game_->player_3.maxBieten_ = 20;
-
-  game_->bieten();
-
-  EXPECT_EQ(game_->gereizt_, 30);
+    ReizenTest, MaxBoundaryTest) {
+  for (int i = 0; i < 60; ++i) {
+    game_->reizen(false);
+  }
+  EXPECT_EQ(game_->reizen(), 216);  // Should cap at max value
 }
 
-// Test case 4: Player 2 wins with 18
-TEST_F(
-    BiddingTest, Scenario4) {
-  game_->player_1.maxBieten_ = 0;
-  game_->player_2.maxBieten_ = 20;
-  game_->player_3.maxBieten_ = 0;
-
-  game_->bieten();
-
-  EXPECT_EQ(game_->gereizt_, 18);
-}
-
-// Test case 5: No player bids
-TEST_F(
-    BiddingTest, Scenario5) {
-  game_->player_1.maxBieten_ = 0;
-  game_->player_2.maxBieten_ = 0;
-  game_->player_3.maxBieten_ = 0;
-
-  game_->bieten();
-
-  EXPECT_EQ(game_->gereizt_, 0);
+int main(
+    int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
