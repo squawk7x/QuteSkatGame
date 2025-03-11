@@ -15,5 +15,8 @@ Extra Arguments=
 Install Directory=
 Runtime=Host System
 
+[Launch]
+Launch Configurations=
+
 [Project]
 VersionControlSupport=kdevgit

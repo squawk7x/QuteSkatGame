@@ -26,6 +26,12 @@ TEST_F(
   EXPECT_EQ(game_->reizen(), 22);
   EXPECT_EQ(game_->reizen(), 23);
 }
+TEST_F(
+    ReizenTest, PreviewTest) {
+  EXPECT_EQ(game_->reizen(), 18);
+  EXPECT_EQ(game_->reizen(false, true), 20);  // preview = true
+  EXPECT_EQ(game_->reizen(), 20);
+}
 
 TEST_F(
     ReizenTest, MaxBoundaryTest) {

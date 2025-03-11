@@ -4,7 +4,7 @@
 
 #include <QTimer>
 
-#include "ui_table.h"
+#include "src/ui_table.h"  //
 
 Table::Table(
     QWidget *parent)
@@ -72,28 +72,26 @@ Table::Table(
                      });
 
     // Reizen
-    // QObject::connect(game_, &Game::bieten, this, &Table::onBieten);
     QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
-    // QObject::connect(game_, &Game::gehoert, this, &Table::onGehoert);
 
     QObject::connect(ui->pbBieten1, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
       // if (!player->isRobot()) game_->gereizt_ = game_->reizen();
       game_->bieten();
-      // Bugfix getPlayerByIsSolo
+      // Bugfix getPlayerByIsSolo  // may be: Ramsch -> all players isSolo ==
+      // true
       // if (game_->gereizt_ >= 18) updateSkatLayout(true);
     });
 
     QObject::connect(ui->pbPassen1, &QPushButton::clicked, this, [this]() {
       game_->bieten(true);  // bieten (bool passe)
-      // ui->pbBieten->setDisabled(true);
       qDebug() << "" << QString::fromStdString("");
     });
 
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
         // disconnect skat
-        if (game_->rule_ != Rule::Ramsch)
+        if (game_->rule_ != Rule::Ramsch || game_->rule_ != Rule::Null)
           game_->getPlayerByIsSolo().tricks_.push_back(std::move(game_->skat_));
         // connect all players to stick
         for (int playerId = 1; playerId <= 3; playerId++)
@@ -205,9 +203,10 @@ void Table::updatePlayerLayout(
               game_->playCard(
                   card);  // No modification, so this works with const reference
 
-              // Insert the card button at the correct position
-              if (playerId == 1) ui->gbTrickLayout->addWidget(cardButton, 0, 1);
+              // Insert the card button at the correct position in Layout
+              // [player 2][player 1][player 3]
               if (playerId == 2) ui->gbTrickLayout->addWidget(cardButton, 0, 0);
+              if (playerId == 1) ui->gbTrickLayout->addWidget(cardButton, 0, 1);
               if (playerId == 3) ui->gbTrickLayout->addWidget(cardButton, 0, 2);
             }
           });
@@ -243,7 +242,7 @@ void Table::onClearTrickLayout() {
 
 void Table::onStarted() {
   updateTrickLayout();
-  // updateSkatLayout(false);
+  updateSkatLayout(false);
 
   for (int playerId = 1; playerId <= 3; playerId++)
     updatePlayerLayout(playerId);

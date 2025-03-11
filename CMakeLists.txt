@@ -12,7 +12,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui DBus)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 # Include the src directory for header files
@@ -83,7 +83,8 @@ qt_add_executable(
   res/cards/queen_of_spades.png
   README.md)
 
-target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+                                           Qt6::DBus)
 
 # Qt for iOS/macOS settings
 if(QT_VERSION_MAJOR EQUAL 6 AND QT_VERSION_MINOR VERSION_LESS 1)

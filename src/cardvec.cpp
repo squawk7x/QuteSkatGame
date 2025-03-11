@@ -44,18 +44,6 @@ void CardVec::moveCardTo(
     cards_.erase(it);
   }
 }
-// void CardVec::moveCardTo(
-//     const Card& card, CardVec& targetVec) {
-//   // Find the card in the current vector
-//   auto it = std::ranges::find(cards_, card);
-//   if (it != cards_.end()) {
-//     // Move the card to the target vector
-//     targetVec.addCard(std::move(*it));  // Move card from the source vector
-
-//     // Remove the card from the source vector
-//     cards_.erase(it);
-//   }
-// }
 
 void CardVec::moveTopCardTo(
     CardVec& targetVec) {

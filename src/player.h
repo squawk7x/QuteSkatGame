@@ -16,8 +16,10 @@ class Player : public QObject {
 
  public:
   bool isRobot_;
-  CardVec handdeck_ = CardVec(10);
-  CardVec skat_ = CardVec(2);  // active player will get the 'Skat'
+  CardVec handdeck_ = CardVec(12);      // including 2 Skat cards
+  CardVec skat_ = CardVec(2);           // active player will get the Skat
+  /*CardVec playable_ = CardVec(10);*/  // collection of playable cards
+
   bool hasTrick_{};
   std::vector<CardVec> tricks_{};
   int maxBieten_{};
@@ -44,7 +46,6 @@ class Player : public QObject {
 
   // public getters
   int id() const;
-  Player &getPlayerById(int id);
   std::string name() const;
   bool isRobot() const;
   int score() const;
@@ -55,7 +56,6 @@ class Player : public QObject {
 
   // Slots
  public slots:
-  // void onCountPoints();
 };
 
 #endif  // game_->player_H
