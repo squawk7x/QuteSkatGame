@@ -49,7 +49,11 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
          <item row="1" column="0">
-          <layout class="QHBoxLayout" name="gbPlayer2Layout"/>
+          <layout class="QHBoxLayout" name="gbPlayer2Layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+          </layout>
          </item>
          <item row="2" column="0">
           <widget class="QPushButton" name="pbBieten2">
@@ -108,7 +112,11 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="1" column="0">
-          <layout class="QHBoxLayout" name="gbPlayer3Layout"/>
+          <layout class="QHBoxLayout" name="gbPlayer3Layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+          </layout>
          </item>
          <item row="2" column="0">
           <widget class="QPushButton" name="pbBieten3">
@@ -390,19 +398,6 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_9">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
        <widget class="QGroupBox" name="gbSkat">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -420,7 +415,11 @@
          <item>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0">
-            <layout class="QHBoxLayout" name="gbSkatLayout"/>
+            <layout class="QHBoxLayout" name="gbSkatLayout">
+             <property name="spacing">
+              <number>6</number>
+             </property>
+            </layout>
            </item>
            <item row="2" column="0">
             <layout class="QGridLayout" name="gridLayout_3">
@@ -484,12 +483,61 @@
        </spacer>
       </item>
       <item>
-       <widget class="QGroupBox" name="gbTrick">
+       <widget class="QGroupBox" name="gbTrick2">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="title">
-         <string>Ausgespielt</string>
+         <string>2</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="gbTrickLayout2" stretch="">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbTrick1">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>1</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -497,14 +545,69 @@
         <property name="checkable">
          <bool>false</bool>
         </property>
-        <layout class="QGridLayout" name="gridLayout_6">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <property name="sizeConstraint">
           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
          </property>
-         <item row="0" column="0">
-          <layout class="QGridLayout" name="gbTrickLayout" columnstretch="0">
-           <property name="sizeConstraint">
-            <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="gbTrickLayout1">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbTrick3">
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>3</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="gbTrickLayout3">
+           <property name="spacing">
+            <number>0</number>
            </property>
           </layout>
          </item>
@@ -588,7 +691,11 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_7">
          <item row="1" column="0" colspan="2">
-          <layout class="QHBoxLayout" name="gbPlayer1Layout"/>
+          <layout class="QHBoxLayout" name="gbPlayer1Layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+          </layout>
          </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="pbBieten1">

@@ -34,55 +34,14 @@ set(PROJECT_SOURCES
     src/game.cpp
     src/player.h
     src/player.cpp
-    src/definitions.h)
+    src/definitions.h
+    README.md
+    res/resources.qrc)
 
 # Add main executable add_executable(skat src/skat.cpp src/card.cpp src/card.h
 # src/cardvec.cpp src/cardvec.h)
 
-qt_add_executable(
-  quteSkatGame
-  MANUAL_FINALIZATION
-  ${PROJECT_SOURCES}
-  res/cards/10_of_clubs.png
-  res/cards/10_of_diamonds.png
-  res/cards/10_of_hearts.png
-  res/cards/10_of_spades.png
-  res/cards/6_of_clubs.png
-  res/cards/6_of_diamonds.png
-  res/cards/6_of_hearts.png
-  res/cards/6_of_spades.png
-  res/cards/7_of_clubs.png
-  res/cards/7_of_diamonds.png
-  res/cards/7_of_hearts.png
-  res/cards/7_of_spades.png
-  res/cards/8_of_clubs.png
-  res/cards/8_of_diamonds.png
-  res/cards/8_of_hearts.png
-  res/cards/8_of_spades.png
-  res/cards/9_of_clubs.png
-  res/cards/9_of_diamonds.png
-  res/cards/9_of_hearts.png
-  res/cards/9_of_spades.png
-  res/cards/ace_of_clubs.png
-  res/cards/ace_of_diamonds.png
-  res/cards/ace_of_hearts.png
-  res/cards/ace_of_spades.png
-  res/cards/backside_blue.png
-  res/cards/backside_red.png
-  res/cards/jack_of_clubs.png
-  res/cards/jack_of_diamonds.png
-  res/cards/jack_of_hearts.png
-  res/cards/jack_of_spades.png
-  res/cards/king_of_clubs.png
-  res/cards/king_of_diamonds.png
-  res/cards/king_of_hearts.png
-  res/cards/king_of_spades.png
-  res/cards/queen_of_clubs.png
-  res/cards/queen_of_diamonds.png
-  res/cards/queen_of_hearts.png
-  res/cards/queen_of_spades.png
-  README.md
-  res/resources.qrc)
+qt_add_executable(quteSkatGame MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
                                            Qt6::DBus)

@@ -152,8 +152,10 @@ void Table::updateSkatLayout(
 
     if (!pixmap.isNull()) {
       cardButton->setIcon(QIcon(pixmap));
+      cardButton->setStyleSheet("QPushBuktton { padding: 0px; margin: 0px; }");
+      cardButton->setFlat(true);
       cardButton->setIconSize(
-          QSize(50, 100));  // Set the icon size for the button
+          QSize(78, 116));  // Set the icon size for the button
     } else {
       qDebug() << "Failed to load image for" << rankname << suitname;
       cardButton->setText(QString::fromStdString(card.str()));
@@ -212,14 +214,16 @@ void Table::updatePlayerLayout(
 
     if (!pixmap.isNull()) {
       cardButton->setIcon(QIcon(pixmap));
+      cardButton->setStyleSheet("QPushButton { padding: 0px; margin: 0px; }");
+      cardButton->setFlat(true);
       cardButton->setIconSize(
-          QSize(20, 30));  // Set the icon size for the button
+          QSize(78, 116));  // Set the icon size for the button
     } else {
       qDebug() << "Failed to load image for" << rankname << suitname;
       cardButton->setText(QString::fromStdString(card.str()));
     }
     cardButton->setIcon(QIcon(pixmap));
-    cardButton->setIconSize(QSize(50, 100));
+    cardButton->setIconSize(QSize(78, 116));
     layout->addWidget(cardButton);
 
     // connect to skat
@@ -279,21 +283,34 @@ void Table::updateTrickLayout(
 
   if (!pixmap.isNull()) {
     cardButton->setIcon(QIcon(pixmap));
+    cardButton->setFlat(true);
     cardButton->setIconSize(
-        QSize(50, 100));  // Set the icon size for the button
+        QSize(78, 116));  // Set the icon size for the button
   } else {
     cardButton->setText(QString::fromStdString(card.str()));
     qDebug() << "Failed to load image for" << rankname << suitname;
   }
 
-  if (playerId == 2) ui->gbTrickLayout->addWidget(cardButton, 0, 0);
-  if (playerId == 1) ui->gbTrickLayout->addWidget(cardButton, 0, 1);
-  if (playerId == 3) ui->gbTrickLayout->addWidget(cardButton, 0, 2);
+  if (playerId == 2) ui->gbTrickLayout2->addWidget(cardButton);
+  if (playerId == 1) ui->gbTrickLayout1->addWidget(cardButton);
+  if (playerId == 3) ui->gbTrickLayout3->addWidget(cardButton);
 }
 
 // Slots
 void Table::onClearTrickLayout() {
-  while (QLayoutItem *item = ui->gbTrickLayout->takeAt(0)) {
+  while (QLayoutItem *item = ui->gbTrickLayout1->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+  while (QLayoutItem *item = ui->gbTrickLayout2->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+  while (QLayoutItem *item = ui->gbTrickLayout3->takeAt(0)) {
     if (QWidget *widget = item->widget()) {
       widget->deleteLater();  // Ensures safe deletion after event loop
     }
