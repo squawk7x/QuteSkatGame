@@ -81,7 +81,8 @@ qt_add_executable(
   res/cards/queen_of_diamonds.png
   res/cards/queen_of_hearts.png
   res/cards/queen_of_spades.png
-  README.md)
+  README.md
+  res/resources.qrc)
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
                                            Qt6::DBus)

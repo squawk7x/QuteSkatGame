@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <memory>
 #include <string>
+
+#include "definitions.h"
 // #include <unordered_map>
 // #include <vector>
 
@@ -16,13 +18,6 @@
 // extern std::vector<std::string> ranknames;
 // extern const std::unordered_map<std::string, int> PowerPrioritySuit;
 // extern const std::unordered_map<std::string, int> PowerPriorityNull;
-
-enum class Rule {
-  Suit,   // Suit and J are trump
-  Grand,  // Only J are trump
-  Null,   // No trump - special card power
-  Ramsch  // No trump - card power as Grand
-};
 
 class Card : public QPushButton {
   Q_OBJECT
@@ -78,6 +73,7 @@ class Card : public QPushButton {
   std::string name() const;
   int value() const;
   int power(const std::string& trumpSuit = "", Rule rule = Rule::Suit) const;
+  // void loadImage(bool isCardFaceVisible = true);
 };
 
 #endif  // CARD_H

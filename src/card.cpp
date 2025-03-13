@@ -146,6 +146,8 @@ void Card::initCard() {
   setName();
   setValue(rank_);
 
+  // loadImage();
+
   // setStyleSheet(
   //     "QPushButton { padding: 2px; font-size: 18px; border-radius: 5px; }");
   // adjustSize();
@@ -229,3 +231,42 @@ int Card::power(
   }
   return power_;
 }
+
+// void Card::loadImage(
+//     bool isCardFaceVisible) {
+//   setStr();  // Update the string representation of the card
+
+//   QString imagePath;
+//   QString rankname = QString::fromStdString(rankname_);
+//   QString suitname = QString::fromStdString(suitname_);
+
+//   // Use arg() with QString
+//   // imagePath = QString(":res/cards/%1_of_%2.png").arg(rankname, suitname);
+
+//   // Determine the image path based on visibility
+//   if (isCardFaceVisible) {
+//     imagePath = QString(":res/cards/%1_of_%2.png").arg(rankname, suitname);
+//   } else {
+//     imagePath = QString(":res/cards/backside_blue.png");
+//   }
+
+//   // setProperty("card-type", cardType_ == CardType::Small ? "Small" :
+//   // "Normal");
+
+//   // QPixmap pixmap(imagePath);  // Load the image as a QPixmap
+
+//   // if (!pixmap.isNull() && cardType_ == CardType::Normal) {
+//   //   setText("");             // Remove any text
+//   //   setIcon(QIcon(pixmap));  // Set the icon
+
+//   //   QSize buttonSize = QSize(500, 726) * 0.2;
+//   //   setIconSize(buttonSize);
+//   // } else {
+//   //   setIcon(QIcon());  // Clear any existing icon
+//   //   setText(isCardFaceVisible && isEnabled() ? str_ : "▓▓");
+//   // }
+
+//   // Notify Qt to reapply the stylesheet
+//   // style()->unpolish(this);
+//   // style()->polish(this);
+// }

@@ -1,7 +1,8 @@
 #include "table.h"
 
-#include <qthread.h>
+// #include <qthread.h>
 
+#include <QDir>
 #include <QTimer>
 
 #include "src/ui_table.h"
@@ -125,36 +126,56 @@ void Table::updateSkatLayout(
     bool hand) {
   QLayoutItem *item;
 
+  // Ensure we only call getPlayerByIsSolo once and reuse the result
   Player *player = game_->getPlayerByIsSolo();
-  if (!player) return;
+  if (!player) return;  // Early exit if no player is found
 
+  // Clear existing widgets from the layout
   while ((item = ui->gbSkatLayout->takeAt(0)) != nullptr) {
     if (item->widget()) {
-      delete item->widget();  // Delete the widget (if it exists)
+      delete item->widget();  // Delete widget if it exists
     }
-    delete item;  // Delete the layout item
+    delete item;  // Delete layout item
   }
+
+  // Loop through cards in the skat
   for (Card &card : game_->skat_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(QString::fromStdString(card.str()));
+
+    QString rankname = QString::fromStdString(card.rankname());
+    QString suitname = QString::fromStdString(card.suitname());
+    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+
+    // qDebug() << "Loading image from:" << imagePath;
+
+    QPixmap pixmap(imagePath);
+
+    if (!pixmap.isNull()) {
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setIconSize(
+          QSize(50, 100));  // Set the icon size for the button
+    } else {
+      qDebug() << "Failed to load image for" << rankname << suitname;
+      cardButton->setText(QString::fromStdString(card.str()));
+    }
+
     ui->gbSkatLayout->addWidget(cardButton);
 
-    // Bug?: Why not if (!hand) ???
+    // Handle card actions only if `hand` is true
     if (hand) {
-      // Bugfix: when player->isSolo not set
-      Player *player = game_->getPlayerByIsSolo();
-      if (!player) return;
-
       int playerId = player->id();
       connect(cardButton, &QPushButton::clicked, this,
               [&, this, cardButton, playerId]() {
                 game_->skat_.moveCardTo(std::move(card),
                                         game_->getPlayerByIsSolo()->handdeck_);
 
+                // Remove the button from layout and set parent to nullptr
                 ui->gbSkatLayout->removeWidget(cardButton);
                 cardButton->setParent(nullptr);
+
+                // Update the player layout after moving the card
+                updatePlayerLayout(playerId, 1);
               });
-      updatePlayerLayout(playerId, 1);
     }
   }
 }
@@ -180,7 +201,25 @@ void Table::updatePlayerLayout(
 
   for (Card &card : player.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
-    cardButton->setText(QString::fromStdString(card.str()));
+
+    QString rankname = QString::fromStdString(card.rankname());
+    QString suitname = QString::fromStdString(card.suitname());
+    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+
+    qDebug() << "Loading image from:" << imagePath;
+
+    QPixmap pixmap(imagePath);
+
+    if (!pixmap.isNull()) {
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setIconSize(
+          QSize(20, 30));  // Set the icon size for the button
+    } else {
+      qDebug() << "Failed to load image for" << rankname << suitname;
+      cardButton->setText(QString::fromStdString(card.str()));
+    }
+    cardButton->setIcon(QIcon(pixmap));
+    cardButton->setIconSize(QSize(50, 100));
     layout->addWidget(cardButton);
 
     // connect to skat
@@ -229,39 +268,28 @@ void Table::updatePlayerLayout(
 void Table::updateTrickLayout(
     const Card &card, int playerId) {
   QPushButton *cardButton = new QPushButton(this);
-  cardButton->setText(QString::fromStdString(card.str()));
+
+  QString rankname = QString::fromStdString(card.rankname());
+  QString suitname = QString::fromStdString(card.suitname());
+  QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+
+  // qDebug() << "Loading image from:" << imagePath;
+
+  QPixmap pixmap(imagePath);
+
+  if (!pixmap.isNull()) {
+    cardButton->setIcon(QIcon(pixmap));
+    cardButton->setIconSize(
+        QSize(50, 100));  // Set the icon size for the button
+  } else {
+    cardButton->setText(QString::fromStdString(card.str()));
+    qDebug() << "Failed to load image for" << rankname << suitname;
+  }
 
   if (playerId == 2) ui->gbTrickLayout->addWidget(cardButton, 0, 0);
   if (playerId == 1) ui->gbTrickLayout->addWidget(cardButton, 0, 1);
   if (playerId == 3) ui->gbTrickLayout->addWidget(cardButton, 0, 2);
 }
-
-// Card *Table::findCardButton(
-//     int playerId, const Card &card) {
-//   QLayout *layout = nullptr;  // Initialize layout
-
-//   if (playerId == 1)
-//     layout = ui->gbPlayer1Layout;
-//   else if (playerId == 2)
-//     layout = ui->gbPlayer2Layout;
-//   else if (playerId == 3)
-//     layout = ui->gbPlayer3Layout;
-
-//   if (!layout) return nullptr;  // Handle invalid playerId
-
-//   for (int i = 0; i < layout->count(); ++i) {
-//     QWidget *widget = layout->itemAt(i)->widget();
-//     if (!widget) continue;  // Skip null widgets
-
-//     Card *cardButton = qobject_cast<Card *>(widget);
-//     if (cardButton &&
-//         cardButton->text() == QString::fromStdString(card.str())) {
-//       return cardButton;  // Found the button
-//     }
-//   }
-
-//   return nullptr;  // No matching button found
-// }
 
 // Slots
 void Table::onClearTrickLayout() {

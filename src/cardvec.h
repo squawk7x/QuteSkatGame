@@ -6,8 +6,6 @@
 
 #include "card.h"
 
-enum class CardFace { Open, Closed };
-
 class CardVec {
  private:
   std::vector<Card> cards_;
