@@ -76,6 +76,7 @@ class Game : public QObject {
               QString antwortHoerer);
   void clearTrickLayout();
   void refreshTrickLayout(const Card& card, int playerId);
+  void refreshPlayerLayout(int playerId, int dest = 2);
 };
 
 #endif  // gameH

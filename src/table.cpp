@@ -102,8 +102,8 @@ Table::Table(
       }
     });
 
-    QObject::connect(ui->pbStart, &QPushButton::clicked, game_,
-                     &Game::autoplay);
+    QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
+    QObject::connect(ui->pbPlay, &QPushButton::clicked, game_, &Game::autoplay);
 
     QObject::connect(game_, &Game::started, this, &Table::onStarted);
     // Connections
@@ -112,6 +112,9 @@ Table::Table(
 
     QObject::connect(game_, &Game::refreshTrickLayout, this,
                      &Table::updateTrickLayout);
+
+    QObject::connect(game_, &Game::refreshPlayerLayout, this,
+                     &Table::updatePlayerLayout);
   }
 
   game_->init();
@@ -214,8 +217,8 @@ void Table::updatePlayerLayout(
               game_->playCard(
                   card);  // No modification, so this works with const reference
 
-              cardButton->setParent(nullptr);
               layout->removeWidget(cardButton);
+              cardButton->setParent(nullptr);
               updatePlayerLayout(playerId, 2);
             }
           });
@@ -232,6 +235,33 @@ void Table::updateTrickLayout(
   if (playerId == 1) ui->gbTrickLayout->addWidget(cardButton, 0, 1);
   if (playerId == 3) ui->gbTrickLayout->addWidget(cardButton, 0, 2);
 }
+
+// Card *Table::findCardButton(
+//     int playerId, const Card &card) {
+//   QLayout *layout = nullptr;  // Initialize layout
+
+//   if (playerId == 1)
+//     layout = ui->gbPlayer1Layout;
+//   else if (playerId == 2)
+//     layout = ui->gbPlayer2Layout;
+//   else if (playerId == 3)
+//     layout = ui->gbPlayer3Layout;
+
+//   if (!layout) return nullptr;  // Handle invalid playerId
+
+//   for (int i = 0; i < layout->count(); ++i) {
+//     QWidget *widget = layout->itemAt(i)->widget();
+//     if (!widget) continue;  // Skip null widgets
+
+//     Card *cardButton = qobject_cast<Card *>(widget);
+//     if (cardButton &&
+//         cardButton->text() == QString::fromStdString(card.str())) {
+//       return cardButton;  // Found the button
+//     }
+//   }
+
+//   return nullptr;  // No matching button found
+// }
 
 // Slots
 void Table::onClearTrickLayout() {

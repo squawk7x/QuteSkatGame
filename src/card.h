@@ -68,13 +68,6 @@ class Card : public QPushButton {
   bool operator==(const Card& other) const;
   std::strong_ordering operator<=>(const Card& other) const;
 
-  // friend QDebug operator<<(
-  //     QDebug debug, const Card& card) {
-  //   QDebugStateSaver saver(debug);
-  //   debug.noquote() << QString::fromStdString(card.rank() + card.suit());
-  //   return debug;
-  // }
-
  public:
   // Getters
   std::string suit() const;

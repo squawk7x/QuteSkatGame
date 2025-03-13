@@ -27,8 +27,10 @@ class Table : public QMainWindow {
 
   void start();
   void updateSkatLayout(bool hand = false);
-  void updatePlayerLayout(int playerId, int dest = 0);
+  void updatePlayerLayout(int playerId, int dest = 2);
   void updateTrickLayout(const Card &card, int playerId);
+
+  // Card *findCardButton(int playerId, const Card &card);
 
  public slots:
   void onStarted();

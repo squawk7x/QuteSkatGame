@@ -283,8 +283,11 @@ void Game::autoplay() {
 
     if (player->isRobot()) {
       Card card = playableCards(player->id()).front();
+
       playCard(card);
+
       emit refreshTrickLayout(card, player->id());
+      emit refreshPlayerLayout(player->id());
     }
   }
 }
@@ -401,42 +404,52 @@ std::vector<Card> Game::playableCards(
   return playable;
 }
 
-bool Game::isCardGreater(const Card& card) {
+bool Game::isCardGreater(
+    const Card& card) {
   if (trick_.cards().empty()) {
-    // qDebug() << "first Card always greater";
-    return true;  // Erste gespielte Karte ist immer "größer"
+    return true;  // First played card is always "greater"
   }
 
   const auto& firstCard = trick_.cards().front();
 
-  // Trick ohne die letzte gespielte Karte
-  auto trickWithoutLast = std::ranges::subrange(
-      trick_.cards().begin(), std::prev(trick_.cards().end()));
-
   if (rule_ == Rule::Suit) {
-    if (card.suit() == firstCard.suit() || card.suit() == trump_ ||
-        card.rank() == "J") {
-      qDebug() << "first Card in trick:"
-               << QString::fromStdString(firstCard.str());
-      qDebug() << "isCardGreater(const Card& card):"
-               << QString::fromStdString(card.str());
-      qDebug() << "trump_" << QString::fromStdString(trump_);
+    // Jacks are always trump in "Suit" games
+    bool isTrump = (card.suit() == trump_ || card.rank() == "J");
+    bool followsSuit = (card.suit() == firstCard.suit());
+
+    if (isTrump || followsSuit) {
       return std::ranges::all_of(
-          trickWithoutLast, [&card, this](const Card& trickCard) {
+          trick_.cards(), [&card, this](const Card& trickCard) {
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
           });
     }
-  } else if (rule_ == Rule::Grand || rule_ == Rule::Ramsch) {
-    if (card.suit() == firstCard.suit() || card.rank() == "J") {
+  } else if (rule_ == Rule::Grand) {
+    // Grand: Only Jacks are trump
+    bool isJack = (card.rank() == "J");
+    bool followsSuit = (card.suit() == firstCard.suit());
+
+    if (isJack || followsSuit) {
       return std::ranges::all_of(
-          trickWithoutLast, [&card, this](const Card& trickCard) {
+          trick_.cards(), [&card, this](const Card& trickCard) {
+            return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
+          });
+    }
+  } else if (rule_ == Rule::Ramsch) {
+    // Ramsch: Like Grand, Jacks are trump
+    bool isJack = (card.rank() == "J");
+    bool followsSuit = (card.suit() == firstCard.suit());
+
+    if (isJack || followsSuit) {
+      return std::ranges::all_of(
+          trick_.cards(), [&card, this](const Card& trickCard) {
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
           });
     }
   } else if (rule_ == Rule::Null) {
+    // Null: No trumps, lowest rank wins
     if (card.suit() == firstCard.suit()) {
       return std::ranges::all_of(
-          trickWithoutLast, [&card, this](const Card& trickCard) {
+          trick_.cards(), [&card, this](const Card& trickCard) {
             return card.power(trump_, rule_) > trickCard.power(trump_, rule_);
           });
     }

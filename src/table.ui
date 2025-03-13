@@ -424,6 +424,19 @@
            </item>
            <item row="2" column="0">
             <layout class="QGridLayout" name="gridLayout_3">
+             <item row="1" column="0" colspan="3">
+              <widget class="QPushButton" name="pbStart">
+               <property name="font">
+                <font>
+                 <family>Noto Sans Mono</family>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Start</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0" colspan="3">
               <widget class="QPushButton" name="pbDruecken">
                <property name="font">
@@ -437,8 +450,8 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="0" colspan="3">
-              <widget class="QPushButton" name="pbStart">
+             <item row="2" column="0" colspan="3">
+              <widget class="QPushButton" name="pbPlay">
                <property name="font">
                 <font>
                  <family>Noto Sans Mono</family>
@@ -446,7 +459,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Start</string>
+                <string>Play</string>
                </property>
               </widget>
              </item>
