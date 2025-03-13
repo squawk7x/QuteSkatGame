@@ -20,6 +20,7 @@ class Table : public QMainWindow {
  private:
   Ui::Skattisch *ui;
   Game *game_;
+  CardSize cardSize_ = CardSize::Normal;
 
  public:
   Table(QWidget *parent = nullptr);
@@ -27,8 +28,9 @@ class Table : public QMainWindow {
 
   void start();
   void updateSkatLayout(bool hand = false);
-  void updatePlayerLayout(int playerId, int dest = 2);
+  void updatePlayerLayout(int playerId, MoveTo dest = MoveTo::Trick);
   void updateTrickLayout(const Card &card, int playerId);
+  // void changeCardSize(CardSize cardSize);
 
   // Card *findCardButton(int playerId, const Card &card);
 

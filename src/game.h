@@ -27,7 +27,7 @@ class Game : public QObject {
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
   // geberHoererSagerPos_[0][1][2] == id für Geber-Hörer-Sager
   std::vector<int> geberHoererSagerPos_{
-      3, 1, 2};  // first rotation before round starts -> {3, 1, 2}
+      1, 2, 3};  // first rotation before round starts -> first round {3, 1, 2}
   int soloSpieler_id{};
   Rule rule_{};
   std::string trump_{};
@@ -76,7 +76,7 @@ class Game : public QObject {
               QString antwortHoerer);
   void clearTrickLayout();
   void refreshTrickLayout(const Card& card, int playerId);
-  void refreshPlayerLayout(int playerId, int dest = 2);
+  void refreshPlayerLayout(int playerId, MoveTo dest = MoveTo::Trick);
 };
 
 #endif  // gameH

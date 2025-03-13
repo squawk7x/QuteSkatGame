@@ -1,8 +1,5 @@
 #include "table.h"
 
-// #include <qthread.h>
-
-#include <QDir>
 #include <QTimer>
 
 #include "src/ui_table.h"
@@ -12,7 +9,7 @@ Table::Table(
     : QMainWindow(parent), ui(new Ui::Skattisch), game_(new Game(this)) {
   ui->setupUi(this);
 
-  // connect pushbuttons
+  // Spiel Farbe, Grand, Null, Ramsch
   {
     QObject::connect(ui->pbKaro, &QPushButton::clicked, this, [this]() {
       game_->rule_ = Rule::Suit;
@@ -50,6 +47,7 @@ Table::Table(
       qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
     });
 
+    // Spiel Hand, Ouvert, Schneider, Schwarz
     QObject::connect(ui->pbHand, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->hand_ = checked;
@@ -75,7 +73,7 @@ Table::Table(
     // Reizen
     QObject::connect(game_, &Game::gesagt, this, &Table::onGesagt);
 
-    QObject::connect(ui->pbBieten1, &QPushButton::clicked, this, [this]() {
+    QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
       // if (!player->isRobot()) game_->gereizt_ = game_->reizen();
       game_->bieten();
@@ -88,6 +86,7 @@ Table::Table(
       updateSkatLayout(true);
     });
 
+    // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
         Player *player = game_->getPlayerByIsSolo();
@@ -96,7 +95,7 @@ Table::Table(
           if (player) player->tricks_.push_back(std::move(game_->skat_));
         // connect all players to stick
         for (int playerId = 1; playerId <= 3; playerId++)
-          updatePlayerLayout(playerId, 2);
+          updatePlayerLayout(playerId, MoveTo::Trick);
         // update
         // Bug when isSolo not set
         updateSkatLayout(false);
@@ -107,7 +106,8 @@ Table::Table(
     QObject::connect(ui->pbPlay, &QPushButton::clicked, game_, &Game::autoplay);
 
     QObject::connect(game_, &Game::started, this, &Table::onStarted);
-    // Connections
+
+    // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
                      &Table::onClearTrickLayout);
 
@@ -116,6 +116,15 @@ Table::Table(
 
     QObject::connect(game_, &Game::refreshPlayerLayout, this,
                      &Table::updatePlayerLayout);
+
+    // Addons
+    QObject::connect(ui->rbNormal, &QRadioButton::toggled, this, [&]() {
+      if (ui->rbNormal->isChecked()) {
+        cardSize_ = CardSize::Normal;
+      } else {
+        cardSize_ = CardSize::Small;
+      }
+    });
   }
 
   game_->init();
@@ -133,9 +142,9 @@ void Table::updateSkatLayout(
   // Clear existing widgets from the layout
   while ((item = ui->gbSkatLayout->takeAt(0)) != nullptr) {
     if (item->widget()) {
-      delete item->widget();  // Delete widget if it exists
+      delete item->widget();
     }
-    delete item;  // Delete layout item
+    delete item;
   }
 
   // Loop through cards in the skat
@@ -145,20 +154,16 @@ void Table::updateSkatLayout(
     QString rankname = QString::fromStdString(card.rankname());
     QString suitname = QString::fromStdString(card.suitname());
     QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-
-    // qDebug() << "Loading image from:" << imagePath;
-
     QPixmap pixmap(imagePath);
 
-    if (!pixmap.isNull()) {
+    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
       cardButton->setIcon(QIcon(pixmap));
       cardButton->setStyleSheet("QPushBuktton { padding: 0px; margin: 0px; }");
       cardButton->setFlat(true);
-      cardButton->setIconSize(
-          QSize(78, 116));  // Set the icon size for the button
+      cardButton->setIconSize(QSize(78, 116));
     } else {
-      qDebug() << "Failed to load image for" << rankname << suitname;
       cardButton->setText(QString::fromStdString(card.str()));
+      cardButton->setStyleSheet("QPushButton { font-size: 18x; }");
     }
 
     ui->gbSkatLayout->addWidget(cardButton);
@@ -176,14 +181,14 @@ void Table::updateSkatLayout(
                 cardButton->setParent(nullptr);
 
                 // Update the player layout after moving the card
-                updatePlayerLayout(playerId, 1);
+                updatePlayerLayout(playerId, MoveTo::Skat);
               });
     }
   }
 }
 
 void Table::updatePlayerLayout(
-    int playerId, int dest) {
+    int playerId, MoveTo dest) {
   Player &player = game_->getPlayerById(playerId);
 
   QLayout *layout;
@@ -195,9 +200,9 @@ void Table::updatePlayerLayout(
 
   while ((item = layout->takeAt(0)) != nullptr) {
     if (item->widget()) {
-      delete item->widget();  // Delete the widget (if it exists)
+      delete item->widget();
     }
-    delete item;  // Delete the layout item
+    delete item;
   }
   player.handdeck_.sortByJandSuits();
 
@@ -212,22 +217,22 @@ void Table::updatePlayerLayout(
 
     QPixmap pixmap(imagePath);
 
-    if (!pixmap.isNull()) {
+    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
       cardButton->setIcon(QIcon(pixmap));
       cardButton->setStyleSheet("QPushButton { padding: 0px; margin: 0px; }");
       cardButton->setFlat(true);
       cardButton->setIconSize(
           QSize(78, 116));  // Set the icon size for the button
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setIconSize(QSize(78, 116));
     } else {
-      qDebug() << "Failed to load image for" << rankname << suitname;
       cardButton->setText(QString::fromStdString(card.str()));
+      cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
     }
-    cardButton->setIcon(QIcon(pixmap));
-    cardButton->setIconSize(QSize(78, 116));
     layout->addWidget(cardButton);
 
     // connect to skat
-    if (dest == 1) {
+    if (dest == MoveTo::Skat) {
       connect(
           cardButton, &QPushButton::clicked, this,
           [&, layout,
@@ -242,7 +247,7 @@ void Table::updatePlayerLayout(
     }
 
     // connect to trick
-    if (dest == 2) {
+    if (dest == MoveTo::Trick) {
       connect(
           cardButton, &QPushButton::clicked, this,
           [&, playerId, layout, cardButton]() {
@@ -257,12 +262,11 @@ void Table::updatePlayerLayout(
 
               updateTrickLayout(card, playerId);
 
-              game_->playCard(
-                  card);  // No modification, so this works with const reference
+              game_->playCard(card);
 
               layout->removeWidget(cardButton);
               cardButton->setParent(nullptr);
-              updatePlayerLayout(playerId, 2);
+              updatePlayerLayout(playerId, MoveTo::Trick);
             }
           });
     }
@@ -276,19 +280,15 @@ void Table::updateTrickLayout(
   QString rankname = QString::fromStdString(card.rankname());
   QString suitname = QString::fromStdString(card.suitname());
   QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-
-  // qDebug() << "Loading image from:" << imagePath;
-
   QPixmap pixmap(imagePath);
 
-  if (!pixmap.isNull()) {
+  if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
     cardButton->setIcon(QIcon(pixmap));
     cardButton->setFlat(true);
-    cardButton->setIconSize(
-        QSize(78, 116));  // Set the icon size for the button
+    cardButton->setIconSize(QSize(78, 116));
   } else {
     cardButton->setText(QString::fromStdString(card.str()));
-    qDebug() << "Failed to load image for" << rankname << suitname;
+    cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
   }
 
   if (playerId == 2) ui->gbTrickLayout2->addWidget(cardButton);
@@ -326,6 +326,13 @@ void Table::onStarted() {
 
   for (int playerId = 1; playerId <= 3; playerId++)
     updatePlayerLayout(playerId);
+
+  if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
+  if (game_->geberHoererSagerPos_[1] == 2) ui->lblHand2->setText("Vorhand");
+  if (game_->geberHoererSagerPos_[2] == 2) ui->lblHand2->setText("Mittelhand");
+  if (game_->geberHoererSagerPos_[0] == 3) ui->lblHand3->setText("Hinterhand");
+  if (game_->geberHoererSagerPos_[1] == 3) ui->lblHand3->setText("Vorhand");
+  if (game_->geberHoererSagerPos_[2] == 3) ui->lblHand3->setText("Mittelhand");
 }
 
 void Table::onGesagt(
@@ -333,13 +340,13 @@ void Table::onGesagt(
   qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
   qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
 
-  ui->pbBieten1->setText("");
+  ui->pbBieten->setText("");
   ui->pbBieten2->setText("");
   ui->pbBieten3->setText("");
 
   switch (idSager) {
     case 1:
-      ui->pbBieten1->setText(antwortSager);
+      ui->pbBieten->setText(antwortSager);
       break;
     case 2:
       ui->pbBieten2->setText(antwortSager);
@@ -353,7 +360,7 @@ void Table::onGesagt(
 
   switch (idHoerer) {
     case 1:
-      ui->pbBieten1->setText(antwortHoerer);
+      ui->pbBieten->setText(antwortHoerer);
       break;
     case 2:
       ui->pbBieten2->setText(antwortHoerer);

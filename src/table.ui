@@ -80,6 +80,22 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lblHand2">
+           <property name="font">
+            <font>
+             <family>Noto Sans Mono</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -111,13 +127,6 @@
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
-         <item row="1" column="0">
-          <layout class="QHBoxLayout" name="gbPlayer3Layout">
-           <property name="spacing">
-            <number>6</number>
-           </property>
-          </layout>
-         </item>
          <item row="2" column="0">
           <widget class="QPushButton" name="pbBieten3">
            <property name="sizePolicy">
@@ -134,6 +143,29 @@
            </property>
            <property name="text">
             <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <layout class="QHBoxLayout" name="gbPlayer3Layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+          </layout>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lblHand3">
+           <property name="font">
+            <font>
+             <family>Noto Sans Mono</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -550,7 +582,7 @@
           <number>0</number>
          </property>
          <property name="sizeConstraint">
-          <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+          <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
          </property>
          <property name="leftMargin">
           <number>0</number>
@@ -643,6 +675,77 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Spielstärke</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QRadioButton" name="rbKIgering">
+           <property name="text">
+            <string>gering</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbKImittel">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>mittel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbKIstark">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>stark</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbCards">
+        <property name="title">
+         <string>Karten</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="rbSmall">
+           <property name="text">
+            <string>klein</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbNormal">
+           <property name="text">
+            <string>normal</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_7">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -698,7 +801,7 @@
           </layout>
          </item>
          <item row="0" column="0">
-          <widget class="QPushButton" name="pbBieten1">
+          <widget class="QPushButton" name="pbBieten">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -753,32 +856,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="gbCards">
-        <property name="title">
-         <string>Karten</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QRadioButton" name="rbSmall">
-           <property name="text">
-            <string>klein</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbNormal">
-           <property name="text">
-            <string>normal</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
       </item>
      </layout>
     </item>

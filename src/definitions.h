@@ -6,13 +6,9 @@
 #include <vector>
 
 enum class CardFace { Open, Closed };
-
-enum class Rule {
-  Suit,   // Suit and J are trump
-  Grand,  // Only J are trump
-  Null,   // No trump - special card power
-  Ramsch  // No trump - card power as Grand
-};
+enum class CardSize { Normal, Small };
+enum class MoveTo { Skat, Trick };
+enum class Rule { Suit, Grand, Null, Ramsch };
 
 // Use `inline` for `const` global variables (only in header)
 inline const std::vector<std::string> suits = {"♣", "♠", "♥", "♦"};
