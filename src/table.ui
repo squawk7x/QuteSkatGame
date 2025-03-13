@@ -419,6 +419,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <layout class="QHBoxLayout" name="gbSkatLayout"/>
+           </item>
            <item row="2" column="0">
             <layout class="QGridLayout" name="gridLayout_3">
              <item row="0" column="0" colspan="3">
@@ -448,9 +451,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item row="0" column="0">
-            <layout class="QHBoxLayout" name="gbSkatLayout"/>
            </item>
           </layout>
          </item>
@@ -484,12 +484,12 @@
         <property name="checkable">
          <bool>false</bool>
         </property>
-        <layout class="QGridLayout" name="gridLayout_6" columnminimumwidth="0">
+        <layout class="QGridLayout" name="gridLayout_6">
          <property name="sizeConstraint">
           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
          </property>
          <item row="0" column="0">
-          <layout class="QGridLayout" name="gbTrickLayout" columnstretch="0" columnminimumwidth="0">
+          <layout class="QGridLayout" name="gbTrickLayout" columnstretch="0">
            <property name="sizeConstraint">
             <enum>QLayout::SizeConstraint::SetFixedSize</enum>
            </property>

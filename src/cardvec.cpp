@@ -171,11 +171,11 @@ int CardVec::mitOhne(
 
 int CardVec::value() {
   int sum{0};
-  for (Card card : cards_) sum += card.value();
+  for (const Card& card : cards_) sum += card.value();
   return sum;
 }
 
-QString CardVec::print() {
+const QString CardVec::print() const {
   QString str;
   str.reserve(cards_.size() *
               3);  // Optimize memory allocation (assuming ~3 bytes per card)

@@ -26,15 +26,14 @@ class Table : public QMainWindow {
   ~Table();
 
   void start();
-  void updateSkatLayout(bool open = false);
+  void updateSkatLayout(bool hand = false);
   void updatePlayerLayout(int playerId, int dest = 0);
-  void updateTrickLayout();
+  void updateTrickLayout(const Card &card, int playerId);
 
  public slots:
   void onStarted();
   void onGesagt(int idSager, int idHoerer, QString antwortSager,
                 QString antwortHoerer);
-  // void onGehoert(int idHoerer, QString antwort);
   void onClearTrickLayout();
 };
 #endif  // TABLE_H

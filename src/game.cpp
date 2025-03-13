@@ -2,10 +2,14 @@
 
 #include <QDebug>
 #include <QThread>
+#include <iterator>
+#include <ranges>
 
 #include "definitions.h"
 
-Game::Game(QObject* parent) : QObject{parent} {}
+Game::Game(
+    QObject* parent)
+    : QObject{parent} {}
 
 // started by Table constructor
 void Game::init() {
@@ -27,8 +31,8 @@ void Game::start() {
   // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
-  player_2.maxBieten_ = 24;
-  player_3.maxBieten_ = 30;
+  player_2.maxBieten_ = 18;
+  player_3.maxBieten_ = 20;
 
   // Bugfix: Do not iterate over a modified container!
   // trick to blind_
@@ -267,19 +271,39 @@ void Game::bieten(bool passe) {
 
 void Game::druecken(int playerId) {}
 
+void Game::autoplay() {
+  qDebug() << "autoplay() ...";
+
+  if (!player_1.handdeck_.cards().empty() ||
+      !player_2.handdeck_.cards().empty() ||
+      !player_3.handdeck_.cards().empty()) {
+    Player* player = playerList_.front();
+
+    printCards(playableCards(player->id()));
+
+    if (player->isRobot()) {
+      Card card = playableCards(player->id()).front();
+      playCard(card);
+      emit refreshTrickLayout(card, player->id());
+    }
+  }
+}
+
 int Game::spielwert() { return 0; }
 
-bool Game::isCardValid(const Card& card) {
+bool Game::isCardValid(
+    const Card& card) {
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
   }
 
-  if (!(rule_ == Rule::Suit || rule_ == Rule::Grand || rule_ == Rule::Ramsch ||
-        rule_ == Rule::Null)) {
-    qDebug() << "Rule not set";
-    return false;
-  }
+  // if (!(rule_ == Rule::Suit || rule_ == Rule::Grand || rule_ == Rule::Ramsch
+  // ||
+  //       rule_ == Rule::Null)) {
+  //   qDebug() << "Rule not set";
+  //   return false;
+  // }
 
   if (trick_.cards().empty()) {
     return true;
@@ -362,23 +386,24 @@ bool Game::isCardValid(const Card& card) {
   return false;
 }
 
-CardVec Game::playableCards(
+std::vector<Card> Game::playableCards(
     int playerId) {
   Player& player = getPlayerById(playerId);
-  CardVec playable(10);
+  std::vector<Card> handCards = player.handdeck_.cards();
 
-  for (Card card : player.handdeck_.cards()) {
-    if (isCardValid(card)) playable.cards().push_back(card);
-  }
-
-  qDebug() << playable.print();
+  // Use std::ranges to filter and collect into a vector
+  std::vector<Card> playable;
+  std::ranges::copy(handCards | std::views::filter([this](const Card& card) {
+                      return isCardValid(card);
+                    }),
+                    std::back_inserter(playable));
 
   return playable;
 }
 
 bool Game::isCardGreater(const Card& card) {
   if (trick_.cards().empty()) {
-    qDebug() << "first Card always greater";
+    // qDebug() << "first Card always greater";
     return true;  // Erste gespielte Karte ist immer "größer"
   }
 
@@ -391,8 +416,10 @@ bool Game::isCardGreater(const Card& card) {
   if (rule_ == Rule::Suit) {
     if (card.suit() == firstCard.suit() || card.suit() == trump_ ||
         card.rank() == "J") {
-      qDebug() << "first Card:" << QString::fromStdString(firstCard.str());
-      qDebug() << "card:" << QString::fromStdString(card.str());
+      qDebug() << "first Card in trick:"
+               << QString::fromStdString(firstCard.str());
+      qDebug() << "isCardGreater(const Card& card):"
+               << QString::fromStdString(card.str());
       qDebug() << "trump_" << QString::fromStdString(trump_);
       return std::ranges::all_of(
           trickWithoutLast, [&card, this](const Card& trickCard) {
@@ -419,27 +446,25 @@ bool Game::isCardGreater(const Card& card) {
 }
 
 // Slots:
-void Game::playCard(Card& card) {
-  qDebug() << "card played" << QString::fromStdString(card.str());
-  // Card Validation in table.cpp connect (...)
-
-  // Move the card from hand to trick
-  // playerList_.front()->handdeck_.moveCardTo(std::move(card), trick_);
-  playerList_.front()->handdeck_.moveCardTo(std::move(card), trick_);
-
-  qDebug() << "trick_:";
-  qDebug() << trick_.print();
+void Game::playCard(
+    Card& card) {
+  qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
 
   //  Check if the card's power is greater than all cards in the trick
   if (isCardGreater(card)) {
     // Reset the trick status for all players
     for (auto& player : playerList_) player->hasTrick_ = false;
-
     // Mark the current player as having the trick
     playerList_.front()->hasTrick_ = true;
+
     qDebug() << QString::fromStdString(playerList_.front()->name())
              << "has the trick now!";
   }
+
+  // Move the card from hand to trick
+  playerList_.front()->handdeck_.moveCardTo(std::move(card), trick_);
+
+  qDebug() << "trick: " << trick_.print();
 
   // Rotate playerlist
   activateNextPlayer();
@@ -459,9 +484,8 @@ void Game::activateNextPlayer() {
     qDebug() << "Rotating to:"
              << QString::fromStdString(playerList_.front()->name());
 
-    // moving trick to players tricks
-    // Bug?
     playerList_.front()->tricks_.push_back(trick_);
+
     qDebug() << "Trick moved to Trickholder"
              << QString::fromStdString(playerList_.front()->name());
 
@@ -477,10 +501,11 @@ void Game::activateNextPlayer() {
              << QString::fromStdString(playerList_.front()->name());
   }
 
-  qDebug() << "playable cards:";
-  playableCards(playerList_.front()->id()).print();
+  // qDebug() << "playable cards:";
+  // playableCards(playerList_.front()->id()).print();
 
   // showPoints();
+  // autoplay();
 }
 
 Player& Game::getPlayerById(int id) {
@@ -495,10 +520,6 @@ Player& Game::getPlayerById(int id) {
   }
 }
 
-// playerList_ toggles at each move
-// geberHoererSagerPos_ toggles at each round
-// geberHoererSagerPos_[pos] [0] Geber [1] Hoerer [2] Sager
-// e.g. geberHoererSagerPos_{3, 1, 2} Player 3 is Geber
 Player& Game::getPlayerByPos(int pos) {
   auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
     return player->id() == geberHoererSagerPos_[pos];
@@ -512,14 +533,15 @@ Player& Game::getPlayerByPos(int pos) {
   }
 }
 
-Player& Game::getPlayerByIsSolo() {
+Player* Game::getPlayerByIsSolo() {
   auto it = std::ranges::find_if(
       playerList_, [this](const Player* player) { return player->isSolo_; });
 
   if (it != playerList_.end())
-    return **it;
+    return *it;
   else {
-    throw std::runtime_error("Player not found with isSolo == true");
+    qDebug() << "Player not found with isSolo == true";
+    return nullptr;
   }
 }
 

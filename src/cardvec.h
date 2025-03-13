@@ -88,7 +88,7 @@ class CardVec {
   std::string pattern(const std::string& targetSuit);
   int mitOhne(const std::string& targetSuit);
   int value();
-  QString print();
+  const QString print() const;
 };
 
 #endif  // CARDVEC_H

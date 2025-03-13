@@ -6,6 +6,14 @@
 #include "cardvec.h"
 #include "player.h"
 
+// Helperfunction
+void printCards(
+    const auto& coll) {
+  for (const auto& elem : coll) {
+    qDebug() << QString::fromStdString(elem.str()) << ' ';
+  }
+}
+
 class Game : public QObject {
   Q_OBJECT
 
@@ -44,17 +52,19 @@ class Game : public QObject {
   bool sagen(int sagerPos);
   void bieten(bool passe = false);
   void druecken(int playerId);
+  void autoplay();
   int spielwert();
 
   bool isCardValid(const Card& card);
-  CardVec playableCards(int playerId);
+  std::vector<Card> playableCards(int playerId);
   bool isCardGreater(const Card& card);
   void playCard(Card& card);
   void activateNextPlayer();
 
   Player& getPlayerById(int id);
   Player& getPlayerByPos(int pos);
-  Player& getPlayerByIsSolo();
+  Player* getPlayerByIsSolo();
+  // Player& getPlayerByIsSolo();
 
   void showPoints();
   void finishRound();
@@ -65,6 +75,7 @@ class Game : public QObject {
   void gesagt(int idSager, int idHoerer, QString antwortSager,
               QString antwortHoerer);
   void clearTrickLayout();
+  void refreshTrickLayout(const Card& card, int playerId);
 };
 
 #endif  // gameH

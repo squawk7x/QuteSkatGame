@@ -1,9 +1,6 @@
 #include "player.h"
 
 #include <QDebug>
-#include <ranges>
-
-#include "game.h"
 
 Player::Player(
     int id, std::string name, bool isRobot, int score, CardVec handdeck,
