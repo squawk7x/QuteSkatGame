@@ -5,6 +5,7 @@
 #include <qpushbutton.h>
 
 #include <QMainWindow>
+#include <QMouseEvent>
 
 #include "game.h"
 
@@ -30,9 +31,9 @@ class Table : public QMainWindow {
   void updateSkatLayout(bool hand = false);
   void updatePlayerLayout(int playerId, MoveTo dest = MoveTo::Trick);
   void updateTrickLayout(const Card &card, int playerId);
-  // void changeCardSize(CardSize cardSize);
 
-  // Card *findCardButton(int playerId, const Card &card);
+ protected:
+  void mousePressEvent(QMouseEvent *event) override;
 
  public slots:
   void onStarted();

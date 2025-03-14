@@ -75,9 +75,7 @@ Table::Table(
 
     QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
-      // if (!player->isRobot()) game_->gereizt_ = game_->reizen();
       game_->bieten();
-      // Bugfix Player* getPlayerByIsSolo instead of Player& getPlayerByIsSolo
       updateSkatLayout(true);
     });
 
@@ -88,18 +86,8 @@ Table::Table(
 
     // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
-      if (game_->skat_.cards().size() == 2) {
-        Player *player = game_->getPlayerByIsSolo();
-        // disconnect skat
-        if (game_->rule_ != Rule::Ramsch || game_->rule_ != Rule::Null)
-          if (player) player->tricks_.push_back(std::move(game_->skat_));
-        // connect all players to stick
-        for (int playerId = 1; playerId <= 3; playerId++)
-          updatePlayerLayout(playerId, MoveTo::Trick);
-        // update
-        // Bug when isSolo not set
-        updateSkatLayout(false);
-      }
+      game_->druecken();
+      updateSkatLayout(false);
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
@@ -110,6 +98,9 @@ Table::Table(
     // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
                      &Table::onClearTrickLayout);
+
+    QObject::connect(game_, &Game::refreshSkatLayout, this,
+                     &Table::updateSkatLayout);
 
     QObject::connect(game_, &Game::refreshTrickLayout, this,
                      &Table::updateTrickLayout);
@@ -379,3 +370,13 @@ void Table::onGesagt(
 }
 
 Table::~Table() { delete ui; }
+
+void Table::mousePressEvent(
+    QMouseEvent *event) {
+  if (event->button() == Qt::RightButton) {
+    qDebug() << "Right click detected inside window!";
+    game_->autoplay();
+    return;
+  }
+  QMainWindow::mousePressEvent(event);  // Default behavior
+}

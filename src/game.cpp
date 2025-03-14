@@ -74,6 +74,10 @@ void Game::start() {
   // rotate geberHoererSager
   std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
 
+  // rotate playerList_ (Hoerer plays first card)
+  while (playerList_[0]->id() != geberHoererSagerPos_[1])
+    std::ranges::rotate(playerList_, playerList_.begin() + 1);
+
   geben();
   emit started();
   // bieten();
@@ -269,7 +273,18 @@ void Game::bieten(bool passe) {
   }
 }
 
-void Game::druecken(int playerId) {}
+void Game::druecken() {
+  if (skat_.cards().size() == 2) {
+    Player* player = getPlayerByIsSolo();
+    // disconnect skat
+    if (player->isSolo_) player->tricks_.push_back(std::move(skat_));
+    // Ramsch must be handled differntly
+    // connect all players to Trick
+    // for (int playerId = 1; playerId <= 3; playerId++)
+    //    emit refreshPlayerLayout(playerId, MoveTo::Trick);
+    emit refreshPlayerLayout(player->id(), MoveTo::Trick);
+  }
+}
 
 void Game::autoplay() {
   qDebug() << "autoplay() ...";
@@ -546,6 +561,18 @@ Player& Game::getPlayerByPos(int pos) {
   }
 }
 
+Player* Game::getPlayerByHasTrick() {
+  auto it = std::ranges::find_if(
+      playerList_, [this](const Player* player) { return player->hasTrick_; });
+
+  if (it != playerList_.end())
+    return *it;
+  else {
+    qDebug() << "Player not found with hasTrick_ == true";
+    return nullptr;
+  }
+}
+
 Player* Game::getPlayerByIsSolo() {
   auto it = std::ranges::find_if(
       playerList_, [this](const Player* player) { return player->isSolo_; });
@@ -553,7 +580,7 @@ Player* Game::getPlayerByIsSolo() {
   if (it != playerList_.end())
     return *it;
   else {
-    qDebug() << "Player not found with isSolo == true";
+    qDebug() << "Player not found with isSolo_ == true";
     return nullptr;
   }
 }
@@ -567,5 +594,11 @@ void Game::showPoints() {
 
 void Game::finishRound() {
   qDebug() << "finishing round ...\n";
+
+  if (rule_ == Rule::Ramsch) {
+    Player* player = getPlayerByHasTrick();
+    if (player->hasTrick_) player->tricks_.push_back(std::move(skat_));
+  }
+
   showPoints();
 }

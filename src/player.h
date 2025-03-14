@@ -17,8 +17,7 @@ class Player : public QObject {
  public:
   bool isRobot_;
   CardVec handdeck_ = CardVec(12);      // including 2 Skat cards
-  CardVec skat_ = CardVec(2);           // active player will get the Skat
-  /*CardVec playable_ = CardVec(10);*/  // collection of playable cards
+  // CardVec skat_ = CardVec(2);           // active player will get the Skat
 
   bool hasTrick_{};
   std::vector<CardVec> tricks_{};
@@ -27,7 +26,7 @@ class Player : public QObject {
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),
-                  CardVec skat = CardVec(2), bool hasTrick = false);
+                  bool hasTrick = false);
   ~Player() = default;
 
   // operator overloading

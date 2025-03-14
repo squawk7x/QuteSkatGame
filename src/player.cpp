@@ -4,10 +4,10 @@
 
 Player::Player(
     int id, std::string name, bool isRobot, int score, CardVec handdeck,
-    CardVec skat, bool hasTrick)
+    bool hasTrick)
     : id_(id), name_(name), isRobot_(isRobot) {
   // max 10 tricks to collect, reserve space
-  tricks_.reserve(11);  // max: skat + 10 tricks
+  tricks_.reserve(11);  // max: 10 tricks + Skat
 }
 
 // Operators
