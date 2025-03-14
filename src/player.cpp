@@ -56,8 +56,4 @@ int Player::sumTricks() {
 }
 
 // public class methods
-void Player::setPoints() {
-  for (CardVec &vec : tricks_) {
-    points_ = vec.value();
-  }
-}
+void Player::setPoints() { points_ = sumTricks(); }
