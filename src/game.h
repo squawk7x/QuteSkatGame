@@ -72,9 +72,12 @@ class Game : public QObject {
   // void newRound();
 
  signals:
-  void started();
-  void gesagt(int idSager, int idHoerer, QString antwortSager,
-              QString antwortHoerer);
+  void gegeben();
+  void geboten(int idSager, int idHoerer, QString antwortSager,
+               QString antwortHoerer);
+  void frageHand();
+  void enableDruecken();
+
   void clearTrickLayout();
   void refreshSkatLayout(bool hand = false);
   void refreshTrickLayout(const Card& card, int playerId);

@@ -20,6 +20,8 @@ void Game::init() {
       blind_.addCard(std::move(card));
     });
   });
+
+  start();
 }
 
 // started by Table constructor
@@ -31,7 +33,7 @@ void Game::start() {
   // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
-  player_2.maxBieten_ = 18;
+  player_2.maxBieten_ = 27;
   player_3.maxBieten_ = 20;
 
   // Bugfix: Do not iterate over a modified container!
@@ -79,10 +81,6 @@ void Game::start() {
     std::ranges::rotate(playerList_, playerList_.begin() + 1);
 
   geben();
-  emit started();
-  // bieten();
-  // druecken();
-  // autoplay();
 }
 
 void Game::geben() {
@@ -105,6 +103,8 @@ void Game::geben() {
   for (Player* player : playerList_)
     qDebug() << QString::fromStdString(player->name())
              << player->handdeck_.cards().size();
+
+  emit gegeben();
 }
 
 int Game::reizen(
@@ -185,11 +185,11 @@ void Game::bieten(bool passe) {
       break;
     }
 
-    emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+    emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
     return;
   }
   // for break case:
-  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+  emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
   // isSolo nach sagen
   if (!hoeren(hoererPos)) {
@@ -232,11 +232,19 @@ void Game::bieten(bool passe) {
       break;
     }
 
-    emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+    emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
     return;
   }
   // for break case:
-  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+  emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+
+  // Ramsch
+  if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
+    hoerer->isSolo_ = false;
+    antwortSager = "weg";
+    antwortHoerer = "weg";
+    // return;
+  }
 
   // Final decision on solo player
   if (!hoeren(hoererPos)) {
@@ -251,13 +259,6 @@ void Game::bieten(bool passe) {
     antwortHoerer = QString::number(gereizt_);
   }
 
-  if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
-    // or all players isSolo = true
-    hoerer->isSolo_ = false;
-    antwortSager = "weg";
-    antwortHoerer = "weg";
-  }
-
   if (gereizt_ == 0 && hoerer->maxBieten_ >= 18) {
     hoerer->isSolo_ = true;
     gereizt_ = reizen();
@@ -265,12 +266,14 @@ void Game::bieten(bool passe) {
     antwortHoerer = "weg";
   }
 
-  emit gesagt(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+  emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
   qDebug() << "gereizt bis:" << gereizt_;
   for (auto& player : playerList_) {
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
+
+  emit frageHand();
 }
 
 void Game::druecken() {
@@ -615,6 +618,7 @@ void Game::finishRound() {
   // for (const auto& player : playerList_) player->setPoints();
 
   showPoints();
+  // Bug: second round cards are not complete
   assert(player_1.points() + player_2.points() + player_3.points() == 120);
 
   Player* player = getPlayerByIsSolo();

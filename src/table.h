@@ -36,9 +36,11 @@ class Table : public QMainWindow {
   void mousePressEvent(QMouseEvent *event) override;
 
  public slots:
-  void onStarted();
-  void onGesagt(int idSager, int idHoerer, QString antwortSager,
-                QString antwortHoerer);
+  void onGegeben();
+  void onGeboten(int idSager, int idHoerer, QString antwortSager,
+                 QString antwortHoerer);
+  void onFrageHand();
+  void onEnableDruecken();
   void onClearTrickLayout();
 };
 #endif  // TABLE_H
