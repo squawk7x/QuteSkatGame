@@ -34,7 +34,7 @@ bool CardVec::isCardInside(
 }
 
 void CardVec::moveCardTo(
-    Card&& card, CardVec& targetVec) {
+    const Card& card, CardVec& targetVec) {
   auto it = std::ranges::find(cards_, card);
   if (it != cards_.end()) {
     // Move the card to the target vector using std::move

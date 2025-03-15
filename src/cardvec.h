@@ -58,7 +58,7 @@ class CardVec {
     return *this;
   }
 
-  // Perfect Forwarding of card
+  // Universal Forwarding of card
   template <typename T>
   void addCard(
       T&& card) {
@@ -77,7 +77,7 @@ class CardVec {
   std::vector<Card>& cards();
   void shuffle();
   bool isCardInside(const Card& card);
-  void moveCardTo(Card&&, CardVec& targetVec);
+  void moveCardTo(const Card&, CardVec& targetVec);
   // void moveCardTo(Card&, CardVec& targetVec);
   // void moveCardTo(const Card& card, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
