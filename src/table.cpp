@@ -232,7 +232,7 @@ void Table::updatePlayerLayout(
     QString suitname = QString::fromStdString(card.suitname());
     QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
 
-    qDebug() << "Loading image from:" << imagePath;
+    // qDebug() << "Loading image from:" << imagePath;
 
     QPixmap pixmap(imagePath);
 

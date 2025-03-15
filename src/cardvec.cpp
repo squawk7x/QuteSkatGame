@@ -37,11 +37,11 @@ void CardVec::moveCardTo(
     const Card& card, CardVec& targetVec) {
   auto it = std::ranges::find(cards_, card);
   if (it != cards_.end()) {
-    // Move the card to the target vector using std::move
-    targetVec.addCard(std::move(*it));  // Move card from the source vector
+    // Move the card first, then erase it safely
+    Card movedCard = std::move(*it);          // Move to a temporary variable
+    targetVec.addCard(std::move(movedCard));  // Move it to targetVec
 
-    // Remove the card from the source vector
-    cards_.erase(it);
+    cards_.erase(it);  // Now safely remove the moved-from card
   }
 }
 

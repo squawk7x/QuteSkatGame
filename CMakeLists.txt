@@ -38,9 +38,6 @@ set(PROJECT_SOURCES
     README.md
     res/resources.qrc)
 
-# Add main executable add_executable(skat src/skat.cpp src/card.cpp src/card.h
-# src/cardvec.cpp src/cardvec.h)
-
 qt_add_executable(quteSkatGame MANUAL_FINALIZATION ${PROJECT_SOURCES})
 
 target_link_libraries(quteSkatGame PRIVATE Qt${QT_VERSION_MAJOR}::Widgets

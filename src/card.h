@@ -73,7 +73,6 @@ class Card : public QPushButton {
   std::string name() const;
   int value() const;
   int power(const std::string& trumpSuit = "", Rule rule = Rule::Suit) const;
-  // void loadImage(bool isCardFaceVisible = true);
 };
 
 #endif  // CARD_H

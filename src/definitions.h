@@ -12,12 +12,12 @@ enum class Rule { Suit, Grand, Null, Ramsch };
 
 // Use `inline` for `const` global variables (only in header)
 inline const std::vector<std::string> suits = {"♣", "♠", "♥", "♦"};
+inline const std::vector<std::string> suitnames = {"clubs", "spades", "hearts",
+                                                   "diamonds"};
 inline const std::vector<std::string> ranks = {"J", "A", "10", "K",
                                                "Q", "9", "8",  "7"};
 inline const std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
                                                    "queen", "9",   "8",  "7"};
-inline const std::vector<std::string> suitnames = {"clubs", "hearts", "spades",
-                                                   "diamonds"};
 
 inline const std::unordered_map<std::string, int> PowerPriorityNull = {
     {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},

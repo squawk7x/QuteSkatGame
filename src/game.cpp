@@ -36,42 +36,22 @@ void Game::start() {
   player_2.maxBieten_ = 27;
   player_3.maxBieten_ = 20;
 
-  // Bugfix: Do not iterate over a modified container!
-  // trick to blind_
-  std::vector<Card> cardsToMove = trick_.cards();
+  // Players' tricks to blind
+  qDebug() << "Moving cards from players' tricks to blind.";
+  int cardsMovedFromPlayerTricks = 0;
 
-  for (Card& card : cardsToMove) {
-    trick_.moveCardTo(std::move(card), blind_);
-  }
-  cardsToMove = {};
-
-  // players tricks to blind_
   for (Player* player : playerList_) {
     for (CardVec& trick : player->tricks_) {
-      std::vector<Card> cardsToMove = trick.cards();  // Copy cards first
+      std::vector<Card> cardsToMove = trick.cards();
 
       for (Card& card : cardsToMove) {
-        trick.moveCardTo(std::move(card), blind_);
+        trick.moveCardTo(card, blind_);
+        cardsMovedFromPlayerTricks++;
       }
     }
   }
-
-  // handdecks to blind_
-  for (Player* player : playerList_) {
-    std::vector<Card> cardsToMove =
-        player->handdeck_.cards();  // Copy cards first
-
-    for (Card& card : cardsToMove) {
-      player->handdeck_.moveCardTo(std::move(card), blind_);
-    }
-  }
-
-  // skat to blind
-  cardsToMove = skat_.cards();
-  for (Card& card : cardsToMove) {
-    skat_.moveCardTo(std::move(card), blind_);
-  }
-  cardsToMove = {};
+  qDebug() << "Cards moved from players' tricks to blind:"
+           << cardsMovedFromPlayerTricks;
 
   // rotate geberHoererSager
   std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
@@ -79,6 +59,8 @@ void Game::start() {
   // rotate playerList_ (Hoerer plays first card)
   while (playerList_[0]->id() != geberHoererSagerPos_[1])
     std::ranges::rotate(playerList_, playerList_.begin() + 1);
+
+  qDebug() << "Size of blind before geben:" << blind_.cards().size();
 
   geben();
 }
@@ -295,6 +277,7 @@ void Game::druecken() {
 void Game::autoplay() {
   qDebug() << "autoplay() ...";
 
+  // Bugfix: last card in second round missing
   if (!player_1.handdeck_.cards().empty() ||
       !player_2.handdeck_.cards().empty() ||
       !player_3.handdeck_.cards().empty()) {
@@ -433,7 +416,7 @@ std::vector<Card> Game::playableCards(
   return playable;
 }
 
-bool Game::isCardGreater(
+bool Game::isCardStronger(
     const Card& card) {
   if (trick_.cards().empty()) {
     return true;  // First played card is always "greater"
@@ -493,7 +476,7 @@ void Game::playCard(
   qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
 
   //  Check if the card's power is greater than all cards in the trick
-  if (isCardGreater(card)) {
+  if (isCardStronger(card)) {
     // Reset the trick status for all players
     for (auto& player : playerList_) player->hasTrick_ = false;
     // Mark the current player as having the trick
@@ -526,7 +509,10 @@ void Game::activateNextPlayer() {
     qDebug() << "Rotating to:"
              << QString::fromStdString(playerList_.front()->name());
 
+    // Bugfix std::move(trick_)
     playerList_.front()->tricks_.push_back(trick_);
+    // trick_.cards().clear();
+    // emit clearTrickLayout();
 
     qDebug() << "Trick moved to Trickholder"
              << QString::fromStdString(playerList_.front()->name());
@@ -634,4 +620,6 @@ void Game::finishRound() {
       qDebug() << player->name() << "hat verloren mit" << points << "zu"
                << 120 - points << "Punkten";
   }
+
+  qDebug() << "Blind size finish round:" << blind_.cards().size();
 }

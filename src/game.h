@@ -57,7 +57,7 @@ class Game : public QObject {
 
   bool isCardValid(const Card& card);
   std::vector<Card> playableCards(int playerId);
-  bool isCardGreater(const Card& card);
+  bool isCardStronger(const Card& card);
   void playCard(const Card& card);
   void activateNextPlayer();
 
