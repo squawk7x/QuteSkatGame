@@ -65,22 +65,19 @@ class Game : public QObject {
   Player& getPlayerByPos(int pos);
   Player* getPlayerByHasTrick();
   Player* getPlayerByIsSolo();
-  // Player& getPlayerByIsSolo();
 
-  void showPoints();
+  void setAllPlayerstPoints();
   void finishRound();
-  // void newRound();
 
  signals:
   void gegeben();
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
-  void frageHand();
+  void hand();
   void ramsch();
-  void enableDruecken();
 
   void clearTrickLayout();
-  void refreshSkatLayout(bool hand = false);
+  void refreshSkatLayout(LinkTo dest = LinkTo::Skat);
   void refreshTrickLayout(const Card& card, int playerId);
   void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
 };

@@ -28,7 +28,7 @@ class Table : public QMainWindow {
   ~Table();
 
   void start();
-  void updateSkatLayout(bool hand = false);
+  void updateSkatLayout(LinkTo dest = LinkTo::Skat);
   void updatePlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
   void updateTrickLayout(const Card &card, int playerId);
 
@@ -39,8 +39,7 @@ class Table : public QMainWindow {
   void onGegeben();
   void onGeboten(int idSager, int idHoerer, QString antwortSager,
                  QString antwortHoerer);
-  void onFrageHand();
-  void onEnableDruecken();
+  void onHand();
   void onClearTrickLayout();
 };
 #endif  // TABLE_H

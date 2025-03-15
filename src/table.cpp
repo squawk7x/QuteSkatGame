@@ -92,43 +92,52 @@ Table::Table(
     QObject::connect(game_, &Game::geboten, this, &Table::onGeboten);
 
     // Frage Hand
-    QObject::connect(game_, &Game::frageHand, this, &Table::onFrageHand);
+    QObject::connect(game_, &Game::hand, this, &Table::onHand);
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
       ui->pbHandJa->hide();
       ui->pbHandNein->hide();
+      ui->pbHand->setChecked(false);
+      ui->pbHand->setDisabled(true);
       ui->pbDruecken->show();
+      updateSkatLayout(LinkTo::Handdeck);
       // make card face visible
     });
 
     QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
       ui->pbHand->click();
+      ui->pbHand->setChecked(true);
       ui->pbHand->setDisabled(true);
       ui->pbDruecken->click();  // even if not visible
+      updateSkatLayout(LinkTo::Skat);
       // leave skat face invisible
     });
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
       game_->bieten();
-      updateSkatLayout(true);
+      // updateSkatLayout(LinkTo::Skat);
     });
 
     QObject::connect(ui->pbPassen, &QPushButton::clicked, this, [this]() {
       game_->bieten(true);  // bieten (bool passe)
-      updateSkatLayout(true);
+      // updateSkatLayout(true);
+      // updateSkatLayout(LinkTo::Handdeck);
+      // updateSkatLayout(LinkTo::Skat);
     });
 
     // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
-      game_->druecken();
-      updateSkatLayout(false);
-      ui->pbDruecken->hide();
-      ui->gbSkat->hide();
-      ui->gbTrick2->hide();
-      ui->gbTrick1->hide();
-      ui->gbTrick3->hide();
-      ui->gbSpiel->show();
+      if (game_->skat_.cards().size() == 2) {
+        game_->druecken();
+        updateSkatLayout(LinkTo::Skat);
+        ui->pbDruecken->hide();
+        ui->gbSkat->hide();
+        ui->gbTrick2->hide();
+        ui->gbTrick1->hide();
+        ui->gbTrick3->hide();
+        ui->gbSpiel->show();
+      }
     });
 
     QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
@@ -143,8 +152,6 @@ Table::Table(
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
-    // QObject::connect(ui->pbPlay, &QPushButton::clicked, game_,
-    // &Game::autoplay);
 
     // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
@@ -173,11 +180,10 @@ Table::Table(
 }
 
 void Table::updateSkatLayout(
-    bool hand) {
+    LinkTo dest) {
   QLayoutItem *item;
-
-  // Ensure we only call getPlayerByIsSolo once and reuse the result
   // Clear existing widgets from the layout
+
   while ((item = ui->gbSkatLayout->takeAt(0)) != nullptr) {
     if (item->widget()) {
       delete item->widget();
@@ -210,7 +216,7 @@ void Table::updateSkatLayout(
     if (!player) return;  // Early exit if no player is found
 
     // Handle card actions only if `hand` is true
-    if (hand) {
+    if (dest == LinkTo::Handdeck) {
       int playerId = player->id();
       connect(cardButton, &QPushButton::clicked, this,
               [&, this, cardButton, playerId]() {
@@ -253,9 +259,6 @@ void Table::updatePlayerLayout(
     QString rankname = QString::fromStdString(card.rankname());
     QString suitname = QString::fromStdString(card.suitname());
     QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-
-    // qDebug() << "Loading image from:" << imagePath;
-
     QPixmap pixmap(imagePath);
 
     if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
@@ -282,7 +285,7 @@ void Table::updatePlayerLayout(
               player.handdeck_.moveCardTo(std::move(card), game_->skat_);
               cardButton->setParent(nullptr);
               layout->removeWidget(cardButton);
-              updateSkatLayout(true);
+              updateSkatLayout(LinkTo::Handdeck);
             }
           });
     }
@@ -359,8 +362,6 @@ void Table::onClearTrickLayout() {
   }
 }
 
-// void Table::onRefreshTrickLayout() { updateTrickLayout(); }
-
 void Table::onGegeben() {
   {
     ui->gbSkat->show();
@@ -391,7 +392,7 @@ void Table::onGegeben() {
   for (int playerId = 1; playerId <= 3; playerId++)
     updatePlayerLayout(playerId);
 
-  updateSkatLayout(false);
+  updateSkatLayout(LinkTo::Skat);
 
   if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
   if (game_->geberHoererSagerPos_[1] == 2) ui->lblHand2->setText("Vorhand");
@@ -465,7 +466,7 @@ void Table::onGeboten(
   }
 }
 
-void Table::onFrageHand() {
+void Table::onHand() {
   ui->pbSagen->hide();
   ui->pbPassen->hide();
   ui->pbBieten2->hide();
@@ -474,8 +475,6 @@ void Table::onFrageHand() {
   ui->pbHandJa->show();
   ui->pbHandNein->show();
 }
-
-void Table::onEnableDruecken() {}
 
 void Table::mousePressEvent(
     QMouseEvent *event) {

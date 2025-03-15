@@ -257,7 +257,7 @@ void Game::bieten(bool passe) {
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
 
-  emit frageHand();
+  emit hand();
 }
 
 void Game::druecken() {
@@ -270,7 +270,8 @@ void Game::druecken() {
       // connect all players to Trick
       // for (int playerId = 1; playerId <= 3; playerId++)
       //   emit refreshPlayerLayout(playerId, LinkTo::Trick);
-      emit refreshSkatLayout(false);
+      // emit refreshSkatLayout(false);
+      emit refreshSkatLayout(LinkTo::Skat);
       emit refreshPlayerLayout(player->id(), LinkTo::Trick);
     }
   }
@@ -531,7 +532,7 @@ void Game::activateNextPlayer() {
   // qDebug() << "playable cards:";
   // playableCards(playerList_.front()->id()).print();
 
-  // showPoints();
+  // seAllPlayerstPoints();
   // autoplay();
 }
 
@@ -584,9 +585,9 @@ Player* Game::getPlayerByIsSolo() {
   }
 }
 
-void Game::showPoints() {
+void Game::setAllPlayerstPoints() {
   for (const auto& player : playerList_) {
-    // player->setPoints();
+    player->setPoints();
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
   }
@@ -600,11 +601,11 @@ void Game::finishRound() {
     Player* player = getPlayerByHasTrick();
     if (player) {
       player->tricks_.push_back(std::move(skat_));
-      player->setPoints();
+      // player->setPoints();
     }
   }
 
-  showPoints();
+  setAllPlayerstPoints();
   assert(player_1.points() + player_2.points() + player_3.points() == 120);
 
   Player* player = getPlayerByIsSolo();

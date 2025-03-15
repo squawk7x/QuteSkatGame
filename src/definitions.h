@@ -7,7 +7,7 @@
 
 enum class CardFace { Open, Closed };
 enum class CardSize { Normal, Small };
-enum class LinkTo { Skat, Trick };
+enum class LinkTo { Skat, Handdeck, Trick };
 enum class Rule { Suit, Grand, Null, Ramsch };
 
 // Use `inline` for `const` global variables (only in header)
