@@ -76,12 +76,13 @@ class Game : public QObject {
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
   void frageHand();
+  void ramsch();
   void enableDruecken();
 
   void clearTrickLayout();
   void refreshSkatLayout(bool hand = false);
   void refreshTrickLayout(const Card& card, int playerId);
-  void refreshPlayerLayout(int playerId, MoveTo dest = MoveTo::Trick);
+  void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
 };
 
 #endif  // gameH

@@ -29,7 +29,7 @@ class Table : public QMainWindow {
 
   void start();
   void updateSkatLayout(bool hand = false);
-  void updatePlayerLayout(int playerId, MoveTo dest = MoveTo::Trick);
+  void updatePlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
   void updateTrickLayout(const Card &card, int playerId);
 
  protected:

@@ -190,6 +190,19 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QGroupBox" name="gbSpiel">
         <property name="title">
          <string/>
@@ -197,22 +210,9 @@
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <spacer name="horizontalSpacer_9">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="bgRule">
+          <widget class="QGroupBox" name="gbRule">
            <property name="title">
             <string/>
            </property>
@@ -223,8 +223,8 @@
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="2" column="0">
-             <widget class="QPushButton" name="pbKaro">
+            <item row="0" column="0" colspan="4">
+             <widget class="QLabel" name="lblSpieler">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -232,64 +232,10 @@
                </font>
               </property>
               <property name="text">
-               <string>♦</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="4">
-             <widget class="QLabel" name="lblSpieler">
-              <property name="text">
-               <string>Spieler spielt:</string>
+               <string>Spiel:</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QPushButton" name="pbOuvert">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Ouvert</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3">
-             <widget class="QPushButton" name="pbRamsch">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Ramsch</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -312,6 +258,44 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="1" colspan="2">
+             <widget class="QPushButton" name="pbGrand">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Grand</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="pbOuvert">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Ouvert</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="3">
              <widget class="QPushButton" name="pbKreuz">
               <property name="font">
@@ -331,8 +315,8 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="3">
-             <widget class="QPushButton" name="pbSchwarz">
+            <item row="2" column="0">
+             <widget class="QPushButton" name="pbKaro">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -340,7 +324,70 @@
                </font>
               </property>
               <property name="text">
-               <string>Schwarz</string>
+               <string>♦</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="QPushButton" name="pbRamsch">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Ramsch</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="pbNull">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Null</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QPushButton" name="pbHand">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Hand</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -382,8 +429,8 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QPushButton" name="pbNull">
+            <item row="4" column="3">
+             <widget class="QPushButton" name="pbSchwarz">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -391,45 +438,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Null</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1" colspan="2">
-             <widget class="QPushButton" name="pbGrand">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Grand</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QPushButton" name="pbHand">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Hand</string>
+               <string>Schwarz</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -439,21 +448,21 @@
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pbSpielen">
+           <property name="font">
+            <font>
+             <family>Noto Sans Mono</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Spielen</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_11">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item>
        <widget class="QGroupBox" name="gbSkat">
@@ -483,6 +492,9 @@
             <layout class="QGridLayout" name="gridLayout_3">
              <item row="1" column="0">
               <widget class="QPushButton" name="pbHandJa">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="font">
                 <font>
                  <family>Noto Sans Mono</family>
@@ -491,6 +503,9 @@
                </property>
                <property name="text">
                 <string>Hand</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -713,49 +728,10 @@
         </property>
        </spacer>
       </item>
-      <item>
-       <spacer name="horizontalSpacer_8">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
      </layout>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QPushButton" name="pbStart">
-        <property name="font">
-         <font>
-          <family>Noto Sans Mono</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Start</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pbPlay">
-        <property name="font">
-         <font>
-          <family>Noto Sans Mono</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Play</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <spacer name="horizontalSpacer_4">
         <property name="orientation">
@@ -768,6 +744,19 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbStart">
+        <property name="font">
+         <font>
+          <family>Noto Sans Mono</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Start</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer_10">

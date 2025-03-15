@@ -33,7 +33,8 @@ void Game::start() {
   // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
-  player_2.maxBieten_ = 27;
+  // player_1.maxBieten_ = 0;
+  player_2.maxBieten_ = 23;
   player_3.maxBieten_ = 20;
 
   // Players' tricks to blind
@@ -225,7 +226,8 @@ void Game::bieten(bool passe) {
     hoerer->isSolo_ = false;
     antwortSager = "weg";
     antwortHoerer = "weg";
-    // return;
+    emit ramsch();
+    return;
   }
 
   // Final decision on solo player
@@ -241,7 +243,7 @@ void Game::bieten(bool passe) {
     antwortHoerer = QString::number(gereizt_);
   }
 
-  if (gereizt_ == 0 && hoerer->maxBieten_ >= 18) {
+  if (gereizt_ == 0 && hoerer->isRobot() && hoerer->maxBieten_ >= 18) {
     hoerer->isSolo_ = true;
     gereizt_ = reizen();
     antwortSager = QString::number(gereizt_);
@@ -267,9 +269,9 @@ void Game::druecken() {
       // Skat in Ramsch handled in finishRound
       // connect all players to Trick
       // for (int playerId = 1; playerId <= 3; playerId++)
-      //   emit refreshPlayerLayout(playerId, MoveTo::Trick);
+      //   emit refreshPlayerLayout(playerId, LinkTo::Trick);
       emit refreshSkatLayout(false);
-      emit refreshPlayerLayout(player->id(), MoveTo::Trick);
+      emit refreshPlayerLayout(player->id(), LinkTo::Trick);
     }
   }
 }
@@ -509,10 +511,7 @@ void Game::activateNextPlayer() {
     qDebug() << "Rotating to:"
              << QString::fromStdString(playerList_.front()->name());
 
-    // Bugfix std::move(trick_)
     playerList_.front()->tricks_.push_back(trick_);
-    // trick_.cards().clear();
-    // emit clearTrickLayout();
 
     qDebug() << "Trick moved to Trickholder"
              << QString::fromStdString(playerList_.front()->name());
@@ -587,7 +586,7 @@ Player* Game::getPlayerByIsSolo() {
 
 void Game::showPoints() {
   for (const auto& player : playerList_) {
-    player->setPoints();
+    // player->setPoints();
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
   }
@@ -599,14 +598,14 @@ void Game::finishRound() {
   if (rule_ == Rule::Ramsch) {
     qDebug() << "Ramsch - Skat moved to last Trickholder";
     Player* player = getPlayerByHasTrick();
-    if (player) player->tricks_.push_back(std::move(skat_));
+    if (player) {
+      player->tricks_.push_back(std::move(skat_));
+      player->setPoints();
+    }
   }
 
-  // for (const auto& player : playerList_) player->setPoints();
-
   showPoints();
-  // Bug: second round cards are not complete
-  // assert(player_1.points() + player_2.points() + player_3.points() == 120);
+  assert(player_1.points() + player_2.points() + player_3.points() == 120);
 
   Player* player = getPlayerByIsSolo();
 

@@ -47,6 +47,13 @@ Table::Table(
       qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
     });
 
+    QObject::connect(game_, &Game::ramsch, this, [this]() {
+      ui->pbRamsch->click();
+      ui->pbRamsch->setDisabled(true);
+      ui->pbDruecken->click();
+      ui->gbRule->setDisabled(true);
+    });
+
     // Spiel Hand, Ouvert, Schneider, Schwarz
     QObject::connect(ui->pbHand, &QPushButton::toggled, this,
                      [this](bool checked) {
@@ -64,11 +71,19 @@ Table::Table(
                        game_->schneider_ = checked;
                        qDebug() << "schneider_ set to" << game_->schneider_;
                      });
-    QObject::connect(ui->pbSchwarz, &QPushButton::toggled, this,
-                     [this](bool checked) {
-                       game_->schwarz_ = checked;
-                       qDebug() << "schwarz_ set to" << game_->schwarz_;
-                     });
+    QObject::connect(
+        ui->pbSchwarz, &QPushButton::toggled, this, [this](bool checked) {
+          if (checked) {
+            ui->pbSchneider->setChecked(
+                true);  // Wenn schwarz angesagt dann auch Schneider
+            ui->pbSchneider->setDisabled(true);
+          } else
+            ui->pbSchneider->setDisabled(false);
+          game_->schwarz_ = checked;
+
+          qDebug() << "schneider_/schwarz_ set to" << game_->schneider_ << "/"
+                   << game_->schwarz_;
+        });
 
     // Karten geben
     QObject::connect(game_, &Game::gegeben, this, &Table::onGegeben);
@@ -88,19 +103,9 @@ Table::Table(
 
     QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
       ui->pbHand->click();
+      ui->pbHand->setDisabled(true);
       ui->pbDruecken->click();  // even if not visible
       // leave skat face invisible
-    });
-
-    QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
-      game_->druecken();
-
-      ui->pbDruecken->hide();
-      ui->gbSkat->hide();
-      ui->gbSpiel->show();
-      ui->gbTrick1->show();
-      ui->gbTrick2->show();
-      ui->gbTrick3->show();
     });
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
@@ -118,10 +123,28 @@ Table::Table(
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       game_->druecken();
       updateSkatLayout(false);
+      ui->pbDruecken->hide();
+      ui->gbSkat->hide();
+      ui->gbTrick2->hide();
+      ui->gbTrick1->hide();
+      ui->gbTrick3->hide();
+      ui->gbSpiel->show();
+    });
+
+    QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
+      ui->gbSpiel->hide();
+      ui->pbBieten2->hide();
+      ui->pbBieten3->hide();
+      ui->lblHand2->setText("");
+      ui->lblHand3->setText("");
+      ui->gbTrick2->show();
+      ui->gbTrick1->show();
+      ui->gbTrick3->show();
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
-    QObject::connect(ui->pbPlay, &QPushButton::clicked, game_, &Game::autoplay);
+    // QObject::connect(ui->pbPlay, &QPushButton::clicked, game_,
+    // &Game::autoplay);
 
     // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
@@ -147,7 +170,6 @@ Table::Table(
   }
 
   game_->init();
-  // game_->start();
 }
 
 void Table::updateSkatLayout(
@@ -200,14 +222,14 @@ void Table::updateSkatLayout(
                 cardButton->setParent(nullptr);
 
                 // Update the player layout after moving the card
-                updatePlayerLayout(playerId, MoveTo::Skat);
+                updatePlayerLayout(playerId, LinkTo::Skat);
               });
     }
   }
 }
 
 void Table::updatePlayerLayout(
-    int playerId, MoveTo dest) {
+    int playerId, LinkTo dest) {
   Player &player = game_->getPlayerById(playerId);
 
   QLayout *layout;
@@ -251,7 +273,7 @@ void Table::updatePlayerLayout(
     layout->addWidget(cardButton);
 
     // connect to skat
-    if (dest == MoveTo::Skat) {
+    if (dest == LinkTo::Skat) {
       connect(
           cardButton, &QPushButton::clicked, this,
           [&, layout,
@@ -266,7 +288,7 @@ void Table::updatePlayerLayout(
     }
 
     // connect to trick
-    if (dest == MoveTo::Trick) {
+    if (dest == LinkTo::Trick) {
       connect(
           cardButton, &QPushButton::clicked, this,
           [&, playerId, layout, cardButton]() {
@@ -285,7 +307,7 @@ void Table::updatePlayerLayout(
 
               layout->removeWidget(cardButton);
               cardButton->setParent(nullptr);
-              updatePlayerLayout(playerId, MoveTo::Trick);
+              updatePlayerLayout(playerId, LinkTo::Trick);
             }
           });
     }
@@ -340,25 +362,35 @@ void Table::onClearTrickLayout() {
 // void Table::onRefreshTrickLayout() { updateTrickLayout(); }
 
 void Table::onGegeben() {
-  ui->gbSkat->show();
-  ui->pbSagen->show();
-  ui->pbPassen->show();
-  ui->pbBieten2->show();
-  ui->pbBieten3->show();
-  ui->gbSpiel->hide();
-  ui->gbTrick2->hide();
-  ui->gbTrick1->hide();
-  ui->gbTrick3->hide();
-  ui->pbHandJa->hide();
-  ui->pbHandNein->hide();
-  ui->pbDruecken->hide();
-  // ui->pbHand->clicked(false);
-  onClearTrickLayout();
+  {
+    ui->gbSkat->show();
+    ui->pbSagen->show();
+    ui->pbPassen->show();
+    ui->pbBieten2->show();
+    ui->pbBieten3->show();
+    ui->gbSpiel->hide();
+    ui->gbTrick2->hide();
+    ui->gbTrick1->hide();
+    ui->gbTrick3->hide();
+    ui->pbHandJa->hide();
+    ui->pbHandNein->hide();
+    ui->pbDruecken->hide();
+    ui->pbRamsch->setDisabled(false);
+    ui->pbRamsch->clicked(false);
+    ui->pbHand->setDisabled(false);
+    ui->pbHand->clicked(false);
+    // ui->pbHandJa->clicked(false);
+    ui->pbSchneider->setDisabled(false);
+    ui->pbSchneider->clicked(false);
+    ui->pbSchwarz->clicked(false);
+    ui->gbRule->setDisabled(false);
+
+    onClearTrickLayout();
+  }
 
   for (int playerId = 1; playerId <= 3; playerId++)
     updatePlayerLayout(playerId);
 
-  updateSkatLayout(false);
   updateSkatLayout(false);
 
   if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
