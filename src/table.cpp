@@ -92,7 +92,10 @@ Table::Table(
     QObject::connect(game_, &Game::geboten, this, &Table::onGeboten);
 
     // Frage Hand
-    QObject::connect(game_, &Game::questionHand, this, &Table::onQuestionHand);
+    QObject::connect(game_, &Game::frageHand, this, &Table::onFrageHand);
+
+    // Resultat
+    QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
       ui->pbHandJa->hide();
@@ -100,6 +103,7 @@ Table::Table(
       ui->pbHand->setChecked(false);
       ui->pbHand->setDisabled(false);
       ui->pbDruecken->show();
+      ui->lblHand->hide();
       updateSkatLayout(LinkTo::Handdeck);
     });
 
@@ -146,6 +150,8 @@ Table::Table(
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
+    QObject::connect(ui->pbWeiter, &QPushButton::clicked, game_, &Game::start);
+    QObject::connect(ui->pbEnde, &QPushButton::clicked, this, &QWidget::close);
 
     // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
@@ -171,6 +177,179 @@ Table::Table(
   }
 
   game_->init();
+}
+
+void Table::onGegeben() {
+  {
+    ui->lblUrsprungsSkat->hide();
+    ui->gbSkat->show();
+    ui->pbSagen->show();
+    ui->pbPassen->show();
+    ui->pbBieten2->show();
+    ui->pbBieten3->show();
+
+    // ui->pbHandJa->setDisabled(false);
+    ui->pbHandJa->hide();
+    ui->pbHandNein->hide();
+    ui->lblHand->hide();
+    ui->lblDrueckenGereitztBis->hide();
+    ui->pbDruecken->hide();
+
+    ui->gbSpiel->hide();
+    ui->pbRamsch->setDisabled(false);
+    ui->pbRamsch->clicked(false);
+    ui->pbHand->setDisabled(false);
+    ui->pbHand->clicked(false);
+    ui->pbSchneider->setDisabled(false);
+    ui->pbSchneider->clicked(false);
+    ui->pbSchwarz->clicked(false);
+    ui->gbRule->setDisabled(false);
+
+    ui->gbTrick2->hide();
+    ui->gbTrick1->hide();
+    ui->gbTrick3->hide();
+
+    ui->gbResultat->hide();
+
+    onClearTrickLayout();
+  }
+
+  for (int playerId = 1; playerId <= 3; playerId++)
+    updatePlayerLayout(playerId);
+
+  updateSkatLayout(LinkTo::Skat);
+
+  if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
+  if (game_->geberHoererSagerPos_[1] == 2) ui->lblHand2->setText("Vorhand");
+  if (game_->geberHoererSagerPos_[2] == 2) ui->lblHand2->setText("Mittelhand");
+  if (game_->geberHoererSagerPos_[0] == 3) ui->lblHand3->setText("Hinterhand");
+  if (game_->geberHoererSagerPos_[1] == 3) ui->lblHand3->setText("Vorhand");
+  if (game_->geberHoererSagerPos_[2] == 3) ui->lblHand3->setText("Mittelhand");
+}
+
+void Table::onGeboten(
+    int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
+  qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
+  qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
+
+  ui->pbSagen->setText("");
+  ui->pbBieten2->setText("");
+  ui->pbBieten3->setText("");
+
+  ui->pbSagen->show();
+  ui->pbBieten2->show();
+  ui->pbBieten3->show();
+
+  switch (idSager) {
+    case 1:
+      ui->pbSagen->setText(antwortSager);
+      break;
+    case 2:
+      ui->pbBieten2->setText(antwortSager);
+      ui->pbBieten2->animateClick();
+      break;
+    case 3:
+      ui->pbBieten3->setText(antwortSager);
+      ui->pbBieten3->animateClick();
+      break;
+  }
+
+  switch (idHoerer) {
+    case 1:
+      ui->pbSagen->setText(antwortHoerer);
+      break;
+    case 2:
+      ui->pbBieten2->setText(antwortHoerer);
+      ui->pbBieten2->animateClick();
+      break;
+    case 3:
+      ui->pbBieten3->setText(antwortHoerer);
+      ui->pbBieten3->animateClick();
+      break;
+  }
+
+  if (idSager == 1 || idHoerer == 1)
+    ui->pbPassen->setText("passe");
+  else
+    ui->pbPassen->setText("");
+
+  // Hide the push button for the player who is neither Sager nor Hoerer
+  for (int i = 1; i <= 3; ++i) {
+    if (i != idSager && i != idHoerer) {
+      switch (i) {
+        case 1:
+          ui->pbSagen->hide();
+          break;
+        case 2:
+          ui->pbBieten2->hide();
+          break;
+        case 3:
+          ui->pbBieten3->hide();
+          break;
+      }
+    }
+  }
+}
+
+void Table::onFrageHand() {
+  ui->pbSagen->hide();
+  ui->pbPassen->hide();
+  ui->pbBieten2->hide();
+  ui->pbBieten3->hide();
+
+  ui->lblHand->show();
+  ui->pbHandJa->show();
+  ui->pbHandNein->show();
+  ui->lblDrueckenGereitztBis->setText("Gereizt bis: " +
+                                      QString::number(game_->gereizt_));
+  ui->lblDrueckenGereitztBis->show();
+}
+
+void Table::onResultat() {
+  Player *player = game_->getPlayerByIsSolo();
+  QString resultat;
+
+  if (player) {
+    bool gewonnen = player->points() > 60;
+    resultat = QString("%1 %2\nmit %3 zu %4 Augen.\nDer Spielwert ist %5.")
+                   .arg(QString::fromStdString(player->name()))
+                   .arg(gewonnen ? "gewinnt" : "verliert")
+                   .arg(player->points())
+                   .arg(120 - player->points())
+                   .arg(game_->gereizt_);
+  }
+
+  ui->lblScore1->setText(QString::number(game_->player_1.score()));
+  ui->lblScore2->setText(QString::number(game_->player_2.score()));
+  ui->lblScore3->setText(QString::number(game_->player_3.score()));
+
+  ui->lblStatistik1->setText(QString("%1 / %2")
+                                 .arg(game_->player_1.spieleGewonnen_)
+                                 .arg(game_->player_1.spieleVerloren_));
+  ui->lblStatistik2->setText(QString("%1 / %2")
+                                 .arg(game_->player_2.spieleGewonnen_)
+                                 .arg(game_->player_2.spieleVerloren_));
+  ui->lblStatistik3->setText(QString("%1 / %2")
+                                 .arg(game_->player_3.spieleGewonnen_)
+                                 .arg(game_->player_3.spieleVerloren_));
+
+  // Ramsch Todo
+
+  ui->lblSpielwert->setText(resultat);
+  ui->gbResultat->show();
+
+  ui->gbTrick2->hide();
+  ui->gbTrick1->hide();
+  ui->gbTrick3->hide();
+
+  ui->lblUrsprungsSkat->show();
+
+  CardVec skat = game_->skat_;
+  game_->skat_ = game_->urSkat_;
+  updateSkatLayout();
+  ui->gbSkat->show();
+  // Bugfix: blind size was > 32 next rounds when Ramsch
+  game_->skat_ = skat;
 }
 
 void Table::updateSkatLayout(
@@ -288,27 +467,27 @@ void Table::updatePlayerLayout(
 
     // connect to trick
     if (dest == LinkTo::Trick) {
-      connect(
-          cardButton, &QPushButton::clicked, this,
-          [&, playerId, layout, cardButton]() {
-            if (game_->playerList_.front()->id() == playerId) {
-              qDebug() << "card clicked:" << QString::fromStdString(card.str());
+      connect(cardButton, &QPushButton::clicked, this,
+              [&, playerId, layout, cardButton]() {
+                if (game_->playerList_.front()->id() == playerId) {
+                  qDebug() << "card clicked:"
+                           << QString::fromStdString(card.str());
 
-              if (!player.handdeck_.isCardInside(card) ||
-                  !game_->isCardValid(card)) {
-                qDebug() << "Move rejected: Invalid card choice.";
-                return;
-              }
+                  if (!player.handdeck_.isCardInside(card) ||
+                      !game_->isCardValid(card)) {
+                    qDebug() << "Move rejected: Invalid card choice.";
+                    return;
+                  }
 
-              updateTrickLayout(card, playerId);
+                  updateTrickLayout(card, playerId);
 
-              game_->playCard(card);
+                  game_->playCard(card);
 
-              cardButton->setParent(nullptr);
-              layout->removeWidget(cardButton);
-              // updatePlayerLayout(playerId, LinkTo::Trick);
-            }
-          });
+                  cardButton->setParent(nullptr);
+                  layout->removeWidget(cardButton);
+                  // updatePlayerLayout(playerId, LinkTo::Trick);
+                }
+              });
       updateSkatLayout(LinkTo::Skat);
     }
   }
@@ -357,129 +536,6 @@ void Table::onClearTrickLayout() {
     }
     delete item;  // Cleanup the layout item itself
   }
-}
-
-void Table::onGegeben() {
-  {
-    ui->gbSkat->show();
-    ui->pbSagen->show();
-    ui->pbPassen->show();
-    ui->pbBieten2->show();
-    ui->pbBieten3->show();
-
-    // ui->pbHandJa->setDisabled(false);
-    ui->pbHandJa->hide();
-    ui->pbHandNein->hide();
-    ui->lblHand->hide();
-    ui->lblGereitztBis->hide();
-    ui->pbDruecken->hide();
-
-    ui->gbSpiel->hide();
-    ui->pbRamsch->setDisabled(false);
-    ui->pbRamsch->clicked(false);
-    ui->pbHand->setDisabled(false);
-    ui->pbHand->clicked(false);
-    ui->pbSchneider->setDisabled(false);
-    ui->pbSchneider->clicked(false);
-    ui->pbSchwarz->clicked(false);
-    ui->gbRule->setDisabled(false);
-
-    ui->gbTrick2->hide();
-    ui->gbTrick1->hide();
-    ui->gbTrick3->hide();
-
-    onClearTrickLayout();
-  }
-
-  for (int playerId = 1; playerId <= 3; playerId++)
-    updatePlayerLayout(playerId);
-
-  updateSkatLayout(LinkTo::Skat);
-
-  if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
-  if (game_->geberHoererSagerPos_[1] == 2) ui->lblHand2->setText("Vorhand");
-  if (game_->geberHoererSagerPos_[2] == 2) ui->lblHand2->setText("Mittelhand");
-  if (game_->geberHoererSagerPos_[0] == 3) ui->lblHand3->setText("Hinterhand");
-  if (game_->geberHoererSagerPos_[1] == 3) ui->lblHand3->setText("Vorhand");
-  if (game_->geberHoererSagerPos_[2] == 3) ui->lblHand3->setText("Mittelhand");
-}
-
-void Table::onGeboten(
-    int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
-  qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
-  qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
-
-  ui->pbSagen->setText("");
-  ui->pbBieten2->setText("");
-  ui->pbBieten3->setText("");
-
-  ui->pbSagen->show();
-  ui->pbBieten2->show();
-  ui->pbBieten3->show();
-
-  switch (idSager) {
-    case 1:
-      ui->pbSagen->setText(antwortSager);
-      break;
-    case 2:
-      ui->pbBieten2->setText(antwortSager);
-      ui->pbBieten2->animateClick();
-      break;
-    case 3:
-      ui->pbBieten3->setText(antwortSager);
-      ui->pbBieten3->animateClick();
-      break;
-  }
-
-  switch (idHoerer) {
-    case 1:
-      ui->pbSagen->setText(antwortHoerer);
-      break;
-    case 2:
-      ui->pbBieten2->setText(antwortHoerer);
-      ui->pbBieten2->animateClick();
-      break;
-    case 3:
-      ui->pbBieten3->setText(antwortHoerer);
-      ui->pbBieten3->animateClick();
-      break;
-  }
-
-  if (idSager == 1 || idHoerer == 1)
-    ui->pbPassen->setText("passe");
-  else
-    ui->pbPassen->setText("");
-
-  // Hide the push button for the player who is neither Sager nor Hoerer
-  for (int i = 1; i <= 3; ++i) {
-    if (i != idSager && i != idHoerer) {
-      switch (i) {
-        case 1:
-          ui->pbSagen->hide();
-          break;
-        case 2:
-          ui->pbBieten2->hide();
-          break;
-        case 3:
-          ui->pbBieten3->hide();
-          break;
-      }
-    }
-  }
-}
-
-void Table::onQuestionHand() {
-  ui->pbSagen->hide();
-  ui->pbPassen->hide();
-  ui->pbBieten2->hide();
-  ui->pbBieten3->hide();
-
-  ui->lblHand->show();
-  ui->pbHandJa->show();
-  ui->pbHandNein->show();
-  ui->lblGereitztBis->setText("Gereizt bis: " +
-                              QString::number(game_->gereizt_));
-  ui->lblGereitztBis->show();
 }
 
 void Table::mousePressEvent(

@@ -21,6 +21,7 @@ class Game : public QObject {
   CardVec blind_{32};
   CardVec trick_{3};
   CardVec skat_{2};
+  CardVec urSkat_{2};
   Player player_1{1, "Player-1", false};  // isRobot = false
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
@@ -66,16 +67,18 @@ class Game : public QObject {
   Player& getPlayerByPos(int pos);
   Player* getPlayerByHasTrick();
   Player* getPlayerByIsSolo();
+  Player* getPlayerByMostTricksPoints();
 
-  void setAllPlayerstPoints();
+  // void setAllPlayersTricksPoints();
   void finishRound();
 
  signals:
   void gegeben();
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
-  void questionHand();
+  void frageHand();
   void ramsch();
+  void resultat();
 
   void refreshSkatLayout(LinkTo dest = LinkTo::Skat);
   void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Handdeck);

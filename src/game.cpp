@@ -34,8 +34,8 @@ void Game::start() {
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
   // player_1.maxBieten_ = 0;
-  player_2.maxBieten_ = 23;
-  player_3.maxBieten_ = 20;
+  player_2.maxBieten_ = 0;
+  player_3.maxBieten_ = 0;
 
   // Players' tricks to blind
   qDebug() << "Moving cards from players' tricks to blind.";
@@ -56,11 +56,11 @@ void Game::start() {
 
   // for restart of a new round inbetween:
   for (Player* player : playerList_) {
-    for (Card& card : player->handdeck_.cards())
+    for (const Card& card : player->handdeck_.cards())
       player->handdeck_.moveTopCardTo(blind_);
   }
 
-  for (Card& card : skat_.cards()) skat_.moveTopCardTo(blind_);
+  for (const Card& card : skat_.cards()) skat_.moveTopCardTo(blind_);
 
   // rotate geberHoererSager
   std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
@@ -85,7 +85,8 @@ void Game::geben() {
 
   blind_.moveTopCardTo(skat_);
   blind_.moveTopCardTo(skat_);
-  // emit refreshSkatLayout();
+  // Copy for finishRound / Result
+  urSkat_ = skat_;
 
   for (Player* player : playerList_) {
     for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
@@ -275,7 +276,7 @@ void Game::bieten(bool passe) {
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
 
-  emit questionHand();
+  emit frageHand();
 }
 
 void Game::druecken() {
@@ -535,7 +536,7 @@ void Game::activateNextPlayer() {
     qDebug() << "Trick moved to Trickholder"
              << QString::fromStdString(playerList_.front()->name());
 
-    playerList_.front()->setPoints();
+    playerList_.front()->setTricksPoints();
 
     if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
 
@@ -603,41 +604,67 @@ Player* Game::getPlayerByIsSolo() {
   }
 }
 
-void Game::setAllPlayerstPoints() {
-  for (const auto& player : playerList_) {
-    player->setPoints();
-    qDebug() << QString::fromStdString(player->name())
-             << " - Total Points: " << QString::number(player->points());
+Player* Game::getPlayerByMostTricksPoints() {
+  auto it = std::ranges::max_element(
+      playerList_, [](const Player* a, const Player* b) {
+        return a->tricksPoints_ < b->tricksPoints_;
+      });
+
+  if (it != playerList_.end()) {
+    return *it;  // Return player with the most tricks points
+  } else {
+    qDebug() << "No player found with tricks points";
+    return nullptr;  // If no player is found
   }
 }
+
+// void Game::setAllPlayersTricksPoints() {
+//   for (const auto& player : playerList_) {
+//     player->setTricksPoints();
+//     qDebug() << QString::fromStdString(player->name())
+//              << " - Total Points: " << QString::number(player->points());
+//   }
+// }
 
 void Game::finishRound() {
   qDebug() << "finishing round ...\n";
 
-  if (rule_ == Rule::Ramsch) {
-    qDebug() << "Ramsch - Skat moved to last Trickholder";
-    Player* player = getPlayerByHasTrick();
-    if (player) {
-      player->tricks_.push_back(std::move(skat_));
-      // player->setPoints();
+  for (const auto& player : playerList_) {
+    player->setTricksPoints();
+    qDebug() << QString::fromStdString(player->name())
+             << " - Total Points: " << QString::number(player->points());
+  }
+
+  assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
+             player_3.tricksPoints_ ==
+         120);
+  // TODO Spielwert
+  if (rule_ != Rule::Ramsch) {
+    Player* player = getPlayerByIsSolo();
+    int points = player->tricksPoints_;
+
+    if (points > 60) {
+      player->score_ += spielwert_;
+      player->spieleGewonnen_++;
+      qDebug() << player->name() << "gewinnt mit" << points << "zu"
+               << 120 - points << "Augen";
+    } else {
+      player->score_ -= 2 * spielwert_;
+      player->spieleVerloren_++;
+      qDebug() << player->name() << "verliert mit" << points << "zu"
+               << 120 - points << "Augen.";
     }
   }
 
-  setAllPlayerstPoints();
-  // assert(player_1.points() + player_2.points() + player_3.points() == 120);
-
-  Player* player = getPlayerByIsSolo();
-
-  if (player) {
-    int points = player->points();
-
-    if (points > 60)
-      qDebug() << player->name() << "hat gewonnen mit" << points << "zu"
-               << 120 - points << "Punkten";
-    else
-      qDebug() << player->name() << "hat verloren mit" << points << "zu"
-               << 120 - points << "Punkten";
+  // TODO 2 Spieler mit gleicher Punktzahl
+  if (rule_ == Rule::Ramsch) {
+    Player* player = getPlayerByMostTricksPoints();
+    qDebug() << player->name();
+    player->score_ -= player->sumTricks();
+    player->spieleVerloren_++;
   }
 
   qDebug() << "Blind size finish round:" << blind_.cards().size();
+
+  emit resultat();
 }

@@ -42,7 +42,7 @@ int Player::id() const { return id_; }
 std::string Player::name() const { return name_; }
 bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
-int Player::points() const { return points_; }
+int Player::points() const { return tricksPoints_; }
 
 int Player::sumTricks() {
   int totalSum = 0;
@@ -56,4 +56,4 @@ int Player::sumTricks() {
 }
 
 // public class methods
-void Player::setPoints() { points_ = sumTricks(); }
+void Player::setTricksPoints() { tricksPoints_ = sumTricks(); }

@@ -11,10 +11,11 @@ class Player : public QObject {
   int id_;
   std::string name_;
 
-  int points_{};
-  int score_{};
-
  public:
+  int score_{};         // Gesamtpunktestand
+  int tricksPoints_{};  // sumTricks
+  int spieleGewonnen_{};
+  int spieleVerloren_{};
   bool isRobot_;
   CardVec handdeck_ = CardVec(12);      // including 2 Skat cards
   // CardVec skat_ = CardVec(2);           // active player will get the Skat
@@ -41,7 +42,7 @@ class Player : public QObject {
 
  public:
   // public setters
-  void setPoints();
+  void setTricksPoints();
 
   // public getters
   int id() const;
