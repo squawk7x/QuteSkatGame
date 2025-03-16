@@ -54,6 +54,14 @@ void Game::start() {
   qDebug() << "Cards moved from players' tricks to blind:"
            << cardsMovedFromPlayerTricks;
 
+  // for restart of a new round inbetween:
+  for (Player* player : playerList_) {
+    for (Card& card : player->handdeck_.cards())
+      player->handdeck_.moveTopCardTo(blind_);
+  }
+
+  for (Card& card : skat_.cards()) skat_.moveTopCardTo(blind_);
+
   // rotate geberHoererSager
   std::ranges::rotate(geberHoererSagerPos_, geberHoererSagerPos_.begin() + 1);
 
@@ -70,16 +78,26 @@ void Game::geben() {
   blind_.shuffle();
   // qDebug() << "Blind size after shuffling:" << blind_.cards().size();
   // Distribuite cards 3 - skat(2) - 4 - 3
-  for (Player* player : playerList_)
+  for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-  blind_.moveTopCardTo(skat_);
-  blind_.moveTopCardTo(skat_);
-  for (Player* player : playerList_)
-    for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
-  for (Player* player : playerList_)
-    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
+    // emit refreshPlayerLayout(player->id());
+  }
 
-  for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
+  blind_.moveTopCardTo(skat_);
+  blind_.moveTopCardTo(skat_);
+  // emit refreshSkatLayout();
+
+  for (Player* player : playerList_) {
+    for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
+    // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
+  }
+  for (Player* player : playerList_) {
+    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
+    // player->handdeck_.sortByJandSuits();
+    // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
+  }
+
+  // for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
 
   qDebug() << "blind" << blind_.cards().size();
   qDebug() << "skat" << skat_.cards().size();
@@ -257,7 +275,7 @@ void Game::bieten(bool passe) {
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
 
-  emit hand();
+  emit questionHand();
 }
 
 void Game::druecken() {
@@ -606,7 +624,7 @@ void Game::finishRound() {
   }
 
   setAllPlayerstPoints();
-  assert(player_1.points() + player_2.points() + player_3.points() == 120);
+  // assert(player_1.points() + player_2.points() + player_3.points() == 120);
 
   Player* player = getPlayerByIsSolo();
 

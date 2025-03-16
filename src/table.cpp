@@ -92,16 +92,15 @@ Table::Table(
     QObject::connect(game_, &Game::geboten, this, &Table::onGeboten);
 
     // Frage Hand
-    QObject::connect(game_, &Game::hand, this, &Table::onHand);
+    QObject::connect(game_, &Game::questionHand, this, &Table::onQuestionHand);
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
       ui->pbHandJa->hide();
       ui->pbHandNein->hide();
       ui->pbHand->setChecked(false);
-      ui->pbHand->setDisabled(true);
+      ui->pbHand->setDisabled(false);
       ui->pbDruecken->show();
       updateSkatLayout(LinkTo::Handdeck);
-      // make card face visible
     });
 
     QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
@@ -110,20 +109,15 @@ Table::Table(
       ui->pbHand->setDisabled(true);
       ui->pbDruecken->click();  // even if not visible
       updateSkatLayout(LinkTo::Skat);
-      // leave skat face invisible
     });
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
       Player *player = &game_->getPlayerById(1);
       game_->bieten();
-      // updateSkatLayout(LinkTo::Skat);
     });
 
     QObject::connect(ui->pbPassen, &QPushButton::clicked, this, [this]() {
       game_->bieten(true);  // bieten (bool passe)
-      // updateSkatLayout(true);
-      // updateSkatLayout(LinkTo::Handdeck);
-      // updateSkatLayout(LinkTo::Skat);
     });
 
     // Game Control
@@ -212,11 +206,13 @@ void Table::updateSkatLayout(
 
     ui->gbSkatLayout->addWidget(cardButton);
 
-    Player *player = game_->getPlayerByIsSolo();
-    if (!player) return;  // Early exit if no player is found
+    // if (dest == LinkTo::Skat) return;
 
     // Handle card actions only if `hand` is true
     if (dest == LinkTo::Handdeck) {
+      Player *player = game_->getPlayerByIsSolo();
+      if (!player) return;
+
       int playerId = player->id();
       connect(cardButton, &QPushButton::clicked, this,
               [&, this, cardButton, playerId]() {
@@ -285,8 +281,8 @@ void Table::updatePlayerLayout(
               player.handdeck_.moveCardTo(std::move(card), game_->skat_);
               cardButton->setParent(nullptr);
               layout->removeWidget(cardButton);
-              updateSkatLayout(LinkTo::Handdeck);
             }
+            updateSkatLayout(LinkTo::Handdeck);
           });
     }
 
@@ -308,11 +304,12 @@ void Table::updatePlayerLayout(
 
               game_->playCard(card);
 
-              layout->removeWidget(cardButton);
               cardButton->setParent(nullptr);
-              updatePlayerLayout(playerId, LinkTo::Trick);
+              layout->removeWidget(cardButton);
+              // updatePlayerLayout(playerId, LinkTo::Trick);
             }
           });
+      updateSkatLayout(LinkTo::Skat);
     }
   }
 }
@@ -369,22 +366,27 @@ void Table::onGegeben() {
     ui->pbPassen->show();
     ui->pbBieten2->show();
     ui->pbBieten3->show();
-    ui->gbSpiel->hide();
-    ui->gbTrick2->hide();
-    ui->gbTrick1->hide();
-    ui->gbTrick3->hide();
+
+    // ui->pbHandJa->setDisabled(false);
     ui->pbHandJa->hide();
     ui->pbHandNein->hide();
+    ui->lblHand->hide();
+    ui->lblGereitztBis->hide();
     ui->pbDruecken->hide();
+
+    ui->gbSpiel->hide();
     ui->pbRamsch->setDisabled(false);
     ui->pbRamsch->clicked(false);
     ui->pbHand->setDisabled(false);
     ui->pbHand->clicked(false);
-    // ui->pbHandJa->clicked(false);
     ui->pbSchneider->setDisabled(false);
     ui->pbSchneider->clicked(false);
     ui->pbSchwarz->clicked(false);
     ui->gbRule->setDisabled(false);
+
+    ui->gbTrick2->hide();
+    ui->gbTrick1->hide();
+    ui->gbTrick3->hide();
 
     onClearTrickLayout();
   }
@@ -466,14 +468,18 @@ void Table::onGeboten(
   }
 }
 
-void Table::onHand() {
+void Table::onQuestionHand() {
   ui->pbSagen->hide();
   ui->pbPassen->hide();
   ui->pbBieten2->hide();
   ui->pbBieten3->hide();
 
+  ui->lblHand->show();
   ui->pbHandJa->show();
   ui->pbHandNein->show();
+  ui->lblGereitztBis->setText("Gereizt bis: " +
+                              QString::number(game_->gereizt_));
+  ui->lblGereitztBis->show();
 }
 
 void Table::mousePressEvent(

@@ -45,15 +45,16 @@ class Game : public QObject {
   void init();
   // void startGame();
   void start();
-
-  int reizen(bool reset = false, bool preview = false);
   void geben();
+  int reizen(bool reset = false, bool preview = false);
+
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
   void bieten(bool passe = false);
   void druecken();
-  void autoplay();
   int spielwert();
+
+  void autoplay();
 
   bool isCardValid(const Card& card);
   std::vector<Card> playableCards(int playerId);
@@ -73,13 +74,13 @@ class Game : public QObject {
   void gegeben();
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
-  void hand();
+  void questionHand();
   void ramsch();
 
-  void clearTrickLayout();
   void refreshSkatLayout(LinkTo dest = LinkTo::Skat);
+  void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Handdeck);
   void refreshTrickLayout(const Card& card, int playerId);
-  void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
+  void clearTrickLayout();
 };
 
 #endif  // gameH

@@ -39,7 +39,7 @@ class Table : public QMainWindow {
   void onGegeben();
   void onGeboten(int idSager, int idHoerer, QString antwortSager,
                  QString antwortHoerer);
-  void onHand();
+  void onQuestionHand();
   void onClearTrickLayout();
 };
 #endif  // TABLE_H

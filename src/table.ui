@@ -490,11 +490,8 @@
            </item>
            <item row="2" column="0">
             <layout class="QGridLayout" name="gridLayout_3">
-             <item row="1" column="0">
-              <widget class="QPushButton" name="pbHandJa">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="pbHandNein">
                <property name="font">
                 <font>
                  <family>Noto Sans Mono</family>
@@ -502,23 +499,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Hand</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QPushButton" name="pbDruecken">
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Drücken</string>
+                <string>Nein</string>
                </property>
               </widget>
              </item>
@@ -563,8 +544,8 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pbHandNein">
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="pbDruecken">
                <property name="font">
                 <font>
                  <family>Noto Sans Mono</family>
@@ -572,7 +553,64 @@
                 </font>
                </property>
                <property name="text">
-                <string>Nein</string>
+                <string>Drücken</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="pbHandJa">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Noto Sans Mono</family>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Ja</string>
+               </property>
+               <property name="checkable">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QLabel" name="lblHand">
+               <property name="font">
+                <font>
+                 <family>Noto Sans Mono</family>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LayoutDirection::LeftToRight</enum>
+               </property>
+               <property name="text">
+                <string>Hand?</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QLabel" name="lblGereitztBis">
+               <property name="font">
+                <font>
+                 <family>Noto Sans Mono</family>
+                 <pointsize>12</pointsize>
+                </font>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::LayoutDirection::LeftToRight</enum>
+               </property>
+               <property name="text">
+                <string>Gereizt bis:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
                </property>
               </widget>
              </item>
