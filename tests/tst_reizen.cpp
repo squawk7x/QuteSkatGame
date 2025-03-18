@@ -6,7 +6,7 @@ class ReizenTest : public ::testing::Test {
  protected:
   void SetUp() override {
     game_ = new Game();
-    game_->reizen(true);
+    game_->reizen(Reizen::Reset);
   }
 
   void TearDown() override { delete game_; }
@@ -16,7 +16,7 @@ class ReizenTest : public ::testing::Test {
 
 TEST_F(
     ReizenTest, ResetTest) {
-  EXPECT_EQ(game_->reizen(true), 0);
+  EXPECT_EQ(game_->reizen(Reizen::Reset), 0);
 }
 
 TEST_F(
@@ -29,14 +29,14 @@ TEST_F(
 TEST_F(
     ReizenTest, PreviewTest) {
   EXPECT_EQ(game_->reizen(), 18);
-  EXPECT_EQ(game_->reizen(false, true), 20);  // preview = true
+  EXPECT_EQ(game_->reizen(Reizen::Preview), 20);  // preview = true
   EXPECT_EQ(game_->reizen(), 20);
 }
 
 TEST_F(
     ReizenTest, MaxBoundaryTest) {
   for (int i = 0; i < 60; ++i) {
-    game_->reizen(false);
+    game_->reizen();
   }
   EXPECT_EQ(game_->reizen(), 216);  // Should cap at max value
 }

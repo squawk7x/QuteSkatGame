@@ -39,6 +39,8 @@ class Table : public QMainWindow {
   void onGegeben();
   void onGeboten(int idSager, int idHoerer, QString antwortSager,
                  QString antwortHoerer);
+  // void onWeiterbieten(int idSager, int idHoerer, QString antwortSager,
+  //                     QString antwortHoerer);
   void onFrageHand();
   void onResultat();
 

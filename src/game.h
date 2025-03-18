@@ -47,7 +47,7 @@ class Game : public QObject {
   // void startGame();
   void start();
   void geben();
-  int reizen(bool reset = false, bool preview = false);
+  int reizen(Reizen reizen = Reizen::Normal);
 
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
@@ -76,6 +76,8 @@ class Game : public QObject {
   void gegeben();
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
+  void weiterbieten(int idSager, int idHoerer, QString antwortSager,
+                    QString antwortHoerer);
   void frageHand();
   void ramsch();
   void resultat();
