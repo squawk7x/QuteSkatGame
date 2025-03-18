@@ -132,9 +132,6 @@ Table::Table(
       game_->bieten(true);  // bieten (bool passe)
     });
 
-    // QObject::connect(game_, &Game::weiterbieten, this,
-    // &Table::onWeiterbieten);
-
     // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
@@ -258,10 +255,6 @@ void Table::onGeboten(
   qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
   qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
 
-  // ui->pbSagen->setText("");
-  // ui->pbBieten2->setText("");
-  // ui->pbBieten3->setText("");
-
   ui->gbSagenPassen->hide();
   ui->pbBieten2->hide();
   ui->pbBieten3->hide();
@@ -296,39 +289,6 @@ void Table::onGeboten(
       break;
   }
 }
-
-// void Table::onWeiterbieten(
-//     int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
-//   switch (idSager) {
-//     case 1:
-//       ui->pbSagen->setText(antwortSager);
-//       ui->gbSagenPassen->show();
-//       break;
-//     case 2:
-//       ui->pbBieten2->setText(antwortSager);
-//       ui->pbBieten2->show();
-//       break;
-//     case 3:
-//       ui->pbBieten3->setText(antwortSager);
-//       ui->pbBieten3->show();
-//       break;
-//   }
-
-//   switch (idHoerer) {
-//     case 1:
-//       ui->pbSagen->setText(antwortHoerer);
-//       ui->gbSagenPassen->show();
-//       break;
-//     case 2:
-//       ui->pbBieten2->setText(antwortHoerer);
-//       ui->pbBieten2->show();
-//       break;
-//     case 3:
-//       ui->pbBieten3->setText(antwortHoerer);
-//       ui->pbBieten3->show();
-//       break;
-//   }
-// }
 
 void Table::onFrageHand() {
   ui->gbSagenPassen->hide();
