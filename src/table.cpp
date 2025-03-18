@@ -11,6 +11,15 @@ Table::Table(
 
   // Spiel Farbe, Grand, Null, Ramsch
   {
+    // Karten geben
+    QObject::connect(game_, &Game::gegeben, this, &Table::onGegeben);
+
+    // Reizen
+    QObject::connect(game_, &Game::geboten, this, &Table::onGeboten);
+
+    // Frage Hand
+    QObject::connect(game_, &Game::frageHand, this, &Table::onFrageHand);
+
     QObject::connect(ui->pbKaro, &QPushButton::clicked, this, [this]() {
       game_->rule_ = Rule::Suit;
       game_->trump_ = "♦";
@@ -85,25 +94,14 @@ Table::Table(
                    << game_->schwarz_;
         });
 
-    // Karten geben
-    QObject::connect(game_, &Game::gegeben, this, &Table::onGegeben);
-
-    // Reizen
-    QObject::connect(game_, &Game::geboten, this, &Table::onGeboten);
-
-    // Frage Hand
-    QObject::connect(game_, &Game::frageHand, this, &Table::onFrageHand);
-
     // Resultat
     QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
-      ui->pbHandJa->hide();
-      ui->pbHandNein->hide();
       ui->pbHand->setChecked(false);
       ui->pbHand->setDisabled(false);
-      ui->pbDruecken->show();
-      ui->lblHand->hide();
+      ui->gbFrageHand->hide();
+      ui->gbDruecken->show();
       updateSkatLayout(LinkTo::Handdeck);
     });
 
@@ -116,7 +114,17 @@ Table::Table(
     });
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
-      Player *player = &game_->getPlayerById(1);
+      // Player *player = &game_->getPlayerById(1);
+      game_->bieten();
+    });
+
+    QObject::connect(ui->pbBieten2, &QPushButton::clicked, this, [this]() {
+      // Player *player = &game_->getPlayerById(1);
+      game_->bieten();
+    });
+
+    QObject::connect(ui->pbBieten3, &QPushButton::clicked, this, [this]() {
+      // Player *player = &game_->getPlayerById(1);
       game_->bieten();
     });
 
@@ -129,11 +137,14 @@ Table::Table(
       if (game_->skat_.cards().size() == 2) {
         game_->druecken();
         updateSkatLayout(LinkTo::Skat);
-        ui->pbDruecken->hide();
+        ui->gbFrageHand->hide();
+        ui->gbDruecken->hide();
         ui->gbSkat->hide();
         ui->gbTrick2->hide();
         ui->gbTrick1->hide();
         ui->gbTrick3->hide();
+        ui->lblSpielGereiztBis->setText("Gereizt bis: " +
+                                        QString::number(game_->gereizt_));
         ui->gbSpiel->show();
       }
     });
@@ -150,8 +161,22 @@ Table::Table(
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
-    QObject::connect(ui->pbWeiter, &QPushButton::clicked, game_, &Game::start);
-    QObject::connect(ui->pbEnde, &QPushButton::clicked, this, &QWidget::close);
+
+    QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
+                     &Game::start);
+    QObject::connect(ui->pbResultatEnde, &QPushButton::clicked, this, [this]() {
+      ui->gbSkat->hide();
+      ui->gbResultat->hide();
+      ui->gbFrageEnde->show();
+    });
+
+    QObject::connect(ui->pbEndeJa, &QPushButton::clicked, this,
+                     &QWidget::close);
+    QObject::connect(ui->pbEndeNein, &QPushButton::clicked, this, [this]() {
+      ui->gbSkat->show();
+      ui->gbResultat->show();
+      ui->gbFrageEnde->hide();
+    });
 
     // Layouts
     QObject::connect(game_, &Game::clearTrickLayout, this,
@@ -183,17 +208,14 @@ void Table::onGegeben() {
   {
     ui->lblUrsprungsSkat->hide();
     ui->gbSkat->show();
-    ui->pbSagen->show();
-    ui->pbPassen->show();
+
+    ui->gbSagenPassen->show();
     ui->pbBieten2->show();
     ui->pbBieten3->show();
 
-    // ui->pbHandJa->setDisabled(false);
-    ui->pbHandJa->hide();
-    ui->pbHandNein->hide();
-    ui->lblHand->hide();
-    ui->lblDrueckenGereitztBis->hide();
-    ui->pbDruecken->hide();
+    ui->gbFrageHand->hide();
+    ui->gbDruecken->hide();
+    ui->gbFrageEnde->hide();
 
     ui->gbSpiel->hide();
     ui->pbRamsch->setDisabled(false);
@@ -209,6 +231,7 @@ void Table::onGegeben() {
     ui->gbTrick1->hide();
     ui->gbTrick3->hide();
 
+    // ui->gbFrageEnde->hide();
     ui->gbResultat->hide();
 
     onClearTrickLayout();
@@ -232,77 +255,54 @@ void Table::onGeboten(
   qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
   qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
 
-  ui->pbSagen->setText("");
-  ui->pbBieten2->setText("");
-  ui->pbBieten3->setText("");
+  // ui->pbSagen->setText("");
+  // ui->pbBieten2->setText("");
+  // ui->pbBieten3->setText("");
 
-  ui->pbSagen->show();
-  ui->pbBieten2->show();
-  ui->pbBieten3->show();
+  ui->gbSagenPassen->hide();
+  ui->pbBieten2->hide();
+  ui->pbBieten3->hide();
 
   switch (idSager) {
     case 1:
       ui->pbSagen->setText(antwortSager);
+      ui->gbSagenPassen->show();
       break;
     case 2:
       ui->pbBieten2->setText(antwortSager);
-      ui->pbBieten2->animateClick();
+      ui->pbBieten2->show();
       break;
     case 3:
       ui->pbBieten3->setText(antwortSager);
-      ui->pbBieten3->animateClick();
+      ui->pbBieten3->show();
       break;
   }
 
   switch (idHoerer) {
     case 1:
       ui->pbSagen->setText(antwortHoerer);
+      ui->gbSagenPassen->show();
       break;
     case 2:
       ui->pbBieten2->setText(antwortHoerer);
-      ui->pbBieten2->animateClick();
+      ui->pbBieten2->show();
       break;
     case 3:
       ui->pbBieten3->setText(antwortHoerer);
-      ui->pbBieten3->animateClick();
+      ui->pbBieten3->show();
       break;
-  }
-
-  if (idSager == 1 || idHoerer == 1)
-    ui->pbPassen->setText("passe");
-  else
-    ui->pbPassen->setText("");
-
-  // Hide the push button for the player who is neither Sager nor Hoerer
-  for (int i = 1; i <= 3; ++i) {
-    if (i != idSager && i != idHoerer) {
-      switch (i) {
-        case 1:
-          ui->pbSagen->hide();
-          break;
-        case 2:
-          ui->pbBieten2->hide();
-          break;
-        case 3:
-          ui->pbBieten3->hide();
-          break;
-      }
-    }
   }
 }
 
 void Table::onFrageHand() {
-  ui->pbSagen->hide();
-  ui->pbPassen->hide();
+  ui->gbSagenPassen->hide();
   ui->pbBieten2->hide();
   ui->pbBieten3->hide();
 
-  ui->lblHand->show();
-  ui->pbHandJa->show();
-  ui->pbHandNein->show();
-  ui->lblDrueckenGereitztBis->setText("Gereizt bis: " +
-                                      QString::number(game_->gereizt_));
-  ui->lblDrueckenGereitztBis->show();
+  ui->gbFrageHand->show();
+  ui->lblSkatGereiztBis->setText("Gereizt bis: " +
+                                 QString::number(game_->gereizt_));
+  ui->lblSkatGereiztBis->show();
 }
 
 void Table::onResultat() {
@@ -333,8 +333,6 @@ void Table::onResultat() {
                                  .arg(game_->player_3.spieleGewonnen_)
                                  .arg(game_->player_3.spieleVerloren_));
 
-  // Ramsch Todo
-
   ui->lblSpielwert->setText(resultat);
   ui->gbResultat->show();
 
@@ -348,16 +346,16 @@ void Table::onResultat() {
   game_->skat_ = game_->urSkat_;
   updateSkatLayout();
   ui->gbSkat->show();
-  // Bugfix: blind size was > 32 next rounds when Ramsch
   game_->skat_ = skat;
 }
 
 void Table::updateSkatLayout(
     LinkTo dest) {
   QLayoutItem *item;
+
   // Clear existing widgets from the layout
 
-  while ((item = ui->gbSkatLayout->takeAt(0)) != nullptr) {
+  while ((item = ui->layoutSkatKarten->takeAt(0)) != nullptr) {
     if (item->widget()) {
       delete item->widget();
     }
@@ -383,7 +381,7 @@ void Table::updateSkatLayout(
       cardButton->setStyleSheet("QPushButton { font-size: 18x; }");
     }
 
-    ui->gbSkatLayout->addWidget(cardButton);
+    ui->layoutSkatKarten->addWidget(cardButton);
 
     // if (dest == LinkTo::Skat) return;
 
@@ -399,7 +397,7 @@ void Table::updateSkatLayout(
                                         game_->getPlayerByIsSolo()->handdeck_);
 
                 // Remove the button from layout and set parent to nullptr
-                ui->gbSkatLayout->removeWidget(cardButton);
+                ui->layoutSkatKarten->removeWidget(cardButton);
                 cardButton->setParent(nullptr);
 
                 // Update the player layout after moving the card

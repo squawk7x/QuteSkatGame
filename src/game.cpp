@@ -34,8 +34,8 @@ void Game::start() {
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
   // player_1.maxBieten_ = 0;
-  player_2.maxBieten_ = 0;
-  player_3.maxBieten_ = 0;
+  player_2.maxBieten_ = 24;
+  player_3.maxBieten_ = 20;
 
   // Players' tricks to blind
   qDebug() << "Moving cards from players' tricks to blind.";
@@ -107,6 +107,13 @@ void Game::geben() {
              << player->handdeck_.cards().size();
 
   emit gegeben();
+
+  int hoererPos = 1;
+  int sagerPos = 2;
+
+  Player* hoerer = &getPlayerByPos(hoererPos);
+  Player* sager = &getPlayerByPos(sagerPos);
+  emit geboten(sager->id(), hoerer->id(), "sagt", "hört");
 }
 
 int Game::reizen(
@@ -165,7 +172,7 @@ void Game::bieten(bool passe) {
   while (hoeren(hoererPos) && sagen(sagerPos)) {
     if (!sager->isRobot() && passe == true) {
       sager->maxBieten_ = 0;
-      antwortSager = "weg";
+      antwortSager = "passe";
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
       break;
     };
@@ -182,7 +189,7 @@ void Game::bieten(bool passe) {
       antwortSager = QString::number(gereizt_);
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
     } else {
-      antwortSager = "weg";
+      antwortSager = "passe";
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
       break;
     }
@@ -212,7 +219,7 @@ void Game::bieten(bool passe) {
   while (hoeren(hoererPos) && sagen(sagerPos)) {
     if (!sager->isRobot() && passe == true) {
       sager->maxBieten_ = 0;
-      antwortSager = "weg";
+      antwortSager = "passe";
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
       break;
     };
@@ -229,12 +236,13 @@ void Game::bieten(bool passe) {
       antwortSager = QString::number(gereizt_);
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
     } else {
-      antwortSager = "weg";
+      antwortSager = "passe";
       antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
       break;
     }
 
     emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
+
     return;
   }
   // for break case:
@@ -243,8 +251,8 @@ void Game::bieten(bool passe) {
   // Ramsch
   if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
     hoerer->isSolo_ = false;
-    antwortSager = "weg";
-    antwortHoerer = "weg";
+    antwortSager = "passe";
+    antwortHoerer = "passe";
     emit ramsch();
     return;
   }
@@ -253,12 +261,12 @@ void Game::bieten(bool passe) {
   if (!hoeren(hoererPos)) {
     hoerer->isSolo_ = false;
     sager->isSolo_ = true;
-    antwortHoerer = "weg";
+    antwortHoerer = "passe";
     antwortSager = QString::number(gereizt_);
   } else {
     hoerer->isSolo_ = true;
     sager->isSolo_ = false;
-    antwortSager = "weg";
+    antwortSager = "passe";
     antwortHoerer = QString::number(gereizt_);
   }
 
@@ -266,7 +274,7 @@ void Game::bieten(bool passe) {
     hoerer->isSolo_ = true;
     gereizt_ = reizen();
     antwortSager = QString::number(gereizt_);
-    antwortHoerer = "weg";
+    antwortHoerer = "passe";
   }
 
   emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
@@ -286,10 +294,6 @@ void Game::druecken() {
     if (player) {
       player->tricks_.push_back(std::move(skat_));
       // Skat in Ramsch handled in finishRound
-      // connect all players to Trick
-      // for (int playerId = 1; playerId <= 3; playerId++)
-      //   emit refreshPlayerLayout(playerId, LinkTo::Trick);
-      // emit refreshSkatLayout(false);
       emit refreshSkatLayout(LinkTo::Skat);
       emit refreshPlayerLayout(player->id(), LinkTo::Trick);
     }

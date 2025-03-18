@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1199</width>
-    <height>607</height>
+    <width>1449</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayoutMain">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="layoutUpper">
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
@@ -188,7 +188,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="layoutMiddle">
       <item>
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
@@ -274,25 +274,6 @@
               </property>
               <property name="text">
                <string>♠</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1" colspan="2">
-             <widget class="QPushButton" name="pbGrand">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Grand</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -470,6 +451,25 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="1" colspan="2">
+             <widget class="QPushButton" name="pbGrand">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Grand</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -488,6 +488,12 @@
          </item>
          <item>
           <widget class="QLabel" name="lblSpielGereiztBis">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="font">
             <font>
              <family>Noto Sans Mono</family>
@@ -537,152 +543,278 @@
           <number>0</number>
          </property>
          <item>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="0">
-            <layout class="QHBoxLayout" name="gbSkatLayout">
-             <property name="spacing">
-              <number>6</number>
+          <layout class="QGridLayout" name="layoutSkat">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="gpSkatKarten">
+             <property name="title">
+              <string/>
              </property>
-            </layout>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QLabel" name="lblUrsprungsSkat">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans Mono</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Ursprünglicher Skat:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="layoutSkatKarten">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QGroupBox" name="gbDruecken">
+             <property name="title">
+              <string/>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_21">
+              <item row="0" column="0">
+               <layout class="QVBoxLayout" name="layoutDruecken">
+                <item>
+                 <widget class="QLabel" name="lblSkatGereiztBis">
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Gereizt bis:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignmentFlag::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pbDruecken">
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Drücken</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QGroupBox" name="gbSagenPassen">
+             <property name="title">
+              <string/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <layout class="QHBoxLayout" name="layoutSagenPassen">
+                <item>
+                 <widget class="QPushButton" name="pbSagen">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LayoutDirection::RightToLeft</enum>
+                  </property>
+                  <property name="text">
+                   <string>18</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pbPassen">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>passe</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item row="3" column="0">
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="2" column="1">
-              <widget class="QPushButton" name="pbHandNein">
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Nein</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="pbSagen">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LayoutDirection::RightToLeft</enum>
-               </property>
-               <property name="text">
-                <string>18</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pbPassen">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>passe</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0" colspan="2">
-              <widget class="QPushButton" name="pbDruecken">
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Drücken</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QPushButton" name="pbHandJa">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Ja</string>
-               </property>
-               <property name="checkable">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0" colspan="2">
-              <widget class="QLabel" name="lblHand">
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LayoutDirection::LeftToRight</enum>
-               </property>
-               <property name="text">
-                <string>Hand?</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignmentFlag::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QLabel" name="lblDrueckenGereitztBis">
-               <property name="font">
-                <font>
-                 <family>Noto Sans Mono</family>
-                 <pointsize>12</pointsize>
-                </font>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LayoutDirection::LeftToRight</enum>
-               </property>
-               <property name="text">
-                <string>Gereizt bis:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignmentFlag::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QGroupBox" name="gbFrageHand">
+             <property name="title">
+              <string/>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_20">
+              <item row="0" column="0">
+               <layout class="QGridLayout" name="layoutFrageHand">
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="pbHandJa">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                    <underline>false</underline>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Ja</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QPushButton" name="pbHandNein">
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                    <underline>false</underline>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Nein</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="label">
+                  <property name="font">
+                   <font>
+                    <family>Noto Sans Mono</family>
+                    <pointsize>12</pointsize>
+                    <underline>true</underline>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string> Hand ? </string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignmentFlag::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="lblUrsprungsSkat">
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbFrageEnde">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_18">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="layoutFrageEnde">
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pbEndeNein">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
                <pointsize>12</pointsize>
+               <underline>false</underline>
               </font>
              </property>
              <property name="text">
-              <string>Ursprünglicher Skat:</string>
+              <string>Nein</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pbEndeJa">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+               <underline>false</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string>Ja</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="lblEnde">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+               <underline>true</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string> Spiel beenden ? </string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -838,6 +970,9 @@
          <property name="topMargin">
           <number>0</number>
          </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
          <property name="bottomMargin">
           <number>0</number>
          </property>
@@ -845,7 +980,26 @@
           <number>6</number>
          </property>
          <item row="0" column="0">
-          <layout class="QGridLayout" name="gridLayout_6">
+          <layout class="QGridLayout" name="layoutResult">
+           <item row="3" column="1">
+            <widget class="QLabel" name="lblScore2">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LayoutDirection::LeftToRight</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="0" colspan="3">
             <widget class="QLabel" name="lblSpielwert">
              <property name="font">
@@ -881,7 +1035,7 @@
             </widget>
            </item>
            <item row="7" column="2">
-            <widget class="QPushButton" name="pbWeiter">
+            <widget class="QPushButton" name="pbResultatWeiter">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
@@ -893,16 +1047,22 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="0" colspan="2">
-            <widget class="QPushButton" name="pbProtokoll">
+           <item row="3" column="0">
+            <widget class="QLabel" name="lblScore1">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="layoutDirection">
+              <enum>Qt::LayoutDirection::LeftToRight</enum>
+             </property>
              <property name="text">
-              <string>Protokoll</string>
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -925,6 +1085,12 @@ rechts</string>
            </item>
            <item row="0" column="0" colspan="3">
             <widget class="QLabel" name="lblResultat">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
@@ -957,7 +1123,7 @@ rechts</string>
             </widget>
            </item>
            <item row="6" column="1" colspan="2">
-            <widget class="QPushButton" name="pbWiederholen">
+            <widget class="QPushButton" name="pbResultatWiederholen">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
@@ -969,8 +1135,27 @@ rechts</string>
              </property>
             </widget>
            </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="lblScore3">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LayoutDirection::LeftToRight</enum>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
            <item row="6" column="0">
-            <widget class="QPushButton" name="pbEnde">
+            <widget class="QPushButton" name="pbResultatEnde">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
@@ -1017,6 +1202,12 @@ links</string>
            </item>
            <item row="4" column="0" colspan="3">
             <widget class="QLabel" name="lblStatistik">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
@@ -1047,60 +1238,16 @@ links</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="lblScore1">
+           <item row="7" column="0" colspan="2">
+            <widget class="QPushButton" name="pbResultatProtokoll">
              <property name="font">
               <font>
                <family>Noto Sans Mono</family>
                <pointsize>12</pointsize>
               </font>
              </property>
-             <property name="layoutDirection">
-              <enum>Qt::LayoutDirection::LeftToRight</enum>
-             </property>
              <property name="text">
-              <string/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLabel" name="lblScore2">
-             <property name="font">
-              <font>
-               <family>Noto Sans Mono</family>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::LayoutDirection::LeftToRight</enum>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QLabel" name="lblScore3">
-             <property name="font">
-              <font>
-               <family>Noto Sans Mono</family>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::LayoutDirection::LeftToRight</enum>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
+              <string>Protokoll</string>
              </property>
             </widget>
            </item>
@@ -1125,7 +1272,7 @@ links</string>
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <layout class="QHBoxLayout" name="layoutLower">
       <item>
        <spacer name="horizontalSpacer_4">
         <property name="orientation">
@@ -1301,7 +1448,7 @@ links</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1199</width>
+     <width>1449</width>
      <height>26</height>
     </rect>
    </property>
