@@ -93,11 +93,11 @@ void Game::geben() {
   }
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-    // player->handdeck_.sortByJandSuits();
+    // player->handdeck_.sortJacksSuits();
     // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
   }
 
-  // for (Player* player : playerList_) player->handdeck_.sortByJandSuits();
+  // for (Player* player : playerList_) player->handdeck_.sortJacksSuits();
 
   qDebug() << "blind" << blind_.cards().size();
   qDebug() << "skat" << skat_.cards().size();
@@ -173,7 +173,6 @@ void Game::bieten(
     if (!sager->isRobot() && passe) {
       sager->maxBieten_ = 0;
       antwortSager = "passe";
-      // antwortHoerer = hoeren(hoererPos) ? "ja" : "passe";
       antwortHoerer = "hör ich mehr?";
       emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
       break;
@@ -306,7 +305,20 @@ void Game::autoplay() {
   }
 }
 
-int Game::spielwert() { return 0; }
+int Game::spielwert() {
+  qDebug() << "Spielwert";
+  CardVec hand = playerList_.front()->handdeck_;
+
+  auto jacks = hand.filterJacks();
+  auto suits = hand.filterSuits(trump_);
+  auto jacksSuits = hand.filterJacksSuits(trump_);
+
+  auto pattern = hand.trumpPattern(trump_);
+
+  qDebug() << hand.print();
+
+  return 0;
+}
 
 bool Game::isCardValid(
     const Card& card) {

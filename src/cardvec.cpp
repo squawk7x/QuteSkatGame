@@ -54,20 +54,86 @@ void CardVec::moveTopCardTo(
   }
 }
 
-void CardVec::sortByJandSuits() {
+std::vector<Card> CardVec::filterJacks() {
+  auto jacks = cards_ | std::ranges::views::filter([](const Card& card) {
+                 return card.rank() == "J";
+               });
+
+  std::vector<Card> result;
+  result.insert(result.end(), jacks.begin(), jacks.end());
+
+  qDebug() << "filterJacks:" << printRange(result);
+
+  return result;
+}
+
+std::vector<Card> CardVec::filterSuits(
+    const std::string& targetSuit) {
+  auto suits =
+      cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
+        return card.suit() == targetSuit && card.rank() != "J";
+      });
+
+  std::vector<Card> result;
+  result.insert(result.end(), suits.begin(), suits.end());
+
+  qDebug() << "filterSuits:" << printRange(result);
+
+  return result;
+}
+
+std::vector<Card> CardVec::filterJacksSuits(
+    const std::string& targetSuit) {
+  std::vector<Card> result;
+
+  // Store filtered results before inserting
+  std::vector<Card> jacks = filterJacks();
+  std::vector<Card> suits = filterSuits(targetSuit);
+
+  result.insert(result.end(), jacks.begin(), jacks.end());
+  result.insert(result.end(), suits.begin(), suits.end());
+
+  qDebug() << "filterJacksSuits:" << printRange(result);
+
+  return result;
+}
+
+std::bitset<11> CardVec::trumpPattern(
+    const std::string& targetSuit) {
+  std::bitset<11> pattern;
+
+  int i = 10;
+
+  for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
+    if (isCardInside(Card(suit, "J"))) {
+      pattern.set(i);
+    }
+    i--;
+  }
+
+  for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
+    for (const Card& card : cards_) {
+      if (card.rank() == rank && card.suit() == targetSuit) pattern.set(i);
+    }
+    i--;
+  }
+
+  qDebug() << "Pattern: " << QString::fromStdString(pattern.to_string());
+
+  return pattern;
+}
+
+void CardVec::sortJacksSuits() {
   // Step 1: Sort normally by suit and rank
   std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
-    if (SortingPriorityForSuit.at(a.suit()) !=
-        SortingPriorityForSuit.at(b.suit())) {
-      return SortingPriorityForSuit.at(a.suit()) <
-             SortingPriorityForSuit.at(b.suit());
+    if (SortPrioritySuit.at(a.suit()) != SortPrioritySuit.at(b.suit())) {
+      return SortPrioritySuit.at(a.suit()) < SortPrioritySuit.at(b.suit());
     }
-    return SortingPriorityForRank.at(a.rank()) <
-           SortingPriorityForRank.at(b.rank());
+    return SortPriorityRank.at(a.rank()) < SortPriorityRank.at(b.rank());
   });
 
   // Step 2: Move all 'J' cards to the front, sorting by suit using
-  // SortingPriorityFor_J
+  // SortPriorityJacks
   std::stable_partition(cards_.begin(), cards_.end(),
                         [](const Card& card) { return card.rank() == "J"; });
 
@@ -77,97 +143,76 @@ void CardVec::sortByJandSuits() {
   });
 
   std::ranges::sort(cards_.begin(), j_end, [&](const Card& a, const Card& b) {
-    return SortingPriorityFor_J.at(a.suit()) <
-           SortingPriorityFor_J.at(b.suit());
+    return SortPriorityJacks.at(a.suit()) < SortPriorityJacks.at(b.suit());
   });
 }
 
-auto CardVec::filterJplusSuit(
-    const std::string& targetSuit) {
-  // Step 1: Filter all 'J' cards
-  auto j_cards = cards_ | std::ranges::views::filter([](const Card& card) {
-                   return card.rank() == "J";
-                 });
+// std::string CardVec::pattern(
+//     const std::string& targetSuit) {
+//   // Initialize the pattern to empty string
+//   std::string pat = "";
 
-  // Step 2: Filter cards of the specific suit (excluding 'J' cards)
-  auto suit_cards =
-      cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
-        return card.suit() == targetSuit && card.rank() != "J";
-      });
+//   // Step 1: Sort cards and filter Jacks and the specific suit (done by
+//   // sortJacksSuits)
+//   sortJacksSuits();
+//   auto JplusSuits = filterJplusSuit(targetSuit);
 
-  // Combine both parts into a new sequence (first all 'J' cards, then all suit
-  // cards)
-  std::vector<Card> result;
-  result.insert(result.end(), j_cards.begin(), j_cards.end());
-  result.insert(result.end(), suit_cards.begin(), suit_cards.end());
+//   // Step 2: Store the presence of Jacks for each suit
+//   std::unordered_map<std::string, int> jackPresence;
+//   for (const auto& card : JplusSuits) {
+//     if (card.rank() == "J") {
+//       jackPresence[card.suit()] = 1;
+//     }
+//   }
 
-  return result;
-}
+//   // Step 3: Store the presence of other ranks for the specific suit
+//   std::unordered_map<std::string, int> rankPresence;
+//   for (const auto& card : JplusSuits) {
+//     if (card.rank() != "J" && card.suit() == targetSuit) {
+//       rankPresence[card.rank()] = 1;
+//     }
+//   }
 
-std::string CardVec::pattern(
-    const std::string& targetSuit) {
-  // Initialize the pattern to empty string
-  std::string pat = "";
+//   // Step 4: Append '1' or '0' to the pattern for Jacks (♣, ♠, ♥, ♦)
+//   pat += jackPresence["♣"] == 1 ? '1' : '0';
+//   pat += jackPresence["♠"] == 1 ? '1' : '0';
+//   pat += jackPresence["♥"] == 1 ? '1' : '0';
+//   pat += jackPresence["♦"] == 1 ? '1' : '0';
 
-  // Step 1: Sort cards and filter Jacks and the specific suit (done by
-  // sortByJandSuits)
-  sortByJandSuits();
-  auto JplusSuits = filterJplusSuit(targetSuit);
+//   // Step 5: Append '1' or '0' for ranks (A, 10, K, Q, 9, 8, 7)
+//   pat += rankPresence["A"] == 1 ? '1' : '0';
+//   pat += rankPresence["10"] == 1 ? '1' : '0';
+//   pat += rankPresence["K"] == 1 ? '1' : '0';
+//   pat += rankPresence["Q"] == 1 ? '1' : '0';
+//   pat += rankPresence["9"] == 1 ? '1' : '0';
+//   pat += rankPresence["8"] == 1 ? '1' : '0';
+//   pat += rankPresence["7"] == 1 ? '1' : '0';
 
-  // Step 2: Store the presence of Jacks for each suit
-  std::unordered_map<std::string, int> jackPresence;
-  for (const auto& card : JplusSuits) {
-    if (card.rank() == "J") {
-      jackPresence[card.suit()] = 1;
-    }
-  }
+//   // Output the pattern using qDebug()
+//   qDebug() << QString::fromStdString(pat);
 
-  // Step 3: Store the presence of other ranks for the specific suit
-  std::unordered_map<std::string, int> rankPresence;
-  for (const auto& card : JplusSuits) {
-    if (card.rank() != "J" && card.suit() == targetSuit) {
-      rankPresence[card.rank()] = 1;
-    }
-  }
+//   return pat;
+// }
 
-  // Step 4: Append '1' or '0' to the pattern for Jacks (♣, ♠, ♥, ♦)
-  pat += jackPresence["♣"] == 1 ? '1' : '0';
-  pat += jackPresence["♠"] == 1 ? '1' : '0';
-  pat += jackPresence["♥"] == 1 ? '1' : '0';
-  pat += jackPresence["♦"] == 1 ? '1' : '0';
+// int CardVec::mitOhne(
+//     const std::string& targetSuit) {
+//   // Get the pattern for the target suit
+//   std::string pat = pattern(targetSuit);
 
-  // Step 5: Append '1' or '0' for ranks (A, 10, K, Q, 9, 8, 7)
-  pat += rankPresence["A"] == 1 ? '1' : '0';
-  pat += rankPresence["10"] == 1 ? '1' : '0';
-  pat += rankPresence["K"] == 1 ? '1' : '0';
-  pat += rankPresence["Q"] == 1 ? '1' : '0';
-  pat += rankPresence["9"] == 1 ? '1' : '0';
-  pat += rankPresence["8"] == 1 ? '1' : '0';
-  pat += rankPresence["7"] == 1 ? '1' : '0';
+//   // Count leading '0's using ranges
+//   int count0 = std::ranges::distance(
+//       pat | std::ranges::views::take_while([](char c) { return c == '0';
+//       }));
 
-  // Output the pattern using qDebug()
-  qDebug() << QString::fromStdString(pat);
+//   // Count leading '1's using ranges
+//   int count1 = std::ranges::distance(
+//       pat | std::ranges::views::take_while([](char c) { return c == '1';
+//       }));
 
-  return pat;
-}
-
-int CardVec::mitOhne(
-    const std::string& targetSuit) {
-  // Get the pattern for the target suit
-  std::string pat = pattern(targetSuit);
-
-  // Count leading '0's using ranges
-  int count0 = std::ranges::distance(
-      pat | std::ranges::views::take_while([](char c) { return c == '0'; }));
-
-  // Count leading '1's using ranges
-  int count1 = std::ranges::distance(
-      pat | std::ranges::views::take_while([](char c) { return c == '1'; }));
-
-  // Return the maximum of leading '0's and leading '1's
-  qDebug() << "mitOhne " << std::max(count0, count1);
-  return std::max(count0, count1);
-}
+//   // Return the maximum of leading '0's and leading '1's
+//   qDebug() << "mitOhne " << std::max(count0, count1);
+//   return std::max(count0, count1);
+// }
 
 int CardVec::value() {
   int sum{0};
@@ -183,6 +228,19 @@ const QString CardVec::print() const {
   for (const Card& card : cards_) {
     str += QString::fromStdString(card.str()) +
            " ";  // Add a space for readability
+  }
+
+  return str;
+}
+
+const QString CardVec::printRange(
+    std::vector<Card> rng) const {
+  QString str;
+  str.reserve(cards_.size() *
+              3);  // Optimize memory allocation (assuming ~3 bytes per card)
+
+  for (const Card& card : rng) {
+    str += QString::fromStdString(card.str()) + " ";
   }
 
   return str;

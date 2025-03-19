@@ -150,7 +150,7 @@ Table::Table(
     });
 
     QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
-      ui->gbSpiel->hide();
+      // ui->gbSpiel->hide(); // for testing shown
       ui->pbBieten2->hide();
       ui->pbBieten3->hide();
       ui->lblHand2->setText("");
@@ -161,6 +161,8 @@ Table::Table(
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
+    QObject::connect(ui->pbSpielwert, &QPushButton::clicked, game_,
+                     &Game::spielwert);
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
                      &Game::start);
@@ -215,6 +217,7 @@ void Table::onGegeben() {
 
     ui->gbFrageHand->hide();
     ui->gbDruecken->hide();
+    ui->gbAngesagt->hide();
     ui->gbFrageEnde->hide();
 
     ui->gbSpiel->hide();
@@ -420,7 +423,7 @@ void Table::updatePlayerLayout(
     }
     delete item;
   }
-  player.handdeck_.sortByJandSuits();
+  player.handdeck_.sortJacksSuits();
 
   for (Card &card : player.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);

@@ -1,6 +1,7 @@
 #ifndef CARDVEC_H
 #define CARDVEC_H
 
+#include <bitset>
 #include <utility>
 #include <vector>
 
@@ -81,12 +82,18 @@ class CardVec {
   // void moveCardTo(Card&, CardVec& targetVec);
   // void moveCardTo(const Card& card, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
-  void sortByJandSuits();
-  auto filterJplusSuit(const std::string& targetSuit);
-  std::string pattern(const std::string& targetSuit);
-  int mitOhne(const std::string& targetSuit);
+
+  std::vector<Card> filterJacks();
+  std::vector<Card> filterSuits(const std::string& targetSuit);
+  std::vector<Card> filterJacksSuits(const std::string& targetSuit);
+  std::bitset<11> trumpPattern(const std::string& targetSuit);
+  void sortJacksSuits();
+
+  // std::string pattern(const std::string& targetSuit);
+  // int mitOhne(const std::string& targetSuit);
   int value();
   const QString print() const;
+  const QString printRange(std::vector<Card> rng) const;
 };
 
 #endif  // CARDVEC_H

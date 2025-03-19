@@ -29,16 +29,16 @@ inline const std::unordered_map<std::string, int> PowerPrioritySuit = {
     {"J", 8}, {"Q", 4}, {"K", 5}, {"A", 7}};
 
 // Rank priority for sorting within a suit
-inline const std::unordered_map<std::string, int> SortingPriorityForRank = {
+inline const std::unordered_map<std::string, int> SortPriorityRank = {
     {"J", 0}, {"A", 1}, {"10", 2}, {"K", 3},
     {"Q", 4}, {"9", 5}, {"8", 6},  {"7", 7}};
 
 // Suit priority for general sorting
-inline const std::unordered_map<std::string, int> SortingPriorityForSuit = {
+inline const std::unordered_map<std::string, int> SortPrioritySuit = {
     {"♣", 0}, {"♥", 1}, {"♠", 2}, {"♦", 3}};
 
 // Special suit priority for Jokers (J)
-inline const std::unordered_map<std::string, int> SortingPriorityFor_J = {
+inline const std::unordered_map<std::string, int> SortPriorityJacks = {
     {"♣", 0}, {"♠", 1}, {"♥", 2}, {"♦", 3}};
 
 #endif  // DEFINITIONS_H

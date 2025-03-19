@@ -544,6 +544,9 @@
          </property>
          <item>
           <layout class="QGridLayout" name="layoutSkat">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item row="0" column="0">
             <widget class="QGroupBox" name="gpSkatKarten">
              <property name="title">
@@ -748,6 +751,83 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="gbAngesagt">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="2" column="0">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="2" column="1">
+            <widget class="QPushButton" name="pbAha">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Aha</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pbKontra">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>kontra</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="lblAngesagtIst">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+               <underline>true</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string> Angesagt ist </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="gbFrageEnde">
         <property name="title">
          <string/>
@@ -770,20 +850,6 @@
          </property>
          <item row="0" column="0">
           <layout class="QGridLayout" name="layoutFrageEnde">
-           <item row="1" column="1">
-            <widget class="QPushButton" name="pbEndeNein">
-             <property name="font">
-              <font>
-               <family>Noto Sans Mono</family>
-               <pointsize>12</pointsize>
-               <underline>false</underline>
-              </font>
-             </property>
-             <property name="text">
-              <string>Nein</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="pbEndeJa">
              <property name="font">
@@ -818,6 +884,20 @@
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pbEndeNein">
+             <property name="font">
+              <font>
+               <family>Noto Sans Mono</family>
+               <pointsize>12</pointsize>
+               <underline>false</underline>
+              </font>
+             </property>
+             <property name="text">
+              <string>Nein</string>
              </property>
             </widget>
            </item>
@@ -1010,8 +1090,8 @@
              </property>
              <property name="text">
               <string>Spieler _ gewinnt/verliert 
- mit x zu y Augen. 
- Der Spielwert ist z.</string>
+ mit __ zu __ Augen. 
+ Der Spielwert ist __.</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1027,7 +1107,7 @@
               </font>
              </property>
              <property name="text">
-              <string>X/Y</string>
+              <string>_ / _</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1115,7 +1195,7 @@ rechts</string>
               </font>
              </property>
              <property name="text">
-              <string>X/Y</string>
+              <string>_ / _</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1300,6 +1380,13 @@ links</string>
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pbSpielwert">
+        <property name="text">
+         <string>Spielwert</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_10">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -1369,7 +1456,7 @@ links</string>
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="gbSpielstaerke">
         <property name="title">
          <string>Spielstärke</string>
         </property>
