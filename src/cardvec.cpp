@@ -98,29 +98,88 @@ std::vector<Card> CardVec::filterJacksSuits(
   return result;
 }
 
-std::bitset<11> CardVec::trumpPattern(
+// std::bitset<11> CardVec::trumpPattern(
+//     const std::string& targetSuit) {
+//   std::bitset<11> pattern;
+
+//   int i = 10;
+
+//   for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
+//     if (isCardInside(Card(suit, "J"))) {
+//       pattern.set(i);
+//     }
+//     i--;
+//   }
+
+//   for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
+//     for (const Card& card : cards_) {
+//       if (card.rank() == rank && card.suit() == targetSuit) pattern.set(i);
+//     }
+//     i--;
+//   }
+
+//   qDebug() << "Pattern: " << QString::fromStdString(pattern.to_string());
+
+//   return pattern;
+// }
+
+#include <QDebug>
+#include <string>
+#include <vector>
+
+std::vector<int> CardVec::trumpPattern(
     const std::string& targetSuit) {
-  std::bitset<11> pattern;
+  std::vector<int> pattern(11, 0);
+  int i = 0;
 
-  int i = 10;
-
+  // Set bits for Jacks (first 4 bits)
   for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
     if (isCardInside(Card(suit, "J"))) {
-      pattern.set(i);
+      pattern[i] = 1;  // Set the bit to true if the Jack is found
     }
-    i--;
+    i++;  // Move to the next bit
   }
 
+  // Set bits for trump cards (next 7 bits)
   for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
     for (const Card& card : cards_) {
-      if (card.rank() == rank && card.suit() == targetSuit) pattern.set(i);
+      if (card.rank() == rank && card.suit() == targetSuit) {
+        pattern[i] = 1;  // Set the bit to true if the trump card is found
+      }
     }
-    i--;
+    i++;  // Move to the next bit for each rank
   }
 
-  qDebug() << "Pattern: " << QString::fromStdString(pattern.to_string());
+  qDebug() << "Pattern: " << QString::fromStdString(patternToString(pattern));
 
   return pattern;
+}
+
+int CardVec::countTrump(
+    const std::string& targetSuit) {
+  std::vector<int> pattern = trumpPattern(targetSuit);  // Get the trump pattern
+
+  int count = std::ranges::count(pattern, 1);
+
+  return count;
+}
+
+int CardVec::mitOhne(
+    const std::string& targetSuit) {
+  std::vector<int> pattern = trumpPattern(targetSuit);
+
+  auto mit = pattern | std::ranges::views::take_while(
+                           [](int value) { return value != 0; });
+  int count = std::ranges::count(mit, 1);  // mit => plus
+
+  if (count == 0) {
+    auto ohne = pattern | std::ranges::views::take_while(
+                              [](int value) { return value != 1; });
+    count = -std::ranges::count(ohne, 0);  // ohne => minus
+  }
+
+  qDebug() << count;
+  return count;  // This will return the number of `true` values in the pattern
 }
 
 void CardVec::sortJacksSuits() {
@@ -147,73 +206,6 @@ void CardVec::sortJacksSuits() {
   });
 }
 
-// std::string CardVec::pattern(
-//     const std::string& targetSuit) {
-//   // Initialize the pattern to empty string
-//   std::string pat = "";
-
-//   // Step 1: Sort cards and filter Jacks and the specific suit (done by
-//   // sortJacksSuits)
-//   sortJacksSuits();
-//   auto JplusSuits = filterJplusSuit(targetSuit);
-
-//   // Step 2: Store the presence of Jacks for each suit
-//   std::unordered_map<std::string, int> jackPresence;
-//   for (const auto& card : JplusSuits) {
-//     if (card.rank() == "J") {
-//       jackPresence[card.suit()] = 1;
-//     }
-//   }
-
-//   // Step 3: Store the presence of other ranks for the specific suit
-//   std::unordered_map<std::string, int> rankPresence;
-//   for (const auto& card : JplusSuits) {
-//     if (card.rank() != "J" && card.suit() == targetSuit) {
-//       rankPresence[card.rank()] = 1;
-//     }
-//   }
-
-//   // Step 4: Append '1' or '0' to the pattern for Jacks (♣, ♠, ♥, ♦)
-//   pat += jackPresence["♣"] == 1 ? '1' : '0';
-//   pat += jackPresence["♠"] == 1 ? '1' : '0';
-//   pat += jackPresence["♥"] == 1 ? '1' : '0';
-//   pat += jackPresence["♦"] == 1 ? '1' : '0';
-
-//   // Step 5: Append '1' or '0' for ranks (A, 10, K, Q, 9, 8, 7)
-//   pat += rankPresence["A"] == 1 ? '1' : '0';
-//   pat += rankPresence["10"] == 1 ? '1' : '0';
-//   pat += rankPresence["K"] == 1 ? '1' : '0';
-//   pat += rankPresence["Q"] == 1 ? '1' : '0';
-//   pat += rankPresence["9"] == 1 ? '1' : '0';
-//   pat += rankPresence["8"] == 1 ? '1' : '0';
-//   pat += rankPresence["7"] == 1 ? '1' : '0';
-
-//   // Output the pattern using qDebug()
-//   qDebug() << QString::fromStdString(pat);
-
-//   return pat;
-// }
-
-// int CardVec::mitOhne(
-//     const std::string& targetSuit) {
-//   // Get the pattern for the target suit
-//   std::string pat = pattern(targetSuit);
-
-//   // Count leading '0's using ranges
-//   int count0 = std::ranges::distance(
-//       pat | std::ranges::views::take_while([](char c) { return c == '0';
-//       }));
-
-//   // Count leading '1's using ranges
-//   int count1 = std::ranges::distance(
-//       pat | std::ranges::views::take_while([](char c) { return c == '1';
-//       }));
-
-//   // Return the maximum of leading '0's and leading '1's
-//   qDebug() << "mitOhne " << std::max(count0, count1);
-//   return std::max(count0, count1);
-// }
-
 int CardVec::value() {
   int sum{0};
   for (const Card& card : cards_) sum += card.value();
@@ -222,12 +214,11 @@ int CardVec::value() {
 
 const QString CardVec::print() const {
   QString str;
-  str.reserve(cards_.size() *
-              3);  // Optimize memory allocation (assuming ~3 bytes per card)
+  // Optimize memory allocation (assuming ~3 bytes per card)
+  str.reserve(cards_.size() * 3);
 
   for (const Card& card : cards_) {
-    str += QString::fromStdString(card.str()) +
-           " ";  // Add a space for readability
+    str += QString::fromStdString(card.str()) + " ";
   }
 
   return str;
@@ -236,12 +227,23 @@ const QString CardVec::print() const {
 const QString CardVec::printRange(
     std::vector<Card> rng) const {
   QString str;
-  str.reserve(cards_.size() *
-              3);  // Optimize memory allocation (assuming ~3 bytes per card)
+
+  // Optimize memory allocation (assuming ~3 bytes per card)
+  str.reserve(cards_.size() * 3);
 
   for (const Card& card : rng) {
     str += QString::fromStdString(card.str()) + " ";
   }
 
   return str;
+}
+
+std::string CardVec::patternToString(
+    const std::vector<int>& vec) {
+  std::string result;
+
+  for (int bit : vec) {
+    result += ((bit == 1) ? '1' : '0');
+  }
+  return result;
 }

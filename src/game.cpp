@@ -312,8 +312,9 @@ int Game::spielwert() {
   auto jacks = hand.filterJacks();
   auto suits = hand.filterSuits(trump_);
   auto jacksSuits = hand.filterJacksSuits(trump_);
-
   auto pattern = hand.trumpPattern(trump_);
+
+  auto mitOhne = hand.mitOhne(trump_);
 
   qDebug() << hand.print();
 

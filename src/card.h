@@ -8,16 +8,6 @@
 #include <string>
 
 #include "definitions.h"
-// #include <unordered_map>
-// #include <vector>
-
-// Definitions for th3e global card properties
-// extern std::vector<std::string> suits;
-// extern std::vector<std::string> ranks;
-// extern std::vector<std::string> suitnames;
-// extern std::vector<std::string> ranknames;
-// extern const std::unordered_map<std::string, int> PowerPrioritySuit;
-// extern const std::unordered_map<std::string, int> PowerPriorityNull;
 
 class Card : public QPushButton {
   Q_OBJECT

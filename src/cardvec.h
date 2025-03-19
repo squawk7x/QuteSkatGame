@@ -66,34 +66,28 @@ class CardVec {
     cards_.push_back(std::forward<T>(card));
   }
 
-  // void addCard(
-  //     Card&& card) {
-  //   // Add the card to the vector using move semantics
-  //   cards_.push_back(std::move(card));
-  //   qDebug() << "Card added to target vector:"
-  //            << QString::fromStdString(card.str());
-  // }
-
   // Public Methods
   std::vector<Card>& cards();
   void shuffle();
   bool isCardInside(const Card& card);
   void moveCardTo(const Card&, CardVec& targetVec);
-  // void moveCardTo(Card&, CardVec& targetVec);
-  // void moveCardTo(const Card& card, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
 
   std::vector<Card> filterJacks();
   std::vector<Card> filterSuits(const std::string& targetSuit);
   std::vector<Card> filterJacksSuits(const std::string& targetSuit);
-  std::bitset<11> trumpPattern(const std::string& targetSuit);
+  std::vector<int> trumpPattern(const std::string& targetSuit);
+  int countTrump(const std::string& targetSuit);
+  int mitOhne(const std::string& targetSuit);
+
   void sortJacksSuits();
 
-  // std::string pattern(const std::string& targetSuit);
-  // int mitOhne(const std::string& targetSuit);
   int value();
+
+  // Helperfunctions
   const QString print() const;
   const QString printRange(std::vector<Card> rng) const;
+  std::string patternToString(const std::vector<int>& vec);
 };
 
 #endif  // CARDVEC_H
