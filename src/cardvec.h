@@ -14,48 +14,20 @@ class CardVec {
 
  public:
   // Constructors & Destructor
-  explicit CardVec(
-      int length)
-      : isCardFaceVisible_(false), cardFace_(CardFace::Closed) {
-    cards_.reserve(length);
-  }
+  explicit CardVec(int length);
   ~CardVec() = default;
 
   // Copy Constructor
-  CardVec(
-      const CardVec& other)
-      : cards_(other.cards_),
-        isCardFaceVisible_(other.isCardFaceVisible_),
-        cardFace_(other.cardFace_) {}
+  CardVec(const CardVec& other);
 
   // Copy Assignment Operator
-  CardVec& operator=(
-      const CardVec& other) {
-    if (this != &other) {
-      cards_ = other.cards_;
-      isCardFaceVisible_ = other.isCardFaceVisible_;
-      cardFace_ = other.cardFace_;
-    }
-    return *this;
-  }
+  CardVec& operator=(const CardVec& other);
 
   // Move Constructor
-  CardVec(
-      CardVec&& other) noexcept
-      : cards_(std::move(other.cards_)),
-        isCardFaceVisible_(other.isCardFaceVisible_),
-        cardFace_(other.cardFace_) {}
+  CardVec(CardVec&& other) noexcept;
 
   // Move Assignment Operator
-  CardVec& operator=(
-      CardVec&& other) noexcept {
-    if (this != &other) {
-      cards_ = std::move(other.cards_);
-      isCardFaceVisible_ = other.isCardFaceVisible_;
-      cardFace_ = other.cardFace_;
-    }
-    return *this;
-  }
+  CardVec& operator=(CardVec&& other) noexcept;
 
   // Universal Forwarding of card
   template <typename T>
@@ -76,11 +48,11 @@ class CardVec {
   std::vector<Card> filterJacksSuits(const std::string& targetSuit);
   // e.g. J J J J A 10 K Q 9 8 7 =>
   //      1 0 0 1 1  0 0 1 1 0 0
-  std::vector<int> patternForSuit(const std::string& targetSuit);
+  std::vector<int> patternJacksAndSuit(const std::string& targetSuit);
   // e.g. 5
-  int sumPatternForSuit(const std::string& targetSuit);
+  int sumPatternJacksAndSuit(const std::string& targetSuit);
   // e.g. 5
-  int countPatterForSuit(const std::string& targetSuit);
+  int countPatternJacksAndSuit(const std::string& targetSuit);
   // e.g.  {"J", 1}, {"♣", 3}, {"♠", 3}, {"♥", 1}, {"♦", 2}};
   std::map<std::string, int> JandSuitNumMap();
   // e.g. {"J", 4} or {"♣", 5}

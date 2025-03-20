@@ -10,6 +10,7 @@ enum class CardSize { Normal, Small };
 enum class LinkTo { Skat, Handdeck, Trick };
 enum class Rule { Unset, Suit, Grand, Null, Ramsch };
 enum class Reizen { Normal, Reset, Preview };
+enum class Bieten { Ja, Nein };
 
 // Use `inline` for `const` global variables (only in header)
 inline const std::vector<std::string> suits = {"♣", "♠", "♥", "♦"};

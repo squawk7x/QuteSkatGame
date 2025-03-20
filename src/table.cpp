@@ -87,12 +87,7 @@ Table::Table(
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
 
-    QObject::connect(game_, &Game::ramsch, this, [this]() {
-      ui->pbRamsch->click();
-      ui->pbRamsch->setDisabled(true);
-      ui->pbDruecken->click();
-      ui->gbRule->setDisabled(true);
-    });
+    QObject::connect(game_, &Game::ruleAndTrump, this, &Table::onRuleAndTrump);
 
     // Spiel Ouvert, Hand, Schneider, Schwarz
     QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
@@ -145,28 +140,27 @@ Table::Table(
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
       // Player *player = &game_->getPlayerById(1);
-      game_->bieten();
+      game_->bieten(Bieten::Ja);
     });
 
-    QObject::connect(ui->pbBieten2, &QPushButton::clicked, this, [this]() {
-      // Player *player = &game_->getPlayerById(1);
-      game_->bieten();
-    });
+    // Testing
+    QObject::connect(ui->pbBieten2, &QPushButton::clicked, this,
+                     [this]() { game_->bieten(Bieten::Ja); });
 
-    QObject::connect(ui->pbBieten3, &QPushButton::clicked, this, [this]() {
-      // Player *player = &game_->getPlayerById(1);
-      game_->bieten();
-    });
+    // Testing
+    QObject::connect(ui->pbBieten3, &QPushButton::clicked, this,
+                     [this]() { game_->bieten(Bieten::Ja); });
 
-    QObject::connect(ui->pbPassen, &QPushButton::clicked, this, [this]() {
-      game_->bieten(true);  // bieten (bool passe)
-    });
+    QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
+                     [this]() { game_->bieten(Bieten::Nein); });
 
     // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
         game_->druecken();
         updateSkatLayout(LinkTo::Skat);
+        for (int playerId = 1; playerId <= 3; playerId++)
+          updatePlayerLayout(playerId, LinkTo::Trick);
         ui->gbFrageHand->hide();
         ui->gbDruecken->hide();
         ui->gbSkat->hide();
@@ -343,6 +337,32 @@ void Table::onFrageHand() {
   ui->lblSkatGereiztBis->setText("Gereizt bis: " +
                                  QString::number(game_->gereizt_));
   ui->lblSkatGereiztBis->show();
+}
+
+// Robots will emit
+void Table::onRuleAndTrump(
+    Rule rule, std::string trump) {
+  if (rule == Rule::Ramsch) {
+    ui->pbRamsch->click();
+    ui->pbRamsch->setDisabled(true);
+  } else if (rule == Rule::Grand) {
+    ui->pbGrand->click();
+  } else if (rule == Rule::Null) {
+    ui->pbNull->click();
+  } else if (trump == "♦") {
+    ui->pbKaro->click();
+  } else if (trump == "♥") {
+    ui->pbHerz->click();
+  } else if (trump == "♠") {
+    ui->pbPik->click();
+  } else if (trump == "♣") {
+    ui->pbKreuz->click();
+  }
+
+  ui->pbDruecken->click();
+  ui->gbRule->setDisabled(true);
+
+  qDebug() << "Trump:" << QString::fromStdString(game_->trump_);
 }
 
 void Table::onResultat() {

@@ -179,7 +179,7 @@ bool Game::sagen(
 }
 
 void Game::bieten(
-    bool passe) {
+    Bieten bieten) {
   int hoererPos = 1;
   int sagerPos = 2;
 
@@ -189,7 +189,7 @@ void Game::bieten(
   QString antwortSager, antwortHoerer;
 
   while (sagen(sagerPos) && hoeren(hoererPos)) {
-    if (!sager->isRobot() && passe) {
+    if (!sager->isRobot() && bieten == Bieten::Nein) {
       sager->maxBieten_ = 0;
       antwortSager = "passe";
       antwortHoerer = "hör ich mehr?";
@@ -197,7 +197,7 @@ void Game::bieten(
       break;
     }
 
-    if (!hoerer->isRobot() && passe) {
+    if (!hoerer->isRobot() && bieten == Bieten::Nein) {
       hoerer->maxBieten_ = 0;
       antwortSager = QString::number(gereizt_);
       antwortHoerer = "weg";
@@ -229,7 +229,7 @@ void Game::bieten(
   sager = &getPlayerByPos(sagerPos);
 
   while (sagen(sagerPos) && hoeren(hoererPos)) {
-    if (!sager->isRobot() && passe) {
+    if (!sager->isRobot() && bieten == Bieten::Nein) {
       sager->maxBieten_ = 0;
       antwortSager = "passe";
       antwortHoerer = "mein Spiel";
@@ -237,7 +237,7 @@ void Game::bieten(
       break;
     }
 
-    if (!hoerer->isRobot() && passe) {
+    if (!hoerer->isRobot() && bieten == Bieten::Nein) {
       hoerer->maxBieten_ = 0;
       antwortHoerer = "passe";
       antwortSager = QString::number(gereizt_);
@@ -255,7 +255,7 @@ void Game::bieten(
   // Check for Ramsch game
   if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
     hoerer->isSolo_ = false;
-    emit ramsch();
+    emit ruleAndTrump(Rule::Ramsch, "J");
     return;
   }
 
@@ -286,18 +286,30 @@ void Game::bieten(
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
   }
 
-  emit frageHand();
+  if (rule_ != Rule::Ramsch) emit frageHand();
 }
 
 void Game::druecken() {
   if (skat_.cards().size() == 2) {
+    emit refreshSkatLayout(LinkTo::Skat);
+    // TODO after testing: LinkTo::Trick only for player 1
+    for (int playerId = 1; playerId <= 3; playerId++)
+      emit refreshPlayerLayout(playerId, LinkTo::Trick);
+
     Player* player = getPlayerByIsSolo();
     // disconnect skat
     if (player) {
       player->tricks_.push_back(std::move(skat_));
       // Skat in Ramsch handled in finishRound
-      emit refreshSkatLayout(LinkTo::Skat);
-      emit refreshPlayerLayout(player->id(), LinkTo::Trick);
+
+      // TODO
+      if (player->isRobot()) {
+        emit ruleAndTrump(
+            Rule::Suit,
+            player->handdeck_
+                .highestPairInMap(player->handdeck_.JandSuitNumMap())
+                .first);
+      }
     }
   }
 }
@@ -344,6 +356,8 @@ void Game::autoplay() {
              << QString::fromStdString(
                     cardsToString(playableCards(player->id())));
 
+    // Rule must be set!
+    // TODO best card to play
     // if (player->isRobot()) {
     Card card = playableCards(player->id()).front();
 
@@ -527,7 +541,6 @@ bool Game::isCardStronger(
   return false;
 }
 
-// Slots:
 void Game::playCard(
     const Card& card) {
   qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
@@ -653,14 +666,6 @@ Player* Game::getPlayerByMostTricksPoints() {
   }
 }
 
-// void Game::setAllPlayersTricksPoints() {
-//   for (const auto& player : playerList_) {
-//     player->setTricksPoints();
-//     qDebug() << QString::fromStdString(player->name())
-//              << " - Total Points: " << QString::number(player->points());
-//   }
-// }
-
 void Game::finishRound() {
   qDebug() << "finishing round ...\n";
 
@@ -670,9 +675,11 @@ void Game::finishRound() {
              << " - Total Points: " << QString::number(player->points());
   }
 
-  assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
-             player_3.tricksPoints_ ==
-         120);
+  if (rule_ != Rule::Ramsch)
+    assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
+               player_3.tricksPoints_ ==
+           120);
+
   // TODO Spielwert
   if (rule_ != Rule::Ramsch) {
     Player* player = getPlayerByIsSolo();

@@ -7,14 +7,56 @@
 #include <unordered_map>
 
 #include "definitions.h"
-#include "helperFunctions.h"
+
+// Constructor
+CardVec::CardVec(
+    int length)
+    : isCardFaceVisible_(false), cardFace_(CardFace::Closed) {
+  cards_.reserve(length);
+}
+
+// Copy Constructor
+CardVec::CardVec(
+    const CardVec& other)
+    : cards_(other.cards_),
+      isCardFaceVisible_(other.isCardFaceVisible_),
+      cardFace_(other.cardFace_) {}
+
+// Copy Assignment Operator
+CardVec& CardVec::operator=(
+    const CardVec& other) {
+  if (this != &other) {
+    cards_ = other.cards_;
+    isCardFaceVisible_ = other.isCardFaceVisible_;
+    cardFace_ = other.cardFace_;
+  }
+  return *this;
+}
+
+// Move Constructor
+CardVec::CardVec(
+    CardVec&& other) noexcept
+    : cards_(std::move(other.cards_)),
+      isCardFaceVisible_(other.isCardFaceVisible_),
+      cardFace_(other.cardFace_) {}
+
+// Move Assignment Operator
+CardVec& CardVec::operator=(
+    CardVec&& other) noexcept {
+  if (this != &other) {
+    cards_ = std::move(other.cards_);
+    isCardFaceVisible_ = other.isCardFaceVisible_;
+    cardFace_ = other.cardFace_;
+  }
+  return *this;
+}
 
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
 
 void CardVec::shuffle() {
   std::random_device rd;
-  std::mt19937 gen(rd());  // New RNG instance with fresh seed
+  std::mt19937 gen(rd());
   std::ranges::shuffle(cards_, gen);
 }
 
@@ -85,7 +127,7 @@ std::vector<Card> CardVec::filterJacksSuits(
   return result;
 }
 
-std::vector<int> CardVec::patternForSuit(
+std::vector<int> CardVec::patternJacksAndSuit(
     const std::string& targetSuit) {
   std::vector<int> pattern(11, 0);
   int i = 0;
@@ -111,14 +153,15 @@ std::vector<int> CardVec::patternForSuit(
   return pattern;
 }
 
-int CardVec::sumPatternForSuit(
+int CardVec::sumPatternJacksAndSuit(
     const std::string& targetSuit) {
-  return std::ranges::fold_left(patternForSuit(targetSuit), 0, std::plus<>());
+  return std::ranges::fold_left(patternJacksAndSuit(targetSuit), 0,
+                                std::plus<>());
 }
 
-int CardVec::countPatterForSuit(
+int CardVec::countPatternJacksAndSuit(
     const std::string& targetSuit) {
-  std::vector<int> pattern = patternForSuit(targetSuit);
+  std::vector<int> pattern = patternJacksAndSuit(targetSuit);
 
   int count = std::ranges::count(pattern, 1);
 
@@ -152,7 +195,7 @@ std::pair<std::string, int> CardVec::highestPairInMap(
 
 int CardVec::mitOhne(
     const std::string& targetSuit) {
-  std::vector<int> pattern = patternForSuit(targetSuit);
+  std::vector<int> pattern = patternJacksAndSuit(targetSuit);
 
   auto mit = pattern | std::ranges::views::take_while(
                            [](int value) { return value != 0; });
@@ -164,7 +207,7 @@ int CardVec::mitOhne(
     count = -std::ranges::count(ohne, 0);  // ohne => minus
   }
 
-  return count;  // This will return the number of `true` values in the pattern
+  return count;
 }
 
 void CardVec::sortByJacksAndSuits() {
@@ -196,39 +239,3 @@ int CardVec::value() {
   for (const Card& card : cards_) sum += card.value();
   return sum;
 }
-
-// const QString CardVec::print() const {
-//   QString str;
-//   // Optimize memory allocation (assuming ~3 bytes per card)
-//   str.reserve(cards_.size() * 3);
-
-//   for (const Card& card : cards_) {
-//     str += QString::fromStdString(card.str()) + " ";
-//   }
-
-//   return str;
-// }
-
-// const QString CardVec::printRange(
-//     std::vector<Card> rng) const {
-//   QString str;
-
-//   // Optimize memory allocation (assuming ~3 bytes per card)
-//   str.reserve(cards_.size() * 3);
-
-//   for (const Card& card : rng) {
-//     str += QString::fromStdString(card.str()) + " ";
-//   }
-
-//   return str;
-// }
-
-// std::string CardVec::cardsToString(
-//     const std::vector<int>& vec) {
-//   std::string result;
-
-//   for (int bit : vec) {
-//     result += ((bit == 1) ? '1' : '0');
-//   }
-//   return result;
-// }

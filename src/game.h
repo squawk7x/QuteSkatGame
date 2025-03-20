@@ -39,20 +39,19 @@ class Game : public QObject {
 
   // public methods
   void init();
-  // void startGame();
   void start();
   void geben();
+
   int reizen(Reizen reizen = Reizen::Normal);
   void setMaxBieten();
-
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
-  void bieten(bool passe = false);
+  void bieten(Bieten bieten = Bieten::Ja);
   void druecken();
   int reizwert(Player* player, const std::string& suit = "");
   int spielwert(const std::string& suit = "");
-
   void autoplay();
+  void finishRound();
 
   bool isCardValid(const Card& card);
   std::vector<Card> playableCards(int playerId);
@@ -66,8 +65,6 @@ class Game : public QObject {
   Player* getPlayerByIsSolo();
   Player* getPlayerByMostTricksPoints();
 
-  // void setAllPlayersTricksPoints();
-  void finishRound();
 
  signals:
   void gegeben();
@@ -76,7 +73,7 @@ class Game : public QObject {
   void weiterbieten(int idSager, int idHoerer, QString antwortSager,
                     QString antwortHoerer);
   void frageHand();
-  void ramsch();
+  void ruleAndTrump(Rule rule, std::string trump);
   void resultat();
 
   void refreshSkatLayout(LinkTo dest = LinkTo::Skat);
