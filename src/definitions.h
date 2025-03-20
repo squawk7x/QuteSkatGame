@@ -8,7 +8,7 @@
 enum class CardFace { Open, Closed };
 enum class CardSize { Normal, Small };
 enum class LinkTo { Skat, Handdeck, Trick };
-enum class Rule { Suit, Grand, Null, Ramsch };
+enum class Rule { Unset, Suit, Grand, Null, Ramsch };
 enum class Reizen { Normal, Reset, Preview };
 
 // Use `inline` for `const` global variables (only in header)
@@ -19,6 +19,9 @@ inline const std::vector<std::string> ranks = {"J", "A", "10", "K",
                                                "Q", "9", "8",  "7"};
 inline const std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
                                                    "queen", "9",   "8",  "7"};
+
+inline const std::unordered_map<std::string, int> trumpValue = {
+    {"J", 24}, {"♣", 12}, {"♠", 11}, {"♥", 10}, {"♦", 9}};
 
 inline const std::unordered_map<std::string, int> PowerPriorityNull = {
     {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},

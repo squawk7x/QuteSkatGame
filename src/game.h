@@ -6,14 +6,6 @@
 #include "cardvec.h"
 #include "player.h"
 
-// Helperfunction
-void printCards(
-    const auto& coll) {
-  for (const auto& elem : coll) {
-    qDebug() << QString::fromStdString(elem.str()) << ' ';
-  }
-}
-
 class Game : public QObject {
   Q_OBJECT
 
@@ -33,10 +25,13 @@ class Game : public QObject {
   Rule rule_{};
   std::string trump_{};
   int gereizt_{};
+  int reizwert_{};
   int spielwert_{};
   bool hand_{};
   bool ouvert_{};
+  bool schneiderAngesagt_{};
   bool schneider_{};
+  bool schwarzAngesagt_{};
   bool schwarz_{};
 
   // constructor
@@ -48,12 +43,14 @@ class Game : public QObject {
   void start();
   void geben();
   int reizen(Reizen reizen = Reizen::Normal);
+  void setMaxBieten();
 
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
   void bieten(bool passe = false);
   void druecken();
-  int spielwert();
+  int reizwert(Player* player, const std::string& suit = "");
+  int spielwert(const std::string& suit = "");
 
   void autoplay();
 

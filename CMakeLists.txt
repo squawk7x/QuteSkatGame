@@ -35,6 +35,8 @@ set(PROJECT_SOURCES
     src/player.h
     src/player.cpp
     src/definitions.h
+    src/helperFunctions.cpp
+    src/helperFunctions.h
     README.md
     res/resources.qrc)
 
@@ -84,12 +86,12 @@ include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
 add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
 
 # Define test executable Define sources without main.cpp
-set(TEST_SOURCES ${PROJECT_SOURCES})
+set(TEST_SOURCES ${PROJECT_SOURCES} tests/tester.cpp)
 list(REMOVE_ITEM TEST_SOURCES src/main.cpp)
 
 # Define test executable
-add_executable(runTests tests/tst_reizen.cpp tests/tst_bieten.cpp
-                        ${TEST_SOURCES})
+add_executable(runTests #[[tests/tst_reizen.cpp tests/tst_bieten.cpp]]
+               tests/tester.cpp ${TEST_SOURCES})
 
 # Link GoogleTest and Qt6
 target_link_libraries(runTests gtest gtest_main Qt6::Core Qt6::Test

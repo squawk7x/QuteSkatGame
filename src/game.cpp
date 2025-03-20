@@ -6,6 +6,7 @@
 #include <ranges>
 
 #include "definitions.h"
+#include "helperFunctions.h"
 
 Game::Game(
     QObject* parent)
@@ -33,8 +34,8 @@ void Game::start() {
   // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
-  player_2.maxBieten_ = 30;
-  player_3.maxBieten_ = 23;
+  player_2.maxBieten_ = 0;
+  player_3.maxBieten_ = 0;
 
   // Players' tricks to blind
   qDebug() << "Moving cards from players' tricks to blind.";
@@ -93,11 +94,11 @@ void Game::geben() {
   }
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-    // player->handdeck_.sortJacksSuits();
+    // player->handdeck_.sortByJacksAndSuits();
     // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
   }
 
-  // for (Player* player : playerList_) player->handdeck_.sortJacksSuits();
+  // for (Player* player : playerList_) player->handdeck_.sortByJacksAndSuits();
 
   qDebug() << "blind" << blind_.cards().size();
   qDebug() << "skat" << skat_.cards().size();
@@ -106,6 +107,7 @@ void Game::geben() {
              << player->handdeck_.cards().size();
 
   emit gegeben();
+  setMaxBieten();
 
   int hoererPos = 1;
   int sagerPos = 2;
@@ -113,6 +115,23 @@ void Game::geben() {
   Player* hoerer = &getPlayerByPos(hoererPos);
   Player* sager = &getPlayerByPos(sagerPos);
   emit geboten(sager->id(), hoerer->id(), "sagt", "hört");
+}
+
+void Game::setMaxBieten() {
+  for (Player* player : playerList_) {
+    CardVec& hand = player->handdeck_;
+
+    std::pair favorite = hand.highestPairInMap(hand.JandSuitNumMap());
+    int numJacks = hand.JandSuitNumMap()["J"];
+
+    if (player->id() == 1) {
+      player->maxBieten_ = 216;
+    } else if (numJacks + favorite.second >= 5) {
+      player->maxBieten_ = reizwert(player, favorite.first);
+    } else
+      player->maxBieten_ = 0;
+    qDebug() << "Player" << player->id() << "bietet bis:" << player->maxBieten_;
+  }
 }
 
 int Game::reizen(
@@ -283,6 +302,35 @@ void Game::druecken() {
   }
 }
 
+int Game::reizwert(
+    Player* player, const std::string& suit) {
+  int reizwert;
+
+  if (rule_ == Rule::Null) {
+    if (ouvert_ && hand_)
+      return 59;
+    else if (ouvert_)
+      return 46;
+    else if (hand_)
+      return 35;
+    else
+      return 23;
+  } else if (rule_ == Rule::Ramsch) {
+    return 0;
+  }
+
+  reizwert = (abs(player->handdeck_.mitOhne(suit)) + 1 + hand_ + ouvert_ +
+              2 * schneiderAngesagt_ + 2 * schwarzAngesagt_) *
+             trumpValue.at(suit);
+
+  return reizwert;
+}
+
+int Game::spielwert(
+    const std::string& suit) {
+  return 0;
+}
+
 void Game::autoplay() {
   qDebug() << "autoplay() ...";
 
@@ -292,7 +340,9 @@ void Game::autoplay() {
       !player_3.handdeck_.cards().empty()) {
     Player* player = playerList_.front();
 
-    printCards(playableCards(player->id()));
+    qDebug() << "Playable cards:"
+             << QString::fromStdString(
+                    cardsToString(playableCards(player->id())));
 
     // if (player->isRobot()) {
     Card card = playableCards(player->id()).front();
@@ -303,22 +353,6 @@ void Game::autoplay() {
     emit refreshPlayerLayout(player->id());
     // }
   }
-}
-
-int Game::spielwert() {
-  qDebug() << "Spielwert";
-  CardVec hand = playerList_.front()->handdeck_;
-
-  auto jacks = hand.filterJacks();
-  auto suits = hand.filterSuits(trump_);
-  auto jacksSuits = hand.filterJacksSuits(trump_);
-  auto pattern = hand.trumpPattern(trump_);
-
-  auto mitOhne = hand.mitOhne(trump_);
-
-  qDebug() << hand.print();
-
-  return 0;
 }
 
 bool Game::isCardValid(
@@ -511,8 +545,6 @@ void Game::playCard(
 
   // Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
-
-  qDebug() << "trick: " << trick_.print();
 
   // Rotate playerlist
   activateNextPlayer();

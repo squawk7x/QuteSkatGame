@@ -20,41 +20,72 @@ Table::Table(
     // Frage Hand
     QObject::connect(game_, &Game::frageHand, this, &Table::onFrageHand);
 
-    QObject::connect(ui->pbKaro, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Suit;
-      game_->trump_ = "♦";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbHerz, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Suit;
-      game_->trump_ = "♥";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbPik, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Suit;
-      game_->trump_ = "♠";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbKreuz, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Suit;
-      game_->trump_ = "♣";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbNull, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Null;
-      game_->trump_ = "";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbGrand, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Grand;
-      game_->trump_ = "J";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
-    QObject::connect(ui->pbRamsch, &QPushButton::clicked, this, [this]() {
-      game_->rule_ = Rule::Ramsch;
-      game_->trump_ = "J";
-      qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-    });
+    QObject::connect(
+        ui->pbKaro, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = Rule::Suit;
+          game_->trump_ = "♦";
+
+          resetClicks();
+
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbHerz, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = Rule::Suit;
+          game_->trump_ = "♥";
+
+          resetClicks();
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbPik, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = Rule::Suit;
+          game_->trump_ = "♠";
+
+          resetClicks();
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbKreuz, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = Rule::Suit;
+          game_->trump_ = "♣";
+
+          resetClicks();
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbGrand, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = checked ? Rule::Grand : Rule::Unset;
+          game_->trump_ = checked ? "J" : "";
+
+          resetClicks();
+
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbRamsch, &QPushButton::toggled, this, [this](bool checked) {
+          game_->rule_ = checked ? Rule::Ramsch : Rule::Unset;
+          game_->trump_ = checked ? "J" : "";
+
+          resetClicks();
+          ui->pbOuvert->setDisabled(checked);
+          ui->pbHand->setDisabled(checked);
+          ui->pbSchneider->setDisabled(checked);
+          ui->pbSchwarz->setDisabled(checked);
+
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
+    QObject::connect(
+        ui->pbNull, &QPushButton::clicked, this, [this](bool checked) {
+          game_->rule_ = checked ? Rule::Null : Rule::Unset;
+          game_->trump_ = "";
+
+          resetClicks();
+          ui->pbSchneider->setDisabled(checked);
+          ui->pbSchwarz->setDisabled(checked);
+
+          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+        });
 
     QObject::connect(game_, &Game::ramsch, this, [this]() {
       ui->pbRamsch->click();
@@ -63,35 +94,34 @@ Table::Table(
       ui->gbRule->setDisabled(true);
     });
 
-    // Spiel Hand, Ouvert, Schneider, Schwarz
+    // Spiel Ouvert, Hand, Schneider, Schwarz
+    QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
+                     [this](bool checked) {
+                       game_->ouvert_ = checked;
+                       qDebug() << "ouvert_ set to" << game_->ouvert_;
+                     });
+
     QObject::connect(ui->pbHand, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->hand_ = checked;
                        qDebug() << "hand_ set to" << game_->hand_;
                      });
 
-    QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
-                     [this](bool checked) {
-                       game_->ouvert_ = checked;
-                       qDebug() << "ouvert_ set to" << game_->ouvert_;
-                     });
-    QObject::connect(ui->pbSchneider, &QPushButton::toggled, this,
-                     [this](bool checked) {
-                       game_->schneider_ = checked;
-                       qDebug() << "schneider_ set to" << game_->schneider_;
-                     });
+    QObject::connect(
+        ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
+          game_->schneiderAngesagt_ = checked;
+          qDebug() << "schneider_ set to" << game_->schneiderAngesagt_;
+        });
+
     QObject::connect(
         ui->pbSchwarz, &QPushButton::toggled, this, [this](bool checked) {
-          if (checked) {
-            ui->pbSchneider->setChecked(
-                true);  // Wenn schwarz angesagt dann auch Schneider
-            ui->pbSchneider->setDisabled(true);
-          } else
-            ui->pbSchneider->setDisabled(false);
-          game_->schwarz_ = checked;
+          // Wenn schwarz angesagt dann auch Schneider
+          ui->pbSchneider->setChecked(checked);
+          game_->schneiderAngesagt_ = checked;
+          game_->schwarzAngesagt_ = checked;
 
-          qDebug() << "schneider_/schwarz_ set to" << game_->schneider_ << "/"
-                   << game_->schwarz_;
+          qDebug() << "schneider_/schwarz_ set to" << game_->schneiderAngesagt_
+                   << "/" << game_->schwarzAngesagt_;
         });
 
     // Resultat
@@ -161,8 +191,6 @@ Table::Table(
     });
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
-    QObject::connect(ui->pbSpielwert, &QPushButton::clicked, game_,
-                     &Game::spielwert);
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
                      &Game::start);
@@ -206,6 +234,17 @@ Table::Table(
   game_->init();
 }
 
+void Table::resetClicks() {
+  ui->pbOuvert->setDisabled(false);
+  ui->pbOuvert->setChecked(false);
+  ui->pbHand->setDisabled(false);
+  ui->pbHand->setChecked(false);
+  ui->pbSchneider->setDisabled(false);
+  ui->pbSchneider->setChecked(false);
+  ui->pbSchwarz->setDisabled(false);
+  ui->pbSchwarz->setChecked(false);
+}
+
 void Table::onGegeben() {
   {
     ui->lblUrsprungsSkat->hide();
@@ -223,6 +262,8 @@ void Table::onGegeben() {
     ui->gbSpiel->hide();
     ui->pbRamsch->setDisabled(false);
     ui->pbRamsch->clicked(false);
+    ui->pbOuvert->setDisabled(false);
+    ui->pbOuvert->clicked(false);
     ui->pbHand->setDisabled(false);
     ui->pbHand->clicked(false);
     ui->pbSchneider->setDisabled(false);
@@ -423,7 +464,7 @@ void Table::updatePlayerLayout(
     }
     delete item;
   }
-  player.handdeck_.sortJacksSuits();
+  player.handdeck_.sortByJacksAndSuits();
 
   for (Card &card : player.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);

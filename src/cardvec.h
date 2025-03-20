@@ -1,7 +1,6 @@
 #ifndef CARDVEC_H
 #define CARDVEC_H
 
-#include <bitset>
 #include <utility>
 #include <vector>
 
@@ -15,7 +14,6 @@ class CardVec {
 
  public:
   // Constructors & Destructor
-  // CardVec() : isCardFaceVisible_(false), cardFace_(CardFace::Closed) {}
   explicit CardVec(
       int length)
       : isCardFaceVisible_(false), cardFace_(CardFace::Closed) {
@@ -76,18 +74,25 @@ class CardVec {
   std::vector<Card> filterJacks();
   std::vector<Card> filterSuits(const std::string& targetSuit);
   std::vector<Card> filterJacksSuits(const std::string& targetSuit);
-  std::vector<int> trumpPattern(const std::string& targetSuit);
-  int countTrump(const std::string& targetSuit);
+  // e.g. J J J J A 10 K Q 9 8 7 =>
+  //      1 0 0 1 1  0 0 1 1 0 0
+  std::vector<int> patternForSuit(const std::string& targetSuit);
+  // e.g. 5
+  int sumPatternForSuit(const std::string& targetSuit);
+  // e.g. 5
+  int countPatterForSuit(const std::string& targetSuit);
+  // e.g.  {"J", 1}, {"♣", 3}, {"♠", 3}, {"♥", 1}, {"♦", 2}};
+  std::map<std::string, int> JandSuitNumMap();
+  // e.g. {"J", 4} or {"♣", 5}
+  std::pair<std::string, int> highestPairInMap(
+      const std::map<std::string, int>& suitMap);
+  // e.g. J J J J
+  //      0 1 1 0 => -1
   int mitOhne(const std::string& targetSuit);
 
-  void sortJacksSuits();
+  void sortByJacksAndSuits();
 
   int value();
-
-  // Helperfunctions
-  const QString print() const;
-  const QString printRange(std::vector<Card> rng) const;
-  std::string patternToString(const std::vector<int>& vec);
 };
 
 #endif  // CARDVEC_H

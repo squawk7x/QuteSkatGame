@@ -33,6 +33,7 @@ class Table : public QMainWindow {
   void updateTrickLayout(const Card &card, int playerId);
 
  protected:
+  void resetClicks();
   void mousePressEvent(QMouseEvent *event) override;
 
  public slots:

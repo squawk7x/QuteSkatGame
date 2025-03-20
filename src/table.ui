@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1449</width>
+    <width>1629</width>
     <height>621</height>
    </rect>
   </property>
@@ -1380,13 +1380,6 @@ links</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pbSpielwert">
-        <property name="text">
-         <string>Spielwert</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_10">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -1535,7 +1528,7 @@ links</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1449</width>
+     <width>1629</width>
      <height>26</height>
     </rect>
    </property>

@@ -7,14 +7,7 @@
 #include <unordered_map>
 
 #include "definitions.h"
-
-// CardVec::CardVec(
-//     int length)
-//     : cards_{}, isCardFaceVisible_{false}, cardFace_{CardFace::Closed} {
-//   cards_.reserve(length);
-// }
-
-// CardVec::~CardVec() {}
+#include "helperFunctions.h"
 
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
@@ -62,8 +55,6 @@ std::vector<Card> CardVec::filterJacks() {
   std::vector<Card> result;
   result.insert(result.end(), jacks.begin(), jacks.end());
 
-  qDebug() << "filterJacks:" << printRange(result);
-
   return result;
 }
 
@@ -76,8 +67,6 @@ std::vector<Card> CardVec::filterSuits(
 
   std::vector<Card> result;
   result.insert(result.end(), suits.begin(), suits.end());
-
-  qDebug() << "filterSuits:" << printRange(result);
 
   return result;
 }
@@ -93,41 +82,10 @@ std::vector<Card> CardVec::filterJacksSuits(
   result.insert(result.end(), jacks.begin(), jacks.end());
   result.insert(result.end(), suits.begin(), suits.end());
 
-  qDebug() << "filterJacksSuits:" << printRange(result);
-
   return result;
 }
 
-// std::bitset<11> CardVec::trumpPattern(
-//     const std::string& targetSuit) {
-//   std::bitset<11> pattern;
-
-//   int i = 10;
-
-//   for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
-//     if (isCardInside(Card(suit, "J"))) {
-//       pattern.set(i);
-//     }
-//     i--;
-//   }
-
-//   for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
-//     for (const Card& card : cards_) {
-//       if (card.rank() == rank && card.suit() == targetSuit) pattern.set(i);
-//     }
-//     i--;
-//   }
-
-//   qDebug() << "Pattern: " << QString::fromStdString(pattern.to_string());
-
-//   return pattern;
-// }
-
-#include <QDebug>
-#include <string>
-#include <vector>
-
-std::vector<int> CardVec::trumpPattern(
+std::vector<int> CardVec::patternForSuit(
     const std::string& targetSuit) {
   std::vector<int> pattern(11, 0);
   int i = 0;
@@ -135,38 +93,66 @@ std::vector<int> CardVec::trumpPattern(
   // Set bits for Jacks (first 4 bits)
   for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
     if (isCardInside(Card(suit, "J"))) {
-      pattern[i] = 1;  // Set the bit to true if the Jack is found
+      pattern[i] = 1;
     }
-    i++;  // Move to the next bit
+    i++;
   }
 
   // Set bits for trump cards (next 7 bits)
   for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
     for (const Card& card : cards_) {
       if (card.rank() == rank && card.suit() == targetSuit) {
-        pattern[i] = 1;  // Set the bit to true if the trump card is found
+        pattern[i] = 1;
       }
     }
-    i++;  // Move to the next bit for each rank
+    i++;
   }
-
-  qDebug() << "Pattern: " << QString::fromStdString(patternToString(pattern));
 
   return pattern;
 }
 
-int CardVec::countTrump(
+int CardVec::sumPatternForSuit(
     const std::string& targetSuit) {
-  std::vector<int> pattern = trumpPattern(targetSuit);  // Get the trump pattern
+  return std::ranges::fold_left(patternForSuit(targetSuit), 0, std::plus<>());
+}
+
+int CardVec::countPatterForSuit(
+    const std::string& targetSuit) {
+  std::vector<int> pattern = patternForSuit(targetSuit);
 
   int count = std::ranges::count(pattern, 1);
 
   return count;
 }
 
+std::map<std::string, int> CardVec::JandSuitNumMap() {
+  std::map<std::string, int> JandSuitNumMap = {
+      {"J", 0}, {"♣", 0}, {"♠", 0}, {"♥", 0}, {"♦", 0}};
+
+  for (const Card& card : cards_) {
+    if (card.rank() == "J") {
+      JandSuitNumMap["J"]++;
+    } else {
+      JandSuitNumMap[card.suit()]++;
+    }
+  }
+
+  return JandSuitNumMap;
+}
+
+std::pair<std::string, int> CardVec::highestPairInMap(
+    const std::map<std::string, int>& suitMap) {
+  if (suitMap.empty()) return {"", 0};
+
+  auto mostJorSuit = std::ranges::max_element(
+      suitMap, {}, &std::pair<const std::string, int>::second);
+
+  return *mostJorSuit;
+}
+
 int CardVec::mitOhne(
     const std::string& targetSuit) {
-  std::vector<int> pattern = trumpPattern(targetSuit);
+  std::vector<int> pattern = patternForSuit(targetSuit);
 
   auto mit = pattern | std::ranges::views::take_while(
                            [](int value) { return value != 0; });
@@ -178,11 +164,10 @@ int CardVec::mitOhne(
     count = -std::ranges::count(ohne, 0);  // ohne => minus
   }
 
-  qDebug() << count;
   return count;  // This will return the number of `true` values in the pattern
 }
 
-void CardVec::sortJacksSuits() {
+void CardVec::sortByJacksAndSuits() {
   // Step 1: Sort normally by suit and rank
   std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
     if (SortPrioritySuit.at(a.suit()) != SortPrioritySuit.at(b.suit())) {
@@ -212,38 +197,38 @@ int CardVec::value() {
   return sum;
 }
 
-const QString CardVec::print() const {
-  QString str;
-  // Optimize memory allocation (assuming ~3 bytes per card)
-  str.reserve(cards_.size() * 3);
+// const QString CardVec::print() const {
+//   QString str;
+//   // Optimize memory allocation (assuming ~3 bytes per card)
+//   str.reserve(cards_.size() * 3);
 
-  for (const Card& card : cards_) {
-    str += QString::fromStdString(card.str()) + " ";
-  }
+//   for (const Card& card : cards_) {
+//     str += QString::fromStdString(card.str()) + " ";
+//   }
 
-  return str;
-}
+//   return str;
+// }
 
-const QString CardVec::printRange(
-    std::vector<Card> rng) const {
-  QString str;
+// const QString CardVec::printRange(
+//     std::vector<Card> rng) const {
+//   QString str;
 
-  // Optimize memory allocation (assuming ~3 bytes per card)
-  str.reserve(cards_.size() * 3);
+//   // Optimize memory allocation (assuming ~3 bytes per card)
+//   str.reserve(cards_.size() * 3);
 
-  for (const Card& card : rng) {
-    str += QString::fromStdString(card.str()) + " ";
-  }
+//   for (const Card& card : rng) {
+//     str += QString::fromStdString(card.str()) + " ";
+//   }
 
-  return str;
-}
+//   return str;
+// }
 
-std::string CardVec::patternToString(
-    const std::vector<int>& vec) {
-  std::string result;
+// std::string CardVec::cardsToString(
+//     const std::vector<int>& vec) {
+//   std::string result;
 
-  for (int bit : vec) {
-    result += ((bit == 1) ? '1' : '0');
-  }
-  return result;
-}
+//   for (int bit : vec) {
+//     result += ((bit == 1) ? '1' : '0');
+//   }
+//   return result;
+// }
