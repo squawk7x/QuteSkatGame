@@ -28,9 +28,6 @@ class Table : public QMainWindow {
   ~Table();
 
   void start();
-  void updateSkatLayout(LinkTo dest = LinkTo::Skat);
-  void updatePlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
-  void updateTrickLayout(const Card &card, int playerId);
 
  protected:
   void resetClicks();
@@ -43,6 +40,10 @@ class Table : public QMainWindow {
   void onFrageHand();
   void onRuleAndTrump(Rule rule, std::string trump);
   void onResultat();
+
+  void onUpdateSkatLayout(LinkTo dest = LinkTo::Skat);
+  void onUpdatePlayerLayout(int playerId, LinkTo dest = LinkTo::Trick);
+  void onUpdateTrickLayout(const Card &card, int playerId);
 
   void onClearTrickLayout();
 };

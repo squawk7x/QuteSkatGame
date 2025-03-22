@@ -70,16 +70,20 @@ class Game : public QObject {
   void gegeben();
   void geboten(int idSager, int idHoerer, QString antwortSager,
                QString antwortHoerer);
-  void weiterbieten(int idSager, int idHoerer, QString antwortSager,
-                    QString antwortHoerer);
+
   void frageHand();
   void ruleAndTrump(Rule rule, std::string trump);
-  void resultat();
 
-  void refreshSkatLayout(LinkTo dest = LinkTo::Skat);
-  void refreshPlayerLayout(int playerId, LinkTo dest = LinkTo::Handdeck);
-  void refreshTrickLayout(const Card& card, int playerId);
+  void updateSkatLayout(
+      LinkTo dest = LinkTo::Skat);  // connects only id LinkTo::SoloPlayer
+  void updatePlayerLayout(
+      int playerId,
+      LinkTo dest =
+          LinkTo::Handdeck);  // connects only if LinkTo::Trick or LinkTo::Skat
+  void updateTrickLayout(const Card& card, int playerId);
   void clearTrickLayout();
+
+  void resultat();
 };
 
 #endif  // gameH

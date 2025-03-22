@@ -80,7 +80,7 @@ void Game::geben() {
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-    // emit refreshPlayerLayout(player->id());
+    // emit updatePlayerLayout(player->id());
   }
 
   blind_.moveTopCardTo(skat_);
@@ -90,12 +90,12 @@ void Game::geben() {
 
   for (Player* player : playerList_) {
     for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
-    // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
+    // emit updatePlayerLayout(player->id(), LinkTo::Handdeck);
   }
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
     // player->handdeck_.sortByJacksAndSuits();
-    // emit refreshPlayerLayout(player->id(), LinkTo::Handdeck);
+    // emit updatePlayerLayout(player->id(), LinkTo::Handdeck);
   }
 
   // for (Player* player : playerList_) player->handdeck_.sortByJacksAndSuits();
@@ -291,16 +291,18 @@ void Game::bieten(
 
 void Game::druecken() {
   if (skat_.cards().size() == 2) {
-    emit refreshSkatLayout(LinkTo::Skat);
+    // disconnect skat done in table ui->druecken
+    // emit updateSkatLayout(LinkTo::Skat);
+
     // TODO after testing: LinkTo::Trick only for player 1
-    for (int playerId = 1; playerId <= 3; playerId++)
-      emit refreshPlayerLayout(playerId, LinkTo::Trick);
+    // done in table.cpp
+    // for (int playerId = 1; playerId <= 3; playerId++)
+    //   emit updatePlayerLayout(playerId, LinkTo::Trick);
 
     Player* player = getPlayerByIsSolo();
-    // disconnect skat
+    // Skat in Ramsch handled in finishRound
     if (player) {
       player->tricks_.push_back(std::move(skat_));
-      // Skat in Ramsch handled in finishRound
 
       // TODO
       if (player->isRobot()) {
@@ -363,8 +365,8 @@ void Game::autoplay() {
 
     playCard(card);
 
-    emit refreshTrickLayout(card, player->id());
-    emit refreshPlayerLayout(player->id());
+    emit updateTrickLayout(card, player->id());
+    emit updatePlayerLayout(player->id());
     // }
   }
 }
@@ -558,6 +560,7 @@ void Game::playCard(
 
   // Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
+  // emit updatePlayerLayout(playerList_.front()->id());
 
   // Rotate playerlist
   activateNextPlayer();

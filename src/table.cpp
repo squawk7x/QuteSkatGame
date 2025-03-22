@@ -119,24 +119,7 @@ Table::Table(
                    << "/" << game_->schwarzAngesagt_;
         });
 
-    // Resultat
-    QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
-
-    QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
-      ui->pbHand->setChecked(false);
-      ui->pbHand->setDisabled(false);
-      ui->gbFrageHand->hide();
-      ui->gbDruecken->show();
-      updateSkatLayout(LinkTo::Handdeck);
-    });
-
-    QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
-      ui->pbHand->click();
-      ui->pbHand->setChecked(true);
-      ui->pbHand->setDisabled(true);
-      ui->pbDruecken->click();  // even if not visible
-      updateSkatLayout(LinkTo::Skat);
-    });
+    QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
 
     QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
       // Player *player = &game_->getPlayerById(1);
@@ -154,13 +137,34 @@ Table::Table(
     QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
                      [this]() { game_->bieten(Bieten::Nein); });
 
+    QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
+      ui->pbHand->setChecked(false);
+      ui->pbHand->setDisabled(false);
+      ui->gbFrageHand->hide();
+      ui->gbDruecken->show();
+      onUpdateSkatLayout(LinkTo::SoloPlayer);
+    });
+
+    QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
+      ui->pbHand->click();
+      ui->pbHand->setChecked(true);
+      ui->pbHand->setDisabled(true);
+      ui->pbDruecken->click();  // even if not visible
+      // onUpdateSkatLayout(LinkTo::Skat);
+    });
+
     // Game Control
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
-        game_->druecken();
-        updateSkatLayout(LinkTo::Skat);
+        onUpdateSkatLayout(LinkTo::Skat);
+
+        // onUpdatePlayerLayout(1, LinkTo::Trick);
+        // For testing all 3 players are connected
         for (int playerId = 1; playerId <= 3; playerId++)
-          updatePlayerLayout(playerId, LinkTo::Trick);
+          onUpdatePlayerLayout(playerId, LinkTo::Trick);
+
+        game_->druecken();
+
         ui->gbFrageHand->hide();
         ui->gbDruecken->hide();
         ui->gbSkat->hide();
@@ -184,7 +188,7 @@ Table::Table(
       ui->gbTrick3->show();
     });
 
-    QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
+    QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
                      &Game::start);
@@ -203,17 +207,17 @@ Table::Table(
     });
 
     // Layouts
+    QObject::connect(game_, &Game::updateSkatLayout, this,
+                     &Table::onUpdateSkatLayout);
+
+    QObject::connect(game_, &Game::updateTrickLayout, this,
+                     &Table::onUpdateTrickLayout);
+
+    QObject::connect(game_, &Game::updatePlayerLayout, this,
+                     &Table::onUpdatePlayerLayout);
+
     QObject::connect(game_, &Game::clearTrickLayout, this,
                      &Table::onClearTrickLayout);
-
-    QObject::connect(game_, &Game::refreshSkatLayout, this,
-                     &Table::updateSkatLayout);
-
-    QObject::connect(game_, &Game::refreshTrickLayout, this,
-                     &Table::updateTrickLayout);
-
-    QObject::connect(game_, &Game::refreshPlayerLayout, this,
-                     &Table::updatePlayerLayout);
 
     // Addons
     QObject::connect(ui->rbNormal, &QRadioButton::toggled, this, [&]() {
@@ -240,45 +244,36 @@ void Table::resetClicks() {
 }
 
 void Table::onGegeben() {
-  {
-    ui->lblUrsprungsSkat->hide();
-    ui->gbSkat->show();
+  ui->lblUrsprungsSkat->hide();
+  ui->gbSkat->show();
 
-    ui->gbSagenPassen->show();
-    ui->pbBieten2->show();
-    ui->pbBieten3->show();
+  ui->gbSagenPassen->show();
+  ui->pbBieten2->show();
+  ui->pbBieten3->show();
 
-    ui->gbFrageHand->hide();
-    ui->gbDruecken->hide();
-    ui->gbAngesagt->hide();
-    ui->gbFrageEnde->hide();
+  ui->gbFrageHand->hide();
+  ui->gbDruecken->hide();
+  ui->gbAngesagt->hide();
+  ui->gbFrageEnde->hide();
 
-    ui->gbSpiel->hide();
-    ui->pbRamsch->setDisabled(false);
-    ui->pbRamsch->clicked(false);
-    ui->pbOuvert->setDisabled(false);
-    ui->pbOuvert->clicked(false);
-    ui->pbHand->setDisabled(false);
-    ui->pbHand->clicked(false);
-    ui->pbSchneider->setDisabled(false);
-    ui->pbSchneider->clicked(false);
-    ui->pbSchwarz->clicked(false);
-    ui->gbRule->setDisabled(false);
+  ui->gbSpiel->hide();
+  ui->pbRamsch->setDisabled(false);
+  ui->pbRamsch->clicked(false);
+  ui->pbOuvert->setDisabled(false);
+  ui->pbOuvert->clicked(false);
+  ui->pbHand->setDisabled(false);
+  ui->pbHand->clicked(false);
+  ui->pbSchneider->setDisabled(false);
+  ui->pbSchneider->clicked(false);
+  ui->pbSchwarz->clicked(false);
+  ui->gbRule->setDisabled(false);
 
-    ui->gbTrick2->hide();
-    ui->gbTrick1->hide();
-    ui->gbTrick3->hide();
+  ui->gbTrick2->hide();
+  ui->gbTrick1->hide();
+  ui->gbTrick3->hide();
 
-    // ui->gbFrageEnde->hide();
-    ui->gbResultat->hide();
-
-    onClearTrickLayout();
-  }
-
-  for (int playerId = 1; playerId <= 3; playerId++)
-    updatePlayerLayout(playerId);
-
-  updateSkatLayout(LinkTo::Skat);
+  // ui->gbFrageEnde->hide();
+  ui->gbResultat->hide();
 
   if (game_->geberHoererSagerPos_[0] == 2) ui->lblHand2->setText("Hinterhand");
   if (game_->geberHoererSagerPos_[1] == 2) ui->lblHand2->setText("Vorhand");
@@ -286,6 +281,16 @@ void Table::onGegeben() {
   if (game_->geberHoererSagerPos_[0] == 3) ui->lblHand3->setText("Hinterhand");
   if (game_->geberHoererSagerPos_[1] == 3) ui->lblHand3->setText("Vorhand");
   if (game_->geberHoererSagerPos_[2] == 3) ui->lblHand3->setText("Mittelhand");
+
+  // reset to empty
+  onClearTrickLayout();
+
+  // first link cards to players handdeck
+  for (int playerId = 1; playerId <= 3; playerId++)
+    onUpdatePlayerLayout(playerId, LinkTo::Handdeck);
+
+  // first link cards to skat
+  onUpdateSkatLayout(LinkTo::Skat);
 }
 
 void Table::onGeboten(
@@ -365,6 +370,194 @@ void Table::onRuleAndTrump(
   qDebug() << "Trump:" << QString::fromStdString(game_->trump_);
 }
 
+void Table::onUpdateSkatLayout(
+    LinkTo dest) {
+  QLayoutItem *item;
+
+  // Clear existing widgets from the layout
+  while ((item = ui->layoutSkatKarten->takeAt(0)) != nullptr) {
+    if (item->widget()) {
+      delete item->widget();
+    }
+    delete item;
+  }
+
+  // Loop through cards in skat
+  for (Card &card : game_->skat_.cards()) {
+    QPushButton *cardButton = new QPushButton(this);
+
+    QString rankname = QString::fromStdString(card.rankname());
+    QString suitname = QString::fromStdString(card.suitname());
+    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+    QPixmap pixmap(imagePath);
+
+    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setStyleSheet("QPushBuktton { padding: 0px; margin: 0px; }");
+      cardButton->setFlat(true);
+      cardButton->setIconSize(QSize(78, 116));
+    } else {
+      cardButton->setText(QString::fromStdString(card.str()));
+      cardButton->setStyleSheet("QPushButton { font-size: 18x; }");
+    }
+
+    ui->layoutSkatKarten->addWidget(cardButton);
+
+    // Handle card actions only if LinkTo::SoloPlayer
+    if (dest == LinkTo::SoloPlayer) {
+      Player *soloPlayer = game_->getPlayerByIsSolo();
+      if (!soloPlayer) {
+        qDebug() << "onUpdateSkatLayout: solo player not found";
+        return;
+      }
+
+      int playerId = soloPlayer->id();
+
+      connect(cardButton, &QPushButton::clicked, this,
+              [&, this, cardButton, soloPlayer, playerId]() {
+                if (game_->skat_.cards().size() == 2) {
+                  game_->skat_.moveCardTo(card, soloPlayer->handdeck_);
+
+                  ui->layoutSkatKarten->removeWidget(cardButton);
+                  cardButton->setParent(nullptr);
+
+                  onUpdatePlayerLayout(playerId, LinkTo::Skat);
+                }
+              });
+    }
+  }
+}
+
+void Table::onUpdatePlayerLayout(
+    int playerId, LinkTo dest) {
+  Player &player = game_->getPlayerById(playerId);
+
+  QLayout *layout;
+  QLayoutItem *item;
+
+  if (playerId == 1) layout = ui->gbPlayer1Layout;
+  if (playerId == 2) layout = ui->gbPlayer2Layout;
+  if (playerId == 3) layout = ui->gbPlayer3Layout;
+
+  while ((item = layout->takeAt(0)) != nullptr) {
+    if (item->widget()) {
+      delete item->widget();
+    }
+    delete item;
+  }
+
+  player.handdeck_.sortByJacksAndSuits();
+
+  for (Card &card : player.handdeck_.cards()) {
+    QPushButton *cardButton = new QPushButton(this);
+
+    QString rankname = QString::fromStdString(card.rankname());
+    QString suitname = QString::fromStdString(card.suitname());
+    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+    QPixmap pixmap(imagePath);
+
+    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setStyleSheet("QPushButton { padding: 0px; margin: 0px; }");
+      cardButton->setFlat(true);
+      cardButton->setIconSize(
+          QSize(78, 116));  // Set the icon size for the button
+      cardButton->setIcon(QIcon(pixmap));
+      cardButton->setIconSize(QSize(78, 116));
+    } else {
+      cardButton->setText(QString::fromStdString(card.str()));
+      cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
+    }
+    layout->addWidget(cardButton);
+
+    // connect to skat
+    if (dest == LinkTo::Skat) {
+      connect(
+          cardButton, &QPushButton::clicked, this,
+          [&, layout,
+           cardButton]() {  // Bugfix: program crashed w/o layout, cardButton
+            if (game_->skat_.cards().size() == 1) {
+              player.handdeck_.moveCardTo(card, game_->skat_);
+              layout->removeWidget(cardButton);
+              cardButton->setParent(nullptr);
+              // update Layout after card was moved to skat
+              onUpdateSkatLayout(LinkTo::SoloPlayer);
+            }
+          });
+    }
+
+    // connect to trick
+    if (dest == LinkTo::Trick) {
+      connect(cardButton, &QPushButton::clicked, this,
+              [&, playerId, layout, cardButton]() {
+                if (game_->playerList_.front()->id() == playerId) {
+                  qDebug() << "card clicked:"
+                           << QString::fromStdString(card.str());
+
+                  if (!player.handdeck_.isCardInside(card) ||
+                      !game_->isCardValid(card)) {
+                    qDebug() << "Move rejected: Invalid card choice.";
+                    return;
+                  }
+
+                  onUpdateTrickLayout(card, playerId);
+
+                  game_->playCard(card);
+
+                  layout->removeWidget(cardButton);
+                  cardButton->setParent(nullptr);
+                  // update Layout after card was played to trick
+                  onUpdatePlayerLayout(playerId, LinkTo::Trick);
+                }
+              });
+    }
+  }
+}
+
+void Table::onUpdateTrickLayout(
+    const Card &card, int playerId) {
+  QPushButton *cardButton = new QPushButton(this);
+
+  QString rankname = QString::fromStdString(card.rankname());
+  QString suitname = QString::fromStdString(card.suitname());
+  QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
+  QPixmap pixmap(imagePath);
+
+  if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
+    cardButton->setIcon(QIcon(pixmap));
+    cardButton->setFlat(true);
+    cardButton->setIconSize(QSize(78, 116));
+  } else {
+    cardButton->setText(QString::fromStdString(card.str()));
+    cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
+  }
+
+  if (playerId == 2) ui->gbTrickLayout2->addWidget(cardButton);
+  if (playerId == 1) ui->gbTrickLayout1->addWidget(cardButton);
+  if (playerId == 3) ui->gbTrickLayout3->addWidget(cardButton);
+}
+
+void Table::onClearTrickLayout() {
+  while (QLayoutItem *item = ui->gbTrickLayout1->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+  while (QLayoutItem *item = ui->gbTrickLayout2->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+  while (QLayoutItem *item = ui->gbTrickLayout3->takeAt(0)) {
+    if (QWidget *widget = item->widget()) {
+      widget->deleteLater();  // Ensures safe deletion after event loop
+    }
+    delete item;  // Cleanup the layout item itself
+  }
+}
+
 void Table::onResultat() {
   Player *player = game_->getPlayerByIsSolo();
   QString resultat;
@@ -404,196 +597,9 @@ void Table::onResultat() {
 
   CardVec skat = game_->skat_;
   game_->skat_ = game_->urSkat_;
-  updateSkatLayout();
+  onUpdateSkatLayout();
   ui->gbSkat->show();
   game_->skat_ = skat;
-}
-
-void Table::updateSkatLayout(
-    LinkTo dest) {
-  QLayoutItem *item;
-
-  // Clear existing widgets from the layout
-
-  while ((item = ui->layoutSkatKarten->takeAt(0)) != nullptr) {
-    if (item->widget()) {
-      delete item->widget();
-    }
-    delete item;
-  }
-
-  // Loop through cards in the skat
-  for (Card &card : game_->skat_.cards()) {
-    QPushButton *cardButton = new QPushButton(this);
-
-    QString rankname = QString::fromStdString(card.rankname());
-    QString suitname = QString::fromStdString(card.suitname());
-    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-    QPixmap pixmap(imagePath);
-
-    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
-      cardButton->setIcon(QIcon(pixmap));
-      cardButton->setStyleSheet("QPushBuktton { padding: 0px; margin: 0px; }");
-      cardButton->setFlat(true);
-      cardButton->setIconSize(QSize(78, 116));
-    } else {
-      cardButton->setText(QString::fromStdString(card.str()));
-      cardButton->setStyleSheet("QPushButton { font-size: 18x; }");
-    }
-
-    ui->layoutSkatKarten->addWidget(cardButton);
-
-    // if (dest == LinkTo::Skat) return;
-
-    // Handle card actions only if `hand` is true
-    if (dest == LinkTo::Handdeck) {
-      Player *player = game_->getPlayerByIsSolo();
-      if (!player) return;
-
-      int playerId = player->id();
-      connect(cardButton, &QPushButton::clicked, this,
-              [&, this, cardButton, playerId]() {
-                game_->skat_.moveCardTo(std::move(card),
-                                        game_->getPlayerByIsSolo()->handdeck_);
-
-                // Remove the button from layout and set parent to nullptr
-                ui->layoutSkatKarten->removeWidget(cardButton);
-                cardButton->setParent(nullptr);
-
-                // Update the player layout after moving the card
-                updatePlayerLayout(playerId, LinkTo::Skat);
-              });
-    }
-  }
-}
-
-void Table::updatePlayerLayout(
-    int playerId, LinkTo dest) {
-  Player &player = game_->getPlayerById(playerId);
-
-  QLayout *layout;
-  QLayoutItem *item;
-
-  if (playerId == 1) layout = ui->gbPlayer1Layout;
-  if (playerId == 2) layout = ui->gbPlayer2Layout;
-  if (playerId == 3) layout = ui->gbPlayer3Layout;
-
-  while ((item = layout->takeAt(0)) != nullptr) {
-    if (item->widget()) {
-      delete item->widget();
-    }
-    delete item;
-  }
-  player.handdeck_.sortByJacksAndSuits();
-
-  for (Card &card : player.handdeck_.cards()) {
-    QPushButton *cardButton = new QPushButton(this);
-
-    QString rankname = QString::fromStdString(card.rankname());
-    QString suitname = QString::fromStdString(card.suitname());
-    QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-    QPixmap pixmap(imagePath);
-
-    if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
-      cardButton->setIcon(QIcon(pixmap));
-      cardButton->setStyleSheet("QPushButton { padding: 0px; margin: 0px; }");
-      cardButton->setFlat(true);
-      cardButton->setIconSize(
-          QSize(78, 116));  // Set the icon size for the button
-      cardButton->setIcon(QIcon(pixmap));
-      cardButton->setIconSize(QSize(78, 116));
-    } else {
-      cardButton->setText(QString::fromStdString(card.str()));
-      cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
-    }
-    layout->addWidget(cardButton);
-
-    // connect to skat
-    if (dest == LinkTo::Skat) {
-      connect(
-          cardButton, &QPushButton::clicked, this,
-          [&, layout,
-           cardButton]() {  // Bugfix: program crashed w/o layout, cardButton
-            if (game_->skat_.cards().size() < 2) {
-              player.handdeck_.moveCardTo(std::move(card), game_->skat_);
-              cardButton->setParent(nullptr);
-              layout->removeWidget(cardButton);
-            }
-            updateSkatLayout(LinkTo::Handdeck);
-          });
-    }
-
-    // connect to trick
-    if (dest == LinkTo::Trick) {
-      connect(cardButton, &QPushButton::clicked, this,
-              [&, playerId, layout, cardButton]() {
-                if (game_->playerList_.front()->id() == playerId) {
-                  qDebug() << "card clicked:"
-                           << QString::fromStdString(card.str());
-
-                  if (!player.handdeck_.isCardInside(card) ||
-                      !game_->isCardValid(card)) {
-                    qDebug() << "Move rejected: Invalid card choice.";
-                    return;
-                  }
-
-                  updateTrickLayout(card, playerId);
-
-                  game_->playCard(card);
-
-                  cardButton->setParent(nullptr);
-                  layout->removeWidget(cardButton);
-                  // updatePlayerLayout(playerId, LinkTo::Trick);
-                }
-              });
-      updateSkatLayout(LinkTo::Skat);
-    }
-  }
-}
-
-void Table::updateTrickLayout(
-    const Card &card, int playerId) {
-  QPushButton *cardButton = new QPushButton(this);
-
-  QString rankname = QString::fromStdString(card.rankname());
-  QString suitname = QString::fromStdString(card.suitname());
-  QString imagePath = QString(":/cards/%1_of_%2.png").arg(rankname, suitname);
-  QPixmap pixmap(imagePath);
-
-  if (cardSize_ == CardSize::Normal && !pixmap.isNull()) {
-    cardButton->setIcon(QIcon(pixmap));
-    cardButton->setFlat(true);
-    cardButton->setIconSize(QSize(78, 116));
-  } else {
-    cardButton->setText(QString::fromStdString(card.str()));
-    cardButton->setStyleSheet("QPushButton { font-size: 18px; }");
-  }
-
-  if (playerId == 2) ui->gbTrickLayout2->addWidget(cardButton);
-  if (playerId == 1) ui->gbTrickLayout1->addWidget(cardButton);
-  if (playerId == 3) ui->gbTrickLayout3->addWidget(cardButton);
-}
-
-// Slots
-void Table::onClearTrickLayout() {
-  while (QLayoutItem *item = ui->gbTrickLayout1->takeAt(0)) {
-    if (QWidget *widget = item->widget()) {
-      widget->deleteLater();  // Ensures safe deletion after event loop
-    }
-    delete item;  // Cleanup the layout item itself
-  }
-  while (QLayoutItem *item = ui->gbTrickLayout2->takeAt(0)) {
-    if (QWidget *widget = item->widget()) {
-      widget->deleteLater();  // Ensures safe deletion after event loop
-    }
-    delete item;  // Cleanup the layout item itself
-  }
-  while (QLayoutItem *item = ui->gbTrickLayout3->takeAt(0)) {
-    if (QWidget *widget = item->widget()) {
-      widget->deleteLater();  // Ensures safe deletion after event loop
-    }
-    delete item;  // Cleanup the layout item itself
-  }
 }
 
 void Table::mousePressEvent(
