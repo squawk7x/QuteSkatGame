@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "cardvec.h"
+#include "matrix.h"
 #include "player.h"
 
 class Game : public QObject {
@@ -33,6 +34,8 @@ class Game : public QObject {
   bool schneider_{};
   bool schwarzAngesagt_{};
   bool schwarz_{};
+
+  Matrix playedCards{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);

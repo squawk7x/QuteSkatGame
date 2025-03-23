@@ -30,6 +30,7 @@ void Game::start() {
   gereizt_ = 0;
   // reset static int counter in reizen
   reizen(Reizen::Reset);
+  playedCards.reset();
 
   // for testing:
   player_1.isRobot_ = false;
@@ -557,6 +558,9 @@ void Game::playCard(
     qDebug() << QString::fromStdString(playerList_.front()->name())
              << "has the trick now!";
   }
+
+  playedCards.setField(card);
+  playedCards.print();
 
   // Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);

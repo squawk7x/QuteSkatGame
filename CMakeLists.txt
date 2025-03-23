@@ -36,6 +36,8 @@ set(PROJECT_SOURCES
     src/player.cpp
     src/definitions.h
     src/helperFunctions.cpp
+    src/matrix.h
+    src/matrix.cpp
     src/helperFunctions.h
     README.md
     res/resources.qrc)
