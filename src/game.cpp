@@ -27,10 +27,10 @@ void Game::init() {
 
 // started by Table constructor
 void Game::start() {
+  rule_ = Rule::Unset;
   gereizt_ = 0;
-  // reset static int counter in reizen
-  reizen(Reizen::Reset);
-  playedCards.reset();
+  reizen(Reizen::Reset);  // reset static int counter in reizen
+  matrix.reset();
 
   // for testing:
   player_1.isRobot_ = false;
@@ -81,31 +81,18 @@ void Game::geben() {
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-    // emit updatePlayerLayout(player->id());
   }
 
   blind_.moveTopCardTo(skat_);
   blind_.moveTopCardTo(skat_);
-  // Copy for finishRound / Result
-  urSkat_ = skat_;
+  urSkat_ = skat_;  // Copy for finishRound / Result
 
   for (Player* player : playerList_) {
     for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
-    // emit updatePlayerLayout(player->id(), LinkTo::Handdeck);
   }
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
-    // player->handdeck_.sortByJacksAndSuits();
-    // emit updatePlayerLayout(player->id(), LinkTo::Handdeck);
   }
-
-  // for (Player* player : playerList_) player->handdeck_.sortByJacksAndSuits();
-
-  qDebug() << "blind" << blind_.cards().size();
-  qDebug() << "skat" << skat_.cards().size();
-  for (Player* player : playerList_)
-    qDebug() << QString::fromStdString(player->name())
-             << player->handdeck_.cards().size();
 
   emit gegeben();
   setMaxBieten();
@@ -115,10 +102,12 @@ void Game::geben() {
 
   Player* hoerer = &getPlayerByPos(hoererPos);
   Player* sager = &getPlayerByPos(sagerPos);
+
   emit geboten(sager->id(), hoerer->id(), "sagt", "hört");
 }
 
 void Game::setMaxBieten() {
+  // TODO: KI
   for (Player* player : playerList_) {
     CardVec& hand = player->handdeck_;
 
@@ -292,20 +281,15 @@ void Game::bieten(
 
 void Game::druecken() {
   if (skat_.cards().size() == 2) {
-    // disconnect skat done in table ui->druecken
-    // emit updateSkatLayout(LinkTo::Skat);
-
+    // TODO: KI Karten austauschen-druecken Robots
     // TODO after testing: LinkTo::Trick only for player 1
-    // done in table.cpp
-    // for (int playerId = 1; playerId <= 3; playerId++)
-    //   emit updatePlayerLayout(playerId, LinkTo::Trick);
 
     Player* player = getPlayerByIsSolo();
     // Skat in Ramsch handled in finishRound
     if (player) {
       player->tricks_.push_back(std::move(skat_));
 
-      // TODO
+      // TODO: KI
       if (player->isRobot()) {
         emit ruleAndTrump(
             Rule::Suit,
@@ -348,33 +332,28 @@ int Game::spielwert(
 
 void Game::autoplay() {
   qDebug() << "autoplay() ...";
-
-  // Bugfix: last card in second round missing
-  if (!player_1.handdeck_.cards().empty() ||
-      !player_2.handdeck_.cards().empty() ||
-      !player_3.handdeck_.cards().empty()) {
+  // Rule must be set!
+  if (rule_ != Rule::Unset && (!player_1.handdeck_.cards().empty() ||
+                               !player_2.handdeck_.cards().empty() ||
+                               !player_3.handdeck_.cards().empty())) {
     Player* player = playerList_.front();
 
-    qDebug() << "Playable cards:"
-             << QString::fromStdString(
-                    cardsToString(playableCards(player->id())));
-
-    // Rule must be set!
-    // TODO best card to play
     // if (player->isRobot()) {
-    Card card = playableCards(player->id()).front();
-
-    playCard(card);
+    auto cards = playableCards(player->id());
+    Card card = cards.front();
+    if (isCardValid(card)) playCard(card);
 
     emit updateTrickLayout(card, player->id());
-    emit updatePlayerLayout(player->id());
+    emit updatePlayerLayout(player->id(), LinkTo::Trick);
     // }
   }
 }
 
 bool Game::isCardValid(
-    const Card& card) {
+    const Card& card, bool preview) {
+  if (trick_.cards().size() == 3 && preview) return true;
   // If the trick is full (3 cards), clear it and reset the layout
+
   if (trick_.cards().size() == 3) {
     trick_.cards().clear();
     emit clearTrickLayout();
@@ -483,9 +462,12 @@ std::vector<Card> Game::playableCards(
   // Use std::ranges to filter and collect into a vector
   std::vector<Card> playable;
   std::ranges::copy(handCards | std::views::filter([this](const Card& card) {
-                      return isCardValid(card);
+                      return isCardValid(card, true);  // preview = true
                     }),
                     std::back_inserter(playable));
+
+  // qDebug() << "Playable Cards:"
+  //          << QString::fromStdString(cardsToString(playable));
 
   return playable;
 }
@@ -493,7 +475,7 @@ std::vector<Card> Game::playableCards(
 bool Game::isCardStronger(
     const Card& card) {
   if (trick_.cards().empty()) {
-    return true;  // First played card is always "greater"
+    return true;  // First played card is always strongest
   }
 
   const auto& firstCard = trick_.cards().front();
@@ -546,34 +528,25 @@ bool Game::isCardStronger(
 
 void Game::playCard(
     const Card& card) {
-  qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
-
-  //  Check if the card's power is greater than all cards in the trick
   if (isCardStronger(card)) {
-    // Reset the trick status for all players
     for (auto& player : playerList_) player->hasTrick_ = false;
-    // Mark the current player as having the trick
-    playerList_.front()->hasTrick_ = true;
 
+    playerList_.front()->hasTrick_ = true;
     qDebug() << QString::fromStdString(playerList_.front()->name())
              << "has the trick now!";
   }
 
-  playedCards.setField(card);
-  playedCards.print();
+  qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
+  matrix.setField(card);
+  matrix.print();
 
-  // Move the card from hand to trick
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
-  // emit updatePlayerLayout(playerList_.front()->id());
 
   // Rotate playerlist
   activateNextPlayer();
 }
 
 void Game::activateNextPlayer() {
-  // qDebug() << "trick_:";
-  // trick_.print();
-
   if (trick_.cards().size() == 3) {
     // Find the player who has the trick
     auto trickholder =
@@ -581,6 +554,8 @@ void Game::activateNextPlayer() {
                      [](const auto& player) { return player->hasTrick_; });
 
     std::rotate(playerList_.begin(), trickholder, playerList_.end());
+    // std::ranges::rotate(playerList_, trickholder);
+
     qDebug() << "Rotating to:"
              << QString::fromStdString(playerList_.front()->name());
 
@@ -601,10 +576,18 @@ void Game::activateNextPlayer() {
              << QString::fromStdString(playerList_.front()->name());
   }
 
-  // qDebug() << "playable cards:";
-  // playableCards(playerList_.front()->id()).print();
+  // show playable cards for activated player
+  auto cards = playableCards(playerList_.front()->id());
+  qDebug() << "Playable cards:" << QString::fromStdString(cardsToString(cards));
 
-  // seAllPlayerstPoints();
+  std::ranges::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
+  qDebug() << "Proposed order 1:"
+           << QString::fromStdString(cardsToString(cards));
+
+  std::ranges::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
+  qDebug() << "Proposed order 2:"
+           << QString::fromStdString(cardsToString(cards));
+
   // autoplay();
 }
 

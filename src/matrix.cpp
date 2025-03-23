@@ -16,6 +16,19 @@ void Matrix::setField(
     fields[suitIndex][rankIndex] = true;
 }
 
+bool Matrix::isFieldSet(
+    const Card& card) {
+  // Use ranges to find the suit and rank indices
+  auto suitIt = std::ranges::find(suits, card.suit());
+  auto rankIt = std::ranges::find(ranks, card.rank());
+  auto suitIndex = std::distance(suits.begin(), suitIt);
+  auto rankIndex = std::distance(ranks.begin(), rankIt);
+
+  if (suitIndex < suits.size() && rankIndex < ranks.size())
+    return fields[suitIndex][rankIndex];
+  return false;
+}
+
 void Matrix::print() const {
   // Build and print the header row with rank names
   QString header = "   ";

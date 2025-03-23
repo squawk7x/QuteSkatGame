@@ -35,7 +35,7 @@ class Game : public QObject {
   bool schwarzAngesagt_{};
   bool schwarz_{};
 
-  Matrix playedCards{};
+  Matrix matrix{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);
@@ -56,7 +56,7 @@ class Game : public QObject {
   void autoplay();
   void finishRound();
 
-  bool isCardValid(const Card& card);
+  bool isCardValid(const Card& card, bool preview = false);
   std::vector<Card> playableCards(int playerId);
   bool isCardStronger(const Card& card);
   void playCard(const Card& card);

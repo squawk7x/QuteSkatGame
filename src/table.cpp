@@ -59,7 +59,6 @@ Table::Table(
           game_->trump_ = checked ? "J" : "";
 
           resetClicks();
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
     QObject::connect(

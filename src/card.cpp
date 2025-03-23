@@ -225,3 +225,15 @@ int Card::power(
   }
   return power_;
 }
+
+bool Card::hasMoreValue(
+    const Card& other) {
+  if (this->value_ > other.value_) return true;
+  return false;
+}
+
+bool Card::hasMorePower(
+    const Card& other) {
+  if (this->power_ > other.power_) return true;
+  return false;
+}

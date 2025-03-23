@@ -18,6 +18,7 @@ class Matrix {
 
   // Mark a card as played using a Card object
   void setField(const Card& card);
+  bool isFieldSet(const Card& card);
 
   // Print the matrix to the debug output
   void print() const;
