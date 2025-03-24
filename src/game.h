@@ -3,7 +3,10 @@
 
 #include <QObject>
 
+// #include "KI.h"
 #include "cardvec.h"
+#include "definitions.h"
+#include "helperFunctions.h"
 #include "matrix.h"
 #include "player.h"
 
@@ -50,6 +53,7 @@ class Game : public QObject {
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
   void bieten(Bieten bieten = Bieten::Ja);
+  void aufheben();
   void druecken();
   int reizwert(Player* player, const std::string& suit = "");
   int spielwert(const std::string& suit = "");

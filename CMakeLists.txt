@@ -35,9 +35,12 @@ set(PROJECT_SOURCES
     src/player.h
     src/player.cpp
     src/definitions.h
-    src/helperFunctions.cpp
+    src/definitions.cpp
     src/matrix.h
     src/matrix.cpp
+    src/KI.cpp
+    src/KI.h
+    src/helperFunctions.cpp
     src/helperFunctions.h
     README.md
     res/resources.qrc)

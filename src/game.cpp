@@ -5,8 +5,10 @@
 #include <iterator>
 #include <ranges>
 
-#include "definitions.h"
-#include "helperFunctions.h"
+// #include "KI.h"
+// #include "helperFunctions.h"
+
+namespace rng = std::ranges;
 
 Game::Game(
     QObject* parent)
@@ -279,6 +281,13 @@ void Game::bieten(
   if (rule_ != Rule::Ramsch) emit frageHand();
 }
 
+void Game::aufheben() {
+  Player* player = getPlayerByHasTrick();
+
+  if (player->isRobot_) {
+  }
+}
+
 void Game::druecken() {
   if (skat_.cards().size() == 2) {
     // TODO: KI Karten austauschen-druecken Robots
@@ -461,10 +470,10 @@ std::vector<Card> Game::playableCards(
 
   // Use std::ranges to filter and collect into a vector
   std::vector<Card> playable;
-  std::ranges::copy(handCards | std::views::filter([this](const Card& card) {
-                      return isCardValid(card, true);  // preview = true
-                    }),
-                    std::back_inserter(playable));
+  rng::copy(handCards | std::views::filter([this](const Card& card) {
+              return isCardValid(card, true);  // preview = true
+            }),
+            std::back_inserter(playable));
 
   // qDebug() << "Playable Cards:"
   //          << QString::fromStdString(cardsToString(playable));
@@ -549,29 +558,30 @@ void Game::playCard(
 void Game::activateNextPlayer() {
   if (trick_.cards().size() == 3) {
     // Find the player who has the trick
-    auto trickholder =
-        std::find_if(playerList_.begin(), playerList_.end(),
-                     [](const auto& player) { return player->hasTrick_; });
 
-    std::rotate(playerList_.begin(), trickholder, playerList_.end());
-    // std::ranges::rotate(playerList_, trickholder);
+    // auto trickholder =
+    //     std::find_if(playerList_.begin(), playerList_.end(),
+    //                  [](const auto& player) { return player->hasTrick_; });
+    auto trickholder = rng::find_if(playerList_, &Player::hasTrick_);
 
-    qDebug() << "Rotating to:"
-             << QString::fromStdString(playerList_.front()->name());
-
-    playerList_.front()->tricks_.push_back(trick_);
-
+    // std::rotate(playerList_.begin(), trickholder, playerList_.end());
+    (*trickholder)->tricks_.push_back(trick_);
     qDebug() << "Trick moved to Trickholder"
-             << QString::fromStdString(playerList_.front()->name());
-
-    playerList_.front()->setTricksPoints();
+             << QString::fromStdString((*trickholder)->name());
 
     if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
 
+    rng::rotate(playerList_, trickholder);
+    qDebug() << "Rotating to:"
+             << QString::fromStdString(playerList_.front()->name());
+
   } else {
     // Rotate to the next player if the trick is not full
-    std::rotate(playerList_.begin(), playerList_.begin() + 1,
-                playerList_.end());
+    // std::rotate(playerList_.begin(), playerList_.begin() + 1,
+    //             playerList_.end());
+
+    rng::rotate(playerList_, playerList_.begin() + 1);
+
     qDebug() << "Next player:"
              << QString::fromStdString(playerList_.front()->name());
   }
@@ -580,11 +590,11 @@ void Game::activateNextPlayer() {
   auto cards = playableCards(playerList_.front()->id());
   qDebug() << "Playable cards:" << QString::fromStdString(cardsToString(cards));
 
-  std::ranges::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
+  rng::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
   qDebug() << "Proposed order 1:"
            << QString::fromStdString(cardsToString(cards));
 
-  std::ranges::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
+  rng::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
   qDebug() << "Proposed order 2:"
            << QString::fromStdString(cardsToString(cards));
 
