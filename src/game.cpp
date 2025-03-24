@@ -6,7 +6,7 @@
 #include <ranges>
 
 // #include "KI.h"
-// #include "helperFunctions.h"
+#include "helperFunctions.h"
 
 namespace rng = std::ranges;
 
@@ -180,6 +180,7 @@ void Game::bieten(
 
   QString antwortSager, antwortHoerer;
 
+  // sagen
   while (sagen(sagerPos) && hoeren(hoererPos)) {
     if (!sager->isRobot() && bieten == Bieten::Nein) {
       sager->maxBieten_ = 0;
@@ -205,7 +206,7 @@ void Game::bieten(
     return;
   }
 
-  // Determine the solo player
+  // Weitersagen
   if (!hoeren(hoererPos)) {
     hoerer->isSolo_ = false;
     sager->isSolo_ = true;
@@ -244,69 +245,58 @@ void Game::bieten(
     emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
     return;
   }
-  // Check for Ramsch game
-  if (gereizt_ == 0 && hoerer->maxBieten_ == 0) {
-    hoerer->isSolo_ = false;
-    emit ruleAndTrump(Rule::Ramsch, "J");
-    return;
-  }
 
-  // Ensure final solo decision
-  if (!hoeren(hoererPos)) {
-    hoerer->isSolo_ = false;
+  if (gereizt_ == 0 && sager->isRobot() && sager->maxBieten_ >= 18) {
+    gereizt_ = reizen();
     sager->isSolo_ = true;
+    hoerer->isSolo_ = false;
     antwortSager = QString::number(gereizt_);
     antwortHoerer = "passe";
-  } else {
-    hoerer->isSolo_ = true;
+  }
+
+  else if (gereizt_ == 0 && hoerer->isRobot() && hoerer->maxBieten_ >= 18) {
+    gereizt_ = reizen();
     sager->isSolo_ = false;
+    hoerer->isSolo_ = true;
     antwortSager = "passe";
     antwortHoerer = QString::number(gereizt_);
   }
 
-  // If a robot can bid and the bid is at least 18, let it bid
-  if (gereizt_ == 0 && hoerer->isRobot() && hoerer->maxBieten_ >= 18) {
+  // else if (hoeren(hoererPos)) {
+  else if (gereizt_ <= hoerer->maxBieten_) {
+    sager->isSolo_ = false;
     hoerer->isSolo_ = true;
-    gereizt_ = reizen();
+    antwortSager = "passe";
+    antwortHoerer = QString::number(gereizt_);
+  }
+
+  else if (gereizt_ <= sager->maxBieten_) {
+    sager->isSolo_ = true;
+    hoerer->isSolo_ = false;
     antwortSager = QString::number(gereizt_);
     antwortHoerer = "passe";
   }
 
+  else if (gereizt_ == 0 && hoerer->maxBieten_ == 0 && sager->maxBieten_ == 0) {
+    sager->isSolo_ = false;
+    hoerer->isSolo_ = false;
+    antwortSager = "passe";
+    antwortHoerer = "passe";
+
+    emit ruleAndTrump(Rule::Ramsch, "J");
+  }
+
   emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
   qDebug() << "gereizt bis:" << gereizt_;
-  for (auto& player : playerList_) {
+
+  Player* player = getPlayerByIsSolo();
+
+  if (player) {
     qDebug() << QString::fromStdString(player->name()) << player->isSolo_;
-  }
-
-  if (rule_ != Rule::Ramsch) emit frageHand();
-}
-
-void Game::aufheben() {
-  Player* player = getPlayerByHasTrick();
-
-  if (player->isRobot_) {
-  }
-}
-
-void Game::druecken() {
-  if (skat_.cards().size() == 2) {
-    // TODO: KI Karten austauschen-druecken Robots
-    // TODO after testing: LinkTo::Trick only for player 1
-
-    Player* player = getPlayerByIsSolo();
-    // Skat in Ramsch handled in finishRound
-    if (player) {
-      player->tricks_.push_back(std::move(skat_));
-
-      // TODO: KI
-      if (player->isRobot()) {
-        emit ruleAndTrump(
-            Rule::Suit,
-            player->handdeck_
-                .highestPairInMap(player->handdeck_.JandSuitNumMap())
-                .first);
-      }
-    }
+    if (player->isRobot_)
+      roboAufheben();  // hand decision made in aufheben
+    else
+      emit frageHand();
   }
 }
 
@@ -333,6 +323,45 @@ int Game::reizwert(
 
   return reizwert;
 }
+void Game::roboAufheben() {
+  qDebug() << "aufheben...";
+
+  Player* player = getPlayerByIsSolo();
+
+  if (player->isRobot_ && !hand_) {
+    roboDruecken();
+  }
+}
+
+void Game::roboDruecken() {
+  qDebug() << "roboDruecken...";
+
+  Player* player = getPlayerByIsSolo();
+
+  if (player->isRobot()) {
+    emit ruleAndTrump(
+        Rule::Suit,
+        player->handdeck_.highestPairInMap(player->handdeck_.JandSuitNumMap())
+            .first);
+    emit gedrueckt();
+  }
+}
+
+void Game::druecken() {
+  qDebug() << "druecken...";
+  if (skat_.cards().size() == 2) {
+    // TODO: KI Karten austauschen-druecken Robots
+    // TODO after testing: LinkTo::Trick only for player 1
+
+    Player* player = getPlayerByIsSolo();
+    // Skat in Ramsch handled in finishRound
+    qDebug() << "soloPlayer:" << player->name();
+    // TODO: KI
+    if (player) {
+      player->tricks_.push_back(std::move(skat_));
+    }
+  }
+}
 
 int Game::spielwert(
     const std::string& suit) {
@@ -356,6 +385,90 @@ void Game::autoplay() {
     emit updatePlayerLayout(player->id(), LinkTo::Trick);
     // }
   }
+}
+
+void Game::playCard(
+    const Card& card) {
+  if (isCardStronger(card)) {
+    for (auto& player : playerList_) player->hasTrick_ = false;
+
+    playerList_.front()->hasTrick_ = true;
+    qDebug() << QString::fromStdString(playerList_.front()->name())
+             << "has the trick now!";
+  }
+
+  qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
+  matrix.setField(card);
+  matrix.print();
+
+  playerList_.front()->handdeck_.moveCardTo(card, trick_);
+
+  // Rotate playerlist
+  activateNextPlayer();
+}
+
+void Game::activateNextPlayer() {
+  if (trick_.cards().size() == 3) {
+    Player* trickholder = getPlayerByHasTrick();
+
+    trickholder->tricks_.push_back(trick_);
+
+    qDebug() << "Trick moved to Trickholder"
+             << QString::fromStdString(trickholder->name());
+
+    if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
+
+    auto trickholderIt = std::ranges::find(playerList_, trickholder);
+    // Ensure iterator is valid before rotating
+    if (trickholderIt != playerList_.end()) {
+      std::ranges::rotate(playerList_, trickholderIt);
+    }
+
+    qDebug() << "Rotating to:"
+             << QString::fromStdString(playerList_.front()->name());
+
+  } else {
+    // Rotate to the next player if the trick is not full
+    // std::rotate(playerList_.begin(), playerList_.begin() + 1,
+    //             playerList_.end());
+
+    rng::rotate(playerList_, playerList_.begin() + 1);
+
+    qDebug() << "Next player:"
+             << QString::fromStdString(playerList_.front()->name());
+  }
+
+  // show playable cards for activated player
+  auto cards = playableCards(playerList_.front()->id());
+  qDebug() << "Playable cards:" << QString::fromStdString(cardsToString(cards));
+
+  rng::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
+  qDebug() << "Proposed order 1:"
+           << QString::fromStdString(cardsToString(cards));
+
+  rng::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
+  qDebug() << "Proposed order 2:"
+           << QString::fromStdString(cardsToString(cards));
+
+  // autoplay();
+}
+
+std::vector<Card> Game::playableCards(
+    int playerId) {
+  Player& player = getPlayerById(playerId);
+  std::vector<Card> handCards = player.handdeck_.cards();
+
+  // Use std::ranges to filter and collect into a vector
+  std::vector<Card> playable;
+  rng::copy(handCards | std::views::filter([this](const Card& card) {
+              return isCardValid(card, true);  // preview = true
+            }),
+            std::back_inserter(playable));
+
+  // qDebug() << "Playable Cards:"
+  //          << QString::fromStdString(cardsToString(playable));
+
+  return playable;
 }
 
 bool Game::isCardValid(
@@ -463,24 +576,6 @@ bool Game::isCardValid(
   return false;
 }
 
-std::vector<Card> Game::playableCards(
-    int playerId) {
-  Player& player = getPlayerById(playerId);
-  std::vector<Card> handCards = player.handdeck_.cards();
-
-  // Use std::ranges to filter and collect into a vector
-  std::vector<Card> playable;
-  rng::copy(handCards | std::views::filter([this](const Card& card) {
-              return isCardValid(card, true);  // preview = true
-            }),
-            std::back_inserter(playable));
-
-  // qDebug() << "Playable Cards:"
-  //          << QString::fromStdString(cardsToString(playable));
-
-  return playable;
-}
-
 bool Game::isCardStronger(
     const Card& card) {
   if (trick_.cards().empty()) {
@@ -535,72 +630,6 @@ bool Game::isCardStronger(
   return false;
 }
 
-void Game::playCard(
-    const Card& card) {
-  if (isCardStronger(card)) {
-    for (auto& player : playerList_) player->hasTrick_ = false;
-
-    playerList_.front()->hasTrick_ = true;
-    qDebug() << QString::fromStdString(playerList_.front()->name())
-             << "has the trick now!";
-  }
-
-  qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
-  matrix.setField(card);
-  matrix.print();
-
-  playerList_.front()->handdeck_.moveCardTo(card, trick_);
-
-  // Rotate playerlist
-  activateNextPlayer();
-}
-
-void Game::activateNextPlayer() {
-  if (trick_.cards().size() == 3) {
-    // Find the player who has the trick
-
-    // auto trickholder =
-    //     std::find_if(playerList_.begin(), playerList_.end(),
-    //                  [](const auto& player) { return player->hasTrick_; });
-    auto trickholder = rng::find_if(playerList_, &Player::hasTrick_);
-
-    // std::rotate(playerList_.begin(), trickholder, playerList_.end());
-    (*trickholder)->tricks_.push_back(trick_);
-    qDebug() << "Trick moved to Trickholder"
-             << QString::fromStdString((*trickholder)->name());
-
-    if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
-
-    rng::rotate(playerList_, trickholder);
-    qDebug() << "Rotating to:"
-             << QString::fromStdString(playerList_.front()->name());
-
-  } else {
-    // Rotate to the next player if the trick is not full
-    // std::rotate(playerList_.begin(), playerList_.begin() + 1,
-    //             playerList_.end());
-
-    rng::rotate(playerList_, playerList_.begin() + 1);
-
-    qDebug() << "Next player:"
-             << QString::fromStdString(playerList_.front()->name());
-  }
-
-  // show playable cards for activated player
-  auto cards = playableCards(playerList_.front()->id());
-  qDebug() << "Playable cards:" << QString::fromStdString(cardsToString(cards));
-
-  rng::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
-  qDebug() << "Proposed order 1:"
-           << QString::fromStdString(cardsToString(cards));
-
-  rng::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
-  qDebug() << "Proposed order 2:"
-           << QString::fromStdString(cardsToString(cards));
-
-  // autoplay();
-}
-
 Player& Game::getPlayerById(
     int id) {
   auto it = std::ranges::find_if(playerList_, [&, this](const Player* player) {
@@ -629,11 +658,10 @@ Player& Game::getPlayerByPos(
 }
 
 Player* Game::getPlayerByHasTrick() {
-  auto it = std::ranges::find_if(
-      playerList_, [this](const Player* player) { return player->hasTrick_; });
+  auto trickholder = rng::find_if(playerList_, &Player::hasTrick_);
 
-  if (it != playerList_.end())
-    return *it;
+  if (trickholder != playerList_.end())
+    return *trickholder;
   else {
     qDebug() << "Player not found with hasTrick_ == true";
     return nullptr;

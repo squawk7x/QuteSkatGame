@@ -152,7 +152,11 @@ Table::Table(
       // onUpdateSkatLayout(LinkTo::Skat);
     });
 
-    // Game Control
+    QObject::connect(game_, &Game::gedrueckt, this, [this]() {
+      ui->pbDruecken->click();
+      // ui->pbSpielen->click();
+    });
+
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
         onUpdateSkatLayout(LinkTo::Skat);
@@ -187,8 +191,6 @@ Table::Table(
       ui->gbTrick3->show();
     });
 
-    QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
-
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
                      &Game::start);
     QObject::connect(ui->pbResultatEnde, &QPushButton::clicked, this, [this]() {
@@ -204,6 +206,8 @@ Table::Table(
       ui->gbResultat->show();
       ui->gbFrageEnde->hide();
     });
+
+    QObject::connect(game_, &Game::resultat, this, &Table::onResultat);
 
     // Layouts
     QObject::connect(game_, &Game::updateSkatLayout, this,
@@ -558,9 +562,10 @@ void Table::onClearTrickLayout() {
 }
 
 void Table::onResultat() {
+  qDebug() << "onResultat";
+
   Player *player = game_->getPlayerByIsSolo();
   QString resultat;
-
   if (player) {
     bool gewonnen = player->points() > 60;
     resultat = QString("%1 %2\nmit %3 zu %4 Augen.\nDer Spielwert ist %5.")

@@ -38,6 +38,7 @@ class Table : public QMainWindow {
   void onGeboten(int idSager, int idHoerer, QString antwortSager,
                  QString antwortHoerer);
   void onFrageHand();
+  // void onGedrueckt();
   void onRuleAndTrump(Rule rule, std::string trump);
   void onResultat();
 

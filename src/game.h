@@ -6,7 +6,7 @@
 // #include "KI.h"
 #include "cardvec.h"
 #include "definitions.h"
-#include "helperFunctions.h"
+// #include "helperFunctions.h"
 #include "matrix.h"
 #include "player.h"
 
@@ -53,18 +53,19 @@ class Game : public QObject {
   bool hoeren(int hoererPos);
   bool sagen(int sagerPos);
   void bieten(Bieten bieten = Bieten::Ja);
-  void aufheben();
-  void druecken();
   int reizwert(Player* player, const std::string& suit = "");
+  void roboAufheben();
+  void roboDruecken();
+  void druecken();
   int spielwert(const std::string& suit = "");
   void autoplay();
-  void finishRound();
-
-  bool isCardValid(const Card& card, bool preview = false);
-  std::vector<Card> playableCards(int playerId);
-  bool isCardStronger(const Card& card);
   void playCard(const Card& card);
   void activateNextPlayer();
+  void finishRound();
+
+  std::vector<Card> playableCards(int playerId);
+  bool isCardValid(const Card& card, bool preview = false);
+  bool isCardStronger(const Card& card);
 
   Player& getPlayerById(int id);
   Player& getPlayerByPos(int pos);
@@ -80,6 +81,7 @@ class Game : public QObject {
 
   void frageHand();
   void ruleAndTrump(Rule rule, std::string trump);
+  void gedrueckt();
 
   void updateSkatLayout(
       LinkTo dest = LinkTo::Skat);  // connects only id LinkTo::SoloPlayer
