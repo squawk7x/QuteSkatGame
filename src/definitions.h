@@ -10,7 +10,7 @@ enum class CardFace { Open, Closed };
 enum class CardSize { Normal, Small };
 enum class LinkTo { Skat, Handdeck, SoloPlayer, Trick };
 enum class Rule { Unset, Suit, Grand, Null, Ramsch };
-enum class Reizen { Normal, Reset, Preview };
+enum class Reizen { Normal, Reset, Preview, Last };
 enum class Passen { Ja, Nein };
 
 // Extern declarations for global constants

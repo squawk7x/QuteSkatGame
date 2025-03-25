@@ -122,6 +122,7 @@ Table::Table(
 
     QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
       if (!game_->sager->isRobot_) game_->gereizt_ = game_->reizen();
+      qDebug() << "Player pbBieten" << game_->sager->name();
       game_->bieten(Passen::Nein);
     });
 
@@ -298,8 +299,9 @@ void Table::onGegeben() {
 
 void Table::onGeboten(
     int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
-  qDebug() << "Spieler" << idSager << "sagt" << antwortSager;
-  qDebug() << "Spieler" << idHoerer << "sagt" << antwortHoerer;
+  qDebug() << "Gereizt:" << game_->gereizt_;
+  qDebug() << "Buttontext Spieler" << idSager << antwortSager;
+  qDebug() << "ButtonText Spieler" << idHoerer << antwortHoerer;
 
   ui->gbSagenPassen->hide();
   ui->pbBieten2->hide();
