@@ -636,7 +636,7 @@
               <item>
                <layout class="QHBoxLayout" name="layoutSagenPassen">
                 <item>
-                 <widget class="QPushButton" name="pbSagen">
+                 <widget class="QPushButton" name="pbBieten">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>

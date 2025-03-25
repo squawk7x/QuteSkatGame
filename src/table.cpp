@@ -120,21 +120,21 @@ Table::Table(
 
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
 
-    QObject::connect(ui->pbSagen, &QPushButton::clicked, this, [this]() {
-      // Player *player = &game_->getPlayerById(1);
-      game_->bieten(Bieten::Ja);
+    QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
+      if (!game_->sager->isRobot_) game_->gereizt_ = game_->reizen();
+      game_->bieten(Passen::Nein);
     });
+
+    QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
+                     [this]() { game_->bieten(Passen::Ja); });
 
     // Testing
     QObject::connect(ui->pbBieten2, &QPushButton::clicked, this,
-                     [this]() { game_->bieten(Bieten::Ja); });
+                     [this]() { game_->bieten(Passen::Nein); });
 
     // Testing
     QObject::connect(ui->pbBieten3, &QPushButton::clicked, this,
-                     [this]() { game_->bieten(Bieten::Ja); });
-
-    QObject::connect(ui->pbPassen, &QPushButton::clicked, this,
-                     [this]() { game_->bieten(Bieten::Nein); });
+                     [this]() { game_->bieten(Passen::Nein); });
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
       ui->pbHand->setChecked(false);
@@ -307,7 +307,7 @@ void Table::onGeboten(
 
   switch (idSager) {
     case 1:
-      ui->pbSagen->setText(antwortSager);
+      ui->pbBieten->setText(antwortSager);
       ui->gbSagenPassen->show();
       break;
     case 2:
@@ -322,7 +322,7 @@ void Table::onGeboten(
 
   switch (idHoerer) {
     case 1:
-      ui->pbSagen->setText(antwortHoerer);
+      ui->pbBieten->setText(antwortHoerer);
       ui->gbSagenPassen->show();
       break;
     case 2:

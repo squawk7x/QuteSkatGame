@@ -21,6 +21,8 @@ class Game : public QObject {
   Player player_1{1, "Player-1", false};  // isRobot = false
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
+  Player* sager{};
+  Player* hoerer{};
   std::vector<Player*> playerList_{&player_1, &player_2, &player_3};
   // geberHoererSagerPos_[0][1][2] == player.id
   std::vector<int> geberHoererSagerPos_{1, 2, 3};
@@ -50,9 +52,7 @@ class Game : public QObject {
 
   int reizen(Reizen reizen = Reizen::Normal);
   void setMaxBieten();
-  bool hoeren(int hoererPos);
-  bool sagen(int sagerPos);
-  void bieten(Bieten bieten = Bieten::Ja);
+  void bieten(Passen passen = Passen::Nein);
   int reizwert(Player* player, const std::string& suit = "");
   void roboAufheben();
   void roboDruecken();
@@ -71,6 +71,7 @@ class Game : public QObject {
   Player& getPlayerByPos(int pos);
   Player* getPlayerByHasTrick();
   Player* getPlayerByIsSolo();
+  Player* getPlayerByHighestBid();
   Player* getPlayerByMostTricksPoints();
 
 
