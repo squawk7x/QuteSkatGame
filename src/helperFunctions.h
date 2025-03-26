@@ -14,7 +14,10 @@ void printMap(const std::map<std::string, int>& suitMap);
 template <std::size_t ROWS, std::size_t COLS>
 void printMatrix(
     const std::array<std::array<bool, COLS>, ROWS>& matrix) {
+  #ifdef DEBUG
   qDebug() << "   J A 1 K Q 9 8 7";
+  #endif
+
   for (std::size_t i = 0; i < matrix.size(); ++i) {
     QString line = QString::fromStdString(suits[i] + " ");
     for (bool value : matrix[i]) {

@@ -206,6 +206,9 @@ int CardVec::mitOhne(
                               [](int value) { return value != 1; });
     count = -std::ranges::count(ohne, 0);  // ohne => minus
   }
+#ifdef DEBUG
+  qDebug() << "mitOhne:" << count;
+#endif
 
   return count;
 }

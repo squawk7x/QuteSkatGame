@@ -51,9 +51,10 @@ class Game : public QObject {
   void geben();
 
   int reizen(Reizen reizen = Reizen::Normal);
-  void setMaxBieten();
-  void bieten(Passen passen = Passen::Nein);
   int reizwert(Player* player, const std::string& suit = "");
+  void setMaxBieten();
+  int counter();
+  void bieten(Passen passen = Passen::Nein);
   void roboAufheben();
   void roboDruecken();
   void druecken();

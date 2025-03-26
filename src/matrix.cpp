@@ -34,7 +34,10 @@ void Matrix::print() const {
   QString header = "   ";
   for (const auto& rank : ranks)
     header.append(QString::fromStdString(rank).left(1) + " ");
+  #ifdef DEBUG
   qDebug().noquote() << header;
+  #endif
+
 
   // Print each row with the suit name at the beginning
   for (std::size_t i = 0; i < ROWS; ++i) {
@@ -42,7 +45,10 @@ void Matrix::print() const {
     for (std::size_t j = 0; j < COLS; ++j) {
       line.append(fields[i][j] ? "X " : "- ");
     }
+    #ifdef DEBUG
     qDebug().noquote() << line;
+    #endif
+
   }
 }
 

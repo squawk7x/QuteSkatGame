@@ -2,6 +2,7 @@
 #ifndef CARD_H
 #define CARD_H
 
+#define DEBUG
 // #include <QObject>
 #include <QPushButton>
 #include <memory>

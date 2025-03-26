@@ -1,6 +1,7 @@
 #include "table.h"
 
 #include <QTimer>
+#include <thread>
 
 #include "src/ui_table.h"
 
@@ -27,7 +28,10 @@ Table::Table(
 
           resetClicks();
 
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbHerz, &QPushButton::clicked, this, [this](bool checked) {
@@ -35,7 +39,10 @@ Table::Table(
           game_->trump_ = "♥";
 
           resetClicks();
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbPik, &QPushButton::clicked, this, [this](bool checked) {
@@ -43,7 +50,10 @@ Table::Table(
           game_->trump_ = "♠";
 
           resetClicks();
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbKreuz, &QPushButton::clicked, this, [this](bool checked) {
@@ -51,7 +61,10 @@ Table::Table(
           game_->trump_ = "♣";
 
           resetClicks();
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbGrand, &QPushButton::clicked, this, [this](bool checked) {
@@ -59,7 +72,10 @@ Table::Table(
           game_->trump_ = checked ? "J" : "";
 
           resetClicks();
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbRamsch, &QPushButton::toggled, this, [this](bool checked) {
@@ -72,7 +88,10 @@ Table::Table(
           ui->pbSchneider->setDisabled(checked);
           ui->pbSchwarz->setDisabled(checked);
 
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
     QObject::connect(
         ui->pbNull, &QPushButton::clicked, this, [this](bool checked) {
@@ -83,7 +102,10 @@ Table::Table(
           ui->pbSchneider->setDisabled(checked);
           ui->pbSchwarz->setDisabled(checked);
 
+#ifdef DEBUG
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
+#endif
+
         });
 
     QObject::connect(game_, &Game::ruleAndTrump, this, &Table::onRuleAndTrump);
@@ -92,19 +114,28 @@ Table::Table(
     QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->ouvert_ = checked;
+#ifdef DEBUG
                        qDebug() << "ouvert_ set to" << game_->ouvert_;
+#endif
+
                      });
 
     QObject::connect(ui->pbHand, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->hand_ = checked;
+#ifdef DEBUG
                        qDebug() << "hand_ set to" << game_->hand_;
+#endif
+
                      });
 
     QObject::connect(
         ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
           game_->schneiderAngesagt_ = checked;
+#ifdef DEBUG
           qDebug() << "schneider_ set to" << game_->schneiderAngesagt_;
+#endif
+
         });
 
     QObject::connect(
@@ -121,8 +152,11 @@ Table::Table(
     QObject::connect(ui->pbStart, &QPushButton::clicked, game_, &Game::start);
 
     QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
-      if (!game_->sager->isRobot_) game_->gereizt_ = game_->reizen();
+      if (!game_->sager->isRobot()) game_->gereizt_ = game_->reizen();
+#ifdef DEBUG
       qDebug() << "Player pbBieten" << game_->sager->name();
+#endif
+
       game_->bieten(Passen::Nein);
     });
 
@@ -299,10 +333,17 @@ void Table::onGegeben() {
 
 void Table::onGeboten(
     int idSager, int idHoerer, QString antwortSager, QString antwortHoerer) {
+#ifdef DEBUG
   qDebug() << "Gereizt:" << game_->gereizt_;
-  qDebug() << "Buttontext Spieler" << idSager << antwortSager;
-  qDebug() << "ButtonText Spieler" << idHoerer << antwortHoerer;
+#endif
 
+#ifdef DEBUG
+  qDebug() << "Buttontext Spieler" << idSager << antwortSager;
+#endif
+
+#ifdef DEBUG
+  qDebug() << "ButtonText Spieler" << idHoerer << antwortHoerer;
+#endif
   ui->gbSagenPassen->hide();
   ui->pbBieten2->hide();
   ui->pbBieten3->hide();
@@ -336,6 +377,7 @@ void Table::onGeboten(
       ui->pbBieten3->show();
       break;
   }
+  // std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
 void Table::onFrageHand() {
@@ -372,7 +414,9 @@ void Table::onRuleAndTrump(
   ui->pbDruecken->click();
   ui->gbRule->setDisabled(true);
 
+#ifdef DEBUG
   qDebug() << "Trump:" << QString::fromStdString(game_->trump_);
+#endif
 }
 
 void Table::onUpdateSkatLayout(
@@ -412,7 +456,10 @@ void Table::onUpdateSkatLayout(
     if (dest == LinkTo::SoloPlayer) {
       Player *soloPlayer = game_->getPlayerByIsSolo();
       if (!soloPlayer) {
+#ifdef DEBUG
         qDebug() << "onUpdateSkatLayout: solo player not found";
+#endif
+
         return;
       }
 
@@ -501,7 +548,10 @@ void Table::onUpdatePlayerLayout(
 
                   if (!player.handdeck_.isCardInside(card) ||
                       !game_->isCardValid(card)) {
+#ifdef DEBUG
                     qDebug() << "Move rejected: Invalid card choice.";
+#endif
+
                     return;
                   }
 
@@ -564,7 +614,9 @@ void Table::onClearTrickLayout() {
 }
 
 void Table::onResultat() {
+#ifdef DEBUG
   qDebug() << "onResultat";
+#endif
 
   Player *player = game_->getPlayerByIsSolo();
   QString resultat;
@@ -611,7 +663,10 @@ void Table::onResultat() {
 void Table::mousePressEvent(
     QMouseEvent *event) {
   if (event->button() == Qt::RightButton) {
+#ifdef DEBUG
     qDebug() << "Right click detected inside window!";
+#endif
+
     game_->autoplay();
     return;
   }
