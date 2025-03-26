@@ -41,9 +41,8 @@ void Game::start() {
   player_3.maxBieten_ = 0;
 
   // Players' tricks to blind
-#ifdef DEBUG
+
   qDebug() << "Moving cards from players' tricks to blind.";
-#endif
 
   int cardsMovedFromPlayerTricks = 0;
 
@@ -57,10 +56,10 @@ void Game::start() {
       }
     }
   }
-#ifdef DEBUG
+
   qDebug() << "Cards moved from players' tricks to blind:"
            << cardsMovedFromPlayerTricks;
-#endif
+
   // for restart of a new round inbetween:
   for (Player* player : playerList_) {
     for (const Card& card : player->handdeck_.cards())
@@ -78,18 +77,16 @@ void Game::start() {
   while (playerList_[0]->id() != geberHoererSagerPos_[1])
     std::ranges::rotate(playerList_, playerList_.begin() + 1);
 
-#ifdef DEBUG
   qDebug() << "Size of blind before geben:" << blind_.cards().size();
-#endif
 
   geben();
 }
 
 void Game::geben() {
   blind_.shuffle();
-#ifdef DEBUG
+
   // qDebug() << "Blind size after shuffling:" << blind_.cards().size();
-#endif
+
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_) {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
@@ -109,33 +106,6 @@ void Game::geben() {
   emit gegeben();
   setMaxBieten();
   bieten();
-
-  // int hoererPos = 1;
-  // int sagerPos = 2;
-
-  // Player* hoerer = &getPlayerByPos(hoererPos);
-  // Player* sager = &getPlayerByPos(sagerPos);
-
-  // QString antwortSager, antwortHoerer;
-
-  // // Initial setup bieten
-  // if (sager->isRobot()) {
-  //   if (sager->maxBieten_ >= 18) {
-  //     gereizt_ = reizen();
-  //     antwortSager = QString::number(gereizt_);
-  //   } else
-  //     antwortSager = "passe";
-  // }
-  // if (hoerer->isRobot()) antwortHoerer = "höre";
-
-  // if (!sager->isRobot()) antwortSager =
-  // QString::number(reizen(Reizen::Preview)); if (!hoerer->isRobot()) {
-  //   if (gereizt_ == 0)
-  //     antwortHoerer = "höre";
-  //   else
-  //     antwortHoerer = "ja";
-  // }
-  // emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 }
 
 int Game::reizen(
@@ -207,9 +177,8 @@ void Game::setMaxBieten() {
       player->maxBieten_ = reizwert(player, favorite.first);
     } else
       player->maxBieten_ = 0;
-#ifdef DEBUG
+
     qDebug() << "Player" << player->id() << "bietet bis:" << player->maxBieten_;
-#endif
   }
 }
 
@@ -260,7 +229,7 @@ void Game::bieten(
       antwortSager = QString::number(reizen(Reizen::Preview));
 
     antwortHoerer = (gereizt_ <= hoerer->maxBieten_) ? "ja" : "passe";
-    if (gereizt_ == 0) antwortHoerer = "höre";
+    if (gereizt_ == 0 && !hoerer->isRobot()) antwortHoerer = "höre";
 
     emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
 
@@ -326,9 +295,8 @@ void Game::bieten(
 
     rule_ = Rule::Ramsch;
     emit ruleAndTrump(rule_, "J");
-#ifdef DEBUG
+
     qDebug() << "Ramsch!";
-#endif
 
     return;
   }
@@ -361,19 +329,17 @@ void Game::bieten(
     emit geboten(sager->id(), hoerer->id(), antwortSager, antwortHoerer);
   }
 
-#ifdef DEBUG
   qDebug() << "gereizt bis:" << gereizt_;
-#endif
 
   for (Player* player : playerList_) player->isSolo_ = false;
   Player* player = getPlayerByHighestBid();
 
   if (player) {
     player->isSolo_ = true;
-#ifdef DEBUG
+
     qDebug() << QString::fromStdString(player->name()) + " isSolo:"
              << player->isSolo_;
-#endif
+
     if (player->isRobot())
       roboAufheben();  // hand wird in roboAufheben entschieden
     else
@@ -382,9 +348,7 @@ void Game::bieten(
 }
 
 void Game::roboAufheben() {
-#ifdef DEBUG
   qDebug() << "roboAufheben...";
-#endif
 
   Player* player = getPlayerByIsSolo();
 
@@ -395,9 +359,7 @@ void Game::roboAufheben() {
 }
 
 void Game::roboDruecken() {
-#ifdef DEBUG
   qDebug() << "roboDruecken...";
-#endif
 
   Player* player = getPlayerByIsSolo();
 
@@ -411,36 +373,109 @@ void Game::roboDruecken() {
 }
 
 void Game::druecken() {
-#ifdef DEBUG
   qDebug() << "druecken...";
-#endif
 
-  if (skat_.cards().size() == 2) {
+  Player* player = getPlayerByIsSolo();
+
+  if (player && skat_.cards().size() == 2) {
     // TODO: KI Karten austauschen-druecken Robots
     // TODO after testing: LinkTo::Trick only for player 1
 
-    Player* player = getPlayerByIsSolo();
     // Skat in Ramsch handled in finishRound
     // TODO: KI
-    if (player) {
-#ifdef DEBUG
-      qDebug() << "soloPlayer:" << player->name();
-#endif
 
-      player->tricks_.push_back(std::move(skat_));
-    }
+    qDebug() << "soloPlayer:" << player->name();
+
+    player->tricks_.push_back(std::move(skat_));
   }
 }
 
-int Game::spielwert(
-    const std::string& suit) {
-  return 0;
+void Game::setSpielwertGereizt() {
+  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
+    Player* player = getPlayerByIsSolo();
+
+    mitOhne_ = player->handdeck_.mitOhne(trump_);
+
+    int counter = 0;
+
+    if (ouvert_) counter++;
+    if (schneiderAngesagt_) counter++;  // Schneider angesagt
+    if (schwarzAngesagt_) counter++;    // Schwarz angesagt
+
+    if (rule_ == Rule::Suit)
+      spielwertGereizt_ =
+          (abs(mitOhne_) + 1 + hand_ + counter) * trumpValue.at(trump_);
+
+    else if (rule_ == Rule::Grand) {
+      // Grand Hand 36
+      if (hand_) spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
+      // Grand 24
+      else
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 24;
+    }
+  }
+
+  else if (rule_ == Rule::Null) {
+    if (!hand_ && !ouvert_)
+      spielwertGespielt_ = 23;
+    else if (hand_ && !ouvert_)
+      spielwertGespielt_ = 35;
+    else if (ouvert_ && !hand_)
+      spielwertGespielt_ = 46;
+    else if (ouvert_ && hand_)
+      spielwertGespielt_ = 59;
+  }
+
+  else if (rule_ == Rule::Ramsch) {
+    // Spielwert Gespielt: Verlierer mit max Trickpoints Minuspunkte
+  }
+}
+
+void Game::setSpielwertGespielt() {
+  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
+    Player* player = getPlayerByIsSolo();
+    int counter = 0;
+
+    // hand_ separatly evaluated for suit and Grand
+    if (ouvert_) counter++;
+    if (player->tricksPoints_ >= 90) counter++;  // Schneider erreicht
+    if (schneiderAngesagt_) counter++;           // Schneider angesagt
+    if (player->tricks_.size() == 11)
+      counter++;                      // Schwarz erreicht (11 = 10 + skat)
+    if (schwarzAngesagt_) counter++;  // Schwarz angesagt +2!
+
+    // TODO use handdeck/cards from player
+    if (rule_ == Rule::Suit)
+      spielwertGespielt_ =
+          (abs(mitOhne_) + 1 + hand_ + counter) * trumpValue.at(trump_);
+
+    if (rule_ == Rule::Grand) {
+      // Grand 24
+      if (!hand_) spielwertGespielt_ = (abs(mitOhne_) + 1 + counter) * 24;
+      // Grand Hand 36
+      if (hand_) spielwertGespielt_ = (abs(mitOhne_) + 1 + counter) * 36;
+    }
+  }
+
+  else if (rule_ == Rule::Null) {
+    if (!hand_ && !ouvert_)
+      spielwertGespielt_ = 23;
+    else if (hand_ && !ouvert_)
+      spielwertGespielt_ = 35;
+    else if (ouvert_ && !hand_)
+      spielwertGespielt_ = 46;
+    else if (ouvert_ && hand_)
+      spielwertGespielt_ = 59;
+  }
+
+  else if (rule_ == Rule::Ramsch) {
+    Player* player = getPlayerByMostTricksPoints();
+    spielwertGespielt_ = player->tricksPoints_;
+  }
 }
 
 void Game::autoplay() {
-#ifdef DEBUG
   qDebug() << "autoplay() ...";
-#endif
 
   // Rule must be set!
   if (rule_ != Rule::Unset && (!player_1.handdeck_.cards().empty() ||
@@ -465,15 +500,12 @@ void Game::playCard(
     for (auto& player : playerList_) player->hasTrick_ = false;
 
     playerList_.front()->hasTrick_ = true;
-#ifdef DEBUG
+
     qDebug() << QString::fromStdString(playerList_.front()->name())
              << "has the trick now!";
-#endif
   }
 
-#ifdef DEBUG
   qDebug() << "playCard(Card& card):" << QString::fromStdString(card.str());
-#endif
 
   matrix.setField(card);
   matrix.print();
@@ -489,10 +521,10 @@ void Game::activateNextPlayer() {
     Player* trickholder = getPlayerByHasTrick();
 
     trickholder->tricks_.push_back(trick_);
-#ifdef DEBUG
+
     qDebug() << "Trick moved to Trickholder"
              << QString::fromStdString(trickholder->name());
-#endif
+
     if (playerList_.front()->handdeck_.cards().size() == 0) finishRound();
 
     auto trickholderIt = std::ranges::find(playerList_, trickholder);
@@ -500,10 +532,10 @@ void Game::activateNextPlayer() {
     if (trickholderIt != playerList_.end()) {
       std::ranges::rotate(playerList_, trickholderIt);
     }
-#ifdef DEBUG
+
     qDebug() << "Rotating to:"
              << QString::fromStdString(playerList_.front()->name());
-#endif
+
   } else {
     // Rotate to the next player if the trick is not full
     // std::rotate(playerList_.begin(), playerList_.begin() + 1,
@@ -511,29 +543,25 @@ void Game::activateNextPlayer() {
 
     rng::rotate(playerList_, playerList_.begin() + 1);
 
-#ifdef DEBUG
     qDebug() << "Next player:"
              << QString::fromStdString(playerList_.front()->name());
-#endif
   }
 
   // show playable cards for activated player
   auto cards = playableCards(playerList_.front()->id());
-#ifdef DEBUG
+
   qDebug() << "Playable cards:" << QString::fromStdString(cardsToString(cards));
-#endif
 
   rng::sort(cards, [](Card& a, Card& b) { return a.hasMorePower(b); });
-#ifdef DEBUG
+
   qDebug() << "Proposed order 1:"
            << QString::fromStdString(cardsToString(cards));
-#endif
 
   rng::sort(cards, [](Card& a, Card& b) { return a.hasMoreValue(b); });
-#ifdef DEBUG
+
   qDebug() << "Proposed order 2:"
            << QString::fromStdString(cardsToString(cards));
-#endif
+
   // autoplay();
 }
 
@@ -548,10 +576,9 @@ std::vector<Card> Game::playableCards(
               return isCardValid(card, true);  // preview = true
             }),
             std::back_inserter(playable));
-#ifdef DEBUG
-  // qDebug() << "Playable Cards:"
-  //          << QString::fromStdString(cardsToString(playable));
-#endif
+
+  qDebug() << "Playable Cards:"
+           << QString::fromStdString(cardsToString(playable));
 
   return playable;
 }
@@ -748,9 +775,7 @@ Player* Game::getPlayerByHasTrick() {
   if (trickholder != playerList_.end())
     return *trickholder;
   else {
-#ifdef DEBUG
     qDebug() << "Player not found with hasTrick_ == true";
-#endif
 
     return nullptr;
   }
@@ -762,15 +787,11 @@ Player* Game::getPlayerByIsSolo() {
   if (soloPlayer != playerList_.end())
     return *soloPlayer;
   else {
-#ifdef DEBUG
     qDebug() << "Player not found with isSolo_ == true";
-#endif
 
     return nullptr;
   }
 }
-
-#include <ranges>  // Required for std::ranges
 
 Player* Game::getPlayerByHighestBid() {
   if (playerList_.empty()) return nullptr;
@@ -783,9 +804,7 @@ Player* Game::getPlayerByHighestBid() {
   if (highestBidder != playerList_.end() && (*highestBidder)->maxBieten_ > 0)
     return *highestBidder;
 
-#ifdef DEBUG
   qDebug() << "No player has placed a bid.";
-#endif
 
   return nullptr;
 }
@@ -799,70 +818,69 @@ Player* Game::getPlayerByMostTricksPoints() {
   if (it != playerList_.end()) {
     return *it;  // Return player with the most tricks points
   } else {
-#ifdef DEBUG
     qDebug() << "No player found with tricks points";
-#endif
 
     return nullptr;  // If no player is found
   }
 }
 
 void Game::finishRound() {
-#ifdef DEBUG
   qDebug() << "finishing round ...\n";
-#endif
+
+  setSpielwertGespielt();
+  bool ueberreizt = gereizt_ < spielwertGespielt_;
+  qDebug() << "Spielwert Gespielt: " << spielwertGespielt_;
 
   for (const auto& player : playerList_) {
     player->setTricksPoints();
-#ifdef DEBUG
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
-#endif
   }
 
-  if (rule_ != Rule::Ramsch)
-    assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
-               player_3.tricksPoints_ ==
-           120);
-
-  assert(gereizt_ == reizen(Reizen::Last));
-
-  // TODO Spielwert
-  if (rule_ != Rule::Ramsch) {
+  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
     Player* player = getPlayerByIsSolo();
     int points = player->tricksPoints_;
 
-    if (points > 60) {
-      player->score_ += spielwert_;
+    if (points > 60 && !ueberreizt) {
+      player->score_ += spielwertGespielt_;
       player->spieleGewonnen_++;
-#ifdef DEBUG
-      qDebug() << player->name() << "gewinnt mit" << points << "zu"
-               << 120 - points << "Augen";
-#endif
     } else {
-      player->score_ -= 2 * spielwert_;
+      if (ueberreizt)
+        player->score_ -= 2 * gereizt_;
+      else
+        player->score_ -= 2 * spielwertGespielt_;
       player->spieleVerloren_++;
-#ifdef DEBUG
-      qDebug() << player->name() << "verliert mit" << points << "zu"
-               << 120 - points << "Augen.";
-#endif
+    }
+  }
+
+  if (rule_ == Rule::Null) {
+    Player* player = getPlayerByIsSolo();
+
+    if (player->tricks_.empty() && gereizt_ <= spielwertGespielt_) {
+      player->score_ += spielwertGespielt_;
+      player->spieleGewonnen_++;
+    } else {
+      if (ueberreizt)
+        player->score_ -= 2 * gereizt_;
+      else
+        player->score_ -= 2 * spielwertGespielt_;
+      player->spieleVerloren_++;
     }
   }
 
   // TODO 2 Spieler mit gleicher Punktzahl
   if (rule_ == Rule::Ramsch) {
     Player* player = getPlayerByMostTricksPoints();
-#ifdef DEBUG
-    qDebug() << player->name();
-#endif
 
     player->score_ -= player->sumTricks();
     player->spieleVerloren_++;
   }
 
-#ifdef DEBUG
-  qDebug() << "Blind size finish round:" << blind_.cards().size();
-#endif
+  if (rule_ != Rule::Ramsch) {
+    assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
+               player_3.tricksPoints_ ==
+           120);
+  }
 
   emit resultat();
 }

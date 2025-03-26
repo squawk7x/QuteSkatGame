@@ -193,9 +193,10 @@ std::pair<std::string, int> CardVec::highestPairInMap(
   return *mostJorSuit;
 }
 
+// TODO calc separatly for suit and Grand
 int CardVec::mitOhne(
-    const std::string& targetSuit) {
-  std::vector<int> pattern = patternJacksAndSuit(targetSuit);
+    const std::string& trump) {
+  std::vector<int> pattern = patternJacksAndSuit(trump);
 
   auto mit = pattern | std::ranges::views::take_while(
                            [](int value) { return value != 0; });
@@ -206,9 +207,8 @@ int CardVec::mitOhne(
                               [](int value) { return value != 1; });
     count = -std::ranges::count(ohne, 0);  // ohne => minus
   }
-#ifdef DEBUG
+
   qDebug() << "mitOhne:" << count;
-#endif
 
   return count;
 }

@@ -35,8 +35,6 @@ void printMap(
 
   output += "}";
 
-  #ifdef DEBUG
+  
   qDebug() << "suitMap:" << output;
-  #endif
-
 }

@@ -31,8 +31,10 @@ class Game : public QObject {
   Rule rule_{};
   std::string trump_{};
   int gereizt_{};
+  int mitOhne_{};
   int reizwert_{};
-  int spielwert_{};
+  int spielwertGereizt_{};
+  int spielwertGespielt_{};
   bool hand_{};
   bool ouvert_{};
   bool schneiderAngesagt_{};
@@ -58,7 +60,8 @@ class Game : public QObject {
   void roboAufheben();
   void roboDruecken();
   void druecken();
-  int spielwert(const std::string& suit = "");
+  void setSpielwertGereizt();
+  void setSpielwertGespielt();
   void autoplay();
   void playCard(const Card& card);
   void activateNextPlayer();

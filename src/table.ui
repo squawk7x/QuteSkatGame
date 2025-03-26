@@ -509,6 +509,22 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QLabel" name="lblSpielwertGereizt">
+           <property name="font">
+            <font>
+             <family>Noto Sans Mono</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Spielwert (gereizt):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>

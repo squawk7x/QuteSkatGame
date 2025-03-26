@@ -60,7 +60,7 @@ class CardVec {
       const std::map<std::string, int>& suitMap);
   // e.g. J J J J
   //      0 1 1 0 => -1
-  int mitOhne(const std::string& targetSuit);
+  int mitOhne(const std::string& trump);
 
   void sortByJacksAndSuits();
 
