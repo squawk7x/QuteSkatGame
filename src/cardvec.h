@@ -45,22 +45,26 @@ class CardVec {
 
   std::vector<Card> filterJacks();
   std::vector<Card> filterSuits(const std::string& targetSuit);
-  std::vector<Card> filterJacksSuits(const std::string& targetSuit);
-  // e.g. J J J J A 10 K Q 9 8 7 =>
-  //      1 0 0 1 1  0 0 1 1 0 0
-  std::vector<int> patternJacksAndSuit(const std::string& targetSuit);
-  // e.g. 5
-  int sumPatternJacksAndSuit(const std::string& targetSuit);
-  // e.g. 5
-  int countPatternJacksAndSuit(const std::string& targetSuit);
-  // e.g.  {"J", 1}, {"♣", 3}, {"♠", 3}, {"♥", 1}, {"♦", 2}};
-  std::map<std::string, int> JandSuitNumMap();
-  // e.g. {"J", 4} or {"♣", 5}
-  std::pair<std::string, int> highestPairInMap(
-      const std::map<std::string, int>& suitMap);
+  std::vector<Card> filterJacksAndSuits(const std::string& targetSuit);
+
+  // e.g. J J J J   A 10 K Q 9 8 7 =>
+  //      1 0 0 1   1  0 0 1 1 0 0
+  std::vector<int> trumpPattern(const std::string& trump);
+
   // e.g. J J J J
   //      0 1 1 0 => -1
   int mitOhne(const std::string& trump);
+
+  // e.g. J J J J   A 10 K Q 9 8 7 =>
+  //      1 0 0 1   1  0 0 1 1 0 0
+  int sumTrump(const std::string& trump);
+
+  // e.g.  {"J", 1}, {"♣", 3}, {"♠", 3}, {"♥", 1}, {"♦", 2}};
+  std::map<std::string, int> JandSuitNumMap();
+
+  // e.g. {"J", 4} or {"♣", 5}
+  std::pair<std::string, int> highestPairInMap(
+      const std::map<std::string, int>& suitMap);
 
   void sortByJacksAndSuits();
 

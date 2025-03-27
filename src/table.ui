@@ -247,6 +247,60 @@
             <property name="bottomMargin">
              <number>0</number>
             </property>
+            <item row="4" column="2">
+             <widget class="QPushButton" name="pbSchneider">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Schneider</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QPushButton" name="pbHerz">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>♥</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QPushButton" name="pbKreuz">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>♣</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0" colspan="4">
              <widget class="QLabel" name="lblSpiel">
               <property name="font">
@@ -283,8 +337,8 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QPushButton" name="pbOuvert">
+            <item row="3" column="0">
+             <widget class="QPushButton" name="pbNull">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -292,26 +346,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Ouvert</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <widget class="QPushButton" name="pbKreuz">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>♣</string>
+               <string>Null</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -343,8 +378,8 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="3">
-             <widget class="QPushButton" name="pbRamsch">
+            <item row="3" column="1" colspan="2">
+             <widget class="QPushButton" name="pbGrand">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -352,85 +387,12 @@
                </font>
               </property>
               <property name="text">
-               <string>Ramsch</string>
+               <string>Grand</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
               </property>
               <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QPushButton" name="pbNull">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Null</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QPushButton" name="pbHand">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Hand</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QPushButton" name="pbHerz">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>♥</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="autoExclusive">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="2">
-             <widget class="QPushButton" name="pbSchneider">
-              <property name="font">
-               <font>
-                <family>Noto Sans Mono</family>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Schneider</string>
-              </property>
-              <property name="checkable">
                <bool>true</bool>
               </property>
              </widget>
@@ -451,8 +413,8 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1" colspan="2">
-             <widget class="QPushButton" name="pbGrand">
+            <item row="3" column="3">
+             <widget class="QPushButton" name="pbRamsch">
               <property name="font">
                <font>
                 <family>Noto Sans Mono</family>
@@ -460,12 +422,59 @@
                </font>
               </property>
               <property name="text">
-               <string>Grand</string>
+               <string>Ramsch</string>
+              </property>
+              <property name="checkable">
+               <bool>false</bool>
+              </property>
+              <property name="autoExclusive">
+               <bool>true</bool>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="pbOuvert">
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Ouvert</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
               </property>
               <property name="autoExclusive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QPushButton" name="pbHand">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="font">
+               <font>
+                <family>Noto Sans Mono</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Hand</string>
+              </property>
+              <property name="checkable">
+               <bool>false</bool>
+              </property>
+              <property name="default">
+               <bool>false</bool>
+              </property>
+              <property name="flat">
                <bool>true</bool>
               </property>
              </widget>

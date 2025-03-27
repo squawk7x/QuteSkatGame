@@ -25,12 +25,17 @@ Table::Table(
         ui->pbKaro, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♦" : "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
 
-          resetClicks();
+          // resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
@@ -38,12 +43,17 @@ Table::Table(
         ui->pbHerz, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♥" : "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
 
-          resetClicks();
+          // resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
@@ -51,11 +61,16 @@ Table::Table(
         ui->pbPik, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♠" : "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
-          resetClicks();
+          // resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
@@ -63,11 +78,15 @@ Table::Table(
         ui->pbKreuz, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♣" : "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
-          resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
@@ -75,91 +94,63 @@ Table::Table(
         ui->pbGrand, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Grand : Rule::Unset;
           game_->trump_ = checked ? "J" : "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
-          resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
 
 
         });
-    QObject::connect(
-        ui->pbRamsch, &QPushButton::toggled, this, [this](bool checked) {
-          game_->rule_ = checked ? Rule::Ramsch : Rule::Unset;
-          game_->trump_ = checked ? "J" : "";
-          ui->lblSpielwertGereizt->setText("");
 
-          resetClicks();
-          ui->pbOuvert->setDisabled(checked);
-          ui->pbHand->setDisabled(checked);
-          ui->pbSchneider->setDisabled(checked);
-          ui->pbSchwarz->setDisabled(checked);
-
-          qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-
-
-        });
     QObject::connect(
         ui->pbNull, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Null : Rule::Unset;
           game_->trump_ = "";
+          game_->ouvert_ = false;
+          ui->pbOuvert->setChecked(false);
+
+          setButtonLogic();
+
           game_->setSpielwertGereizt();
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
 
-          resetClicks();
-          ui->pbSchneider->setDisabled(checked);
-          ui->pbSchwarz->setDisabled(checked);
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-
-
         });
 
     QObject::connect(game_, &Game::ruleAndTrump, this, &Table::onRuleAndTrump);
 
     // Spiel Ouvert, Hand, Schneider, Schwarz
+    // overt muß immer hand gespielt werden - außer null hand
     QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->ouvert_ = checked;
 
+                       setButtonLogic();
+
                        game_->setSpielwertGereizt();
+
                        ui->lblSpielwertGereizt->setText(
                            "Spielwert gereizt: " +
                            QString::number(game_->spielwertGereizt_));
 
                        qDebug() << "ouvert_ set to" << game_->ouvert_;
-
-
-                     });
-
-    QObject::connect(ui->pbHand, &QPushButton::toggled, this,
-                     [this](bool checked) {
-                       game_->hand_ = checked;
-
-                       // Überprüfe, ob das Spiel ein Null-Spiel ist
-                       if (game_->rule_ == Rule::Null) {
-                         // Ouvert aktivieren, wenn Hand aktiviert wird
-                         game_->ouvert_ = checked;
-                         ui->pbOuvert->setChecked(checked);
-                         ui->pbOuvert->setDisabled(checked);
-                       }
-
-                       game_->setSpielwertGereizt();
-                       ui->lblSpielwertGereizt->setText(
-                           "Spielwert gereizt: " +
-                           QString::number(game_->spielwertGereizt_));
-
-                       qDebug() << "hand_ set to" << game_->hand_;
                      });
 
     QObject::connect(
         ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
           game_->schneiderAngesagt_ = checked;
-          game_->setSpielwertGereizt();
+
+          // game_->setSpielwertGereizt();
+
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
@@ -169,11 +160,10 @@ Table::Table(
 
     QObject::connect(
         ui->pbSchwarz, &QPushButton::toggled, this, [this](bool checked) {
-          // Wenn schwarz angesagt dann auch Schneider
-          ui->pbSchneider->setChecked(checked);
-          game_->schneiderAngesagt_ = checked;
           game_->schwarzAngesagt_ = checked;
-          game_->setSpielwertGereizt();
+
+          // game_->setSpielwertGereizt();
+
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
               QString::number(game_->spielwertGereizt_));
@@ -204,19 +194,18 @@ Table::Table(
                      [this]() { game_->bieten(Passen::Nein); });
 
     QObject::connect(ui->pbHandNein, &QPushButton::clicked, this, [this]() {
-      ui->pbHand->setChecked(false);
-      ui->pbHand->setDisabled(false);
+      game_->hand_ = false;
+      ui->pbHand->setText("");
       ui->gbFrageHand->hide();
       ui->gbDruecken->show();
       onUpdateSkatLayout(LinkTo::SoloPlayer);
     });
 
     QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
-      ui->pbHand->click();
-      ui->pbHand->setChecked(true);
-      ui->pbHand->setDisabled(true);
+      game_->hand_ = true;
+      ui->pbHand->setText("Hand");
+      ui->gbFrageHand->hide();
       ui->pbDruecken->click();  // even if not visible
-      // onUpdateSkatLayout(LinkTo::Skat);
     });
 
     QObject::connect(game_, &Game::gedrueckt, this, [this]() {
@@ -305,19 +294,9 @@ Table::Table(
   game_->init();
 }
 
-void Table::resetClicks() {
-  ui->pbOuvert->setDisabled(false);
-  ui->pbOuvert->setChecked(false);
-  ui->pbHand->setDisabled(false);
-  ui->pbHand->setChecked(false);
-  ui->pbSchneider->setDisabled(false);
-  ui->pbSchneider->setChecked(false);
-  ui->pbSchwarz->setDisabled(false);
-  ui->pbSchwarz->setChecked(false);
-}
-
 void Table::onGegeben() {
   ui->lblUrsprungsSkat->hide();
+
   ui->gbSkat->show();
 
   ui->gbSagenPassen->show();
@@ -330,16 +309,20 @@ void Table::onGegeben() {
   ui->gbFrageEnde->hide();
 
   ui->gbSpiel->hide();
-  ui->pbRamsch->setDisabled(false);
-  ui->pbRamsch->clicked(false);
-  ui->pbOuvert->setDisabled(false);
-  ui->pbOuvert->clicked(false);
-  ui->pbHand->setDisabled(false);
-  ui->pbHand->clicked(false);
-  ui->pbSchneider->setDisabled(false);
-  ui->pbSchneider->clicked(false);
-  ui->pbSchwarz->clicked(false);
-  ui->gbRule->setDisabled(false);
+
+  ui->gbRule->setEnabled(true);
+
+  ui->pbKaro->setChecked(false);
+  ui->pbHerz->setChecked(false);
+  ui->pbPik->setChecked(false);
+  ui->pbKreuz->setChecked(false);
+  ui->pbGrand->setChecked(false);
+  ui->pbNull->setChecked(false);
+
+  // ui-pbHand is already set
+  ui->pbOuvert->setVisible(false);
+  ui->pbSchneider->setVisible(false);
+  ui->pbSchwarz->setVisible(false);
 
   ui->gbTrick2->hide();
   ui->gbTrick1->hide();
@@ -371,6 +354,7 @@ void Table::onGeboten(
   ui->gbSagenPassen->hide();
   ui->pbBieten2->hide();
   ui->pbBieten3->hide();
+  ui->pbRamsch->setVisible((game_->gereizt_ > 0) ? false : true);
 
   switch (idSager) {
     case 1:
@@ -417,9 +401,11 @@ void Table::onFrageHand() {
 // Robots will emit
 void Table::onRuleAndTrump(
     Rule rule, std::string trump) {
+  ui->pbRamsch->setVisible(false);
   if (rule == Rule::Ramsch) {
-    ui->pbRamsch->click();
-    ui->pbRamsch->setDisabled(true);
+    ui->pbRamsch->setVisible(true);
+    ui->pbHand->setVisible(game_->hand_);  // should be false
+    ui->lblSpielwertGereizt->setText("Ramsch!");
   } else if (rule == Rule::Grand) {
     ui->pbGrand->click();
   } else if (rule == Rule::Null) {
@@ -640,8 +626,8 @@ void Table::onResultat() {
     bool gewonnen = (player->points() > 60 && !ueberreizt);
 
     resultat = QString(
-                   "%7\n%1 %2\nmit %3 zu %4 Augen.\nGereizt wurde bis %5\n"
-                   "Der Spielwert %6\n")
+                   "%7\n%1 %2\nmit %3 zu %4 Augen.\nGereizt bis %5.\n"
+                   "Der Spielwert ist %6.\n")
                    .arg(QString::fromStdString(player->name()))
                    .arg(gewonnen ? "gewinnt" : "verliert")
                    .arg(player->points())
@@ -664,6 +650,8 @@ void Table::onResultat() {
   ui->lblStatistik3->setText(QString("%1 / %2")
                                  .arg(game_->player_3.spieleGewonnen_)
                                  .arg(game_->player_3.spieleVerloren_));
+
+  ui->gbSagenPassen->hide();
 
   ui->lblSpielwert->setText(resultat);
   ui->gbResultat->show();
@@ -690,6 +678,41 @@ void Table::mousePressEvent(
     return;
   }
   QMainWindow::mousePressEvent(event);  // Default behavior
+}
+
+/*
+ *Spieltyp              Schneider	Schwarz
+Grand Hand                ❌ Nein          ❌ Nein
+Grand Hand mit Schneider  ✅ Ja            ❌ Nein
+Grand Hand mit Schwarz    ✅ Ja            ✅ Ja
+Grand Hand Ouvert         ✅ Ja            ✅ Ja (automatisch)
+ */
+
+void Table::setButtonLogic() {
+  if (game_->rule_ == Rule::Grand || game_->rule_ == Rule::Suit) {
+    ui->pbHand->setVisible(game_->hand_);
+    // game_->ouvert_ = false;
+    ui->pbOuvert->setVisible(game_->hand_);
+
+    // Schneider is always announced if playing Grand Hand
+    game_->schneiderAngesagt_ = game_->hand_;
+    // game_->schneiderAngesagt_ = true;
+    ui->pbSchneider->setChecked(game_->hand_);
+    ui->pbSchneider->setVisible(game_->hand_);
+    ui->pbSchneider->setDisabled(game_->hand_);
+
+    // Schwarz is only announced if Grand Hand Ouvert is played
+    game_->schwarzAngesagt_ = game_->ouvert_;
+    ui->pbSchwarz->setChecked(game_->ouvert_);
+    ui->pbSchwarz->setVisible(game_->ouvert_);
+    ui->pbSchwarz->setDisabled(game_->ouvert_);
+  }
+
+  if (game_->rule_ == Rule::Null) {
+    ui->pbOuvert->setVisible(true);
+    ui->pbSchneider->setVisible(false);
+    ui->pbSchwarz->setVisible(false);
+  }
 }
 
 Table::~Table() { delete ui; }

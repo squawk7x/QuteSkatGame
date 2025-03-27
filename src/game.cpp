@@ -30,11 +30,16 @@ void Game::init() {
 // started by Table constructor
 void Game::start() {
   rule_ = Rule::Unset;
-  gereizt_ = 0;
+  hand_ = false;
+  ouvert_ = false;
+  schneiderAngesagt_ = false;
+  schwarzAngesagt_ = false;
+  schneider_ = false;
+  schwarz_ = false;
   reizen(Reizen::Reset);  // reset static int counter in reizen
+  gereizt_ = 0;
   matrix.reset();
 
-  // for testing:
   player_1.isRobot_ = false;
   player_1.maxBieten_ = 216;
   player_2.maxBieten_ = 0;
@@ -408,7 +413,11 @@ void Game::setSpielwertGereizt() {
 
     else if (rule_ == Rule::Grand) {
       // Grand Hand 36
-      if (hand_) spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
+      if (hand_ && !ouvert_)
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
+      // Grand ouvert immer hand schneider schwarz
+      else if (ouvert_)
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + 4) * 24;
       // Grand 24
       else
         spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 24;
@@ -417,13 +426,13 @@ void Game::setSpielwertGereizt() {
 
   else if (rule_ == Rule::Null) {
     if (!hand_ && !ouvert_)
-      spielwertGespielt_ = 23;
+      spielwertGereizt_ = 23;
     else if (hand_ && !ouvert_)
-      spielwertGespielt_ = 35;
+      spielwertGereizt_ = 35;
     else if (ouvert_ && !hand_)
-      spielwertGespielt_ = 46;
+      spielwertGereizt_ = 46;
     else if (ouvert_ && hand_)
-      spielwertGespielt_ = 59;
+      spielwertGereizt_ = 59;
   }
 
   else if (rule_ == Rule::Ramsch) {
@@ -450,10 +459,15 @@ void Game::setSpielwertGespielt() {
           (abs(mitOhne_) + 1 + hand_ + counter) * trumpValue.at(trump_);
 
     if (rule_ == Rule::Grand) {
-      // Grand 24
-      if (!hand_) spielwertGespielt_ = (abs(mitOhne_) + 1 + counter) * 24;
       // Grand Hand 36
-      if (hand_) spielwertGespielt_ = (abs(mitOhne_) + 1 + counter) * 36;
+      if (hand_ && !ouvert_)
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
+      // Grand ouvert immer hand schneider schwarz
+      else if (ouvert_)
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + 6) * 24;
+      // Grand 24
+      else
+        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 24;
     }
   }
 
@@ -837,9 +851,22 @@ void Game::finishRound() {
              << " - Total Points: " << QString::number(player->points());
   }
 
-  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
+  if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
     Player* player = getPlayerByIsSolo();
     int points = player->tricksPoints_;
+
+    // Grand hand ouvert
+    if (rule_ == Rule::Grand && hand_ && ouvert_) {
+      // Spieler muß scharz erreichen um zu gewinnen
+      if (player->tricks_.size() == 11) {  // 10 tricks + skat
+        player->score_ += spielwertGespielt_;
+        player->spieleGewonnen_++;
+      } else {
+        player->score_ -= spielwertGespielt_;
+        player->spieleVerloren_++;
+      }
+      return;
+    }
 
     if (points > 60 && !ueberreizt) {
       player->score_ += spielwertGespielt_;
@@ -851,36 +878,36 @@ void Game::finishRound() {
         player->score_ -= 2 * spielwertGespielt_;
       player->spieleVerloren_++;
     }
-  }
 
-  if (rule_ == Rule::Null) {
-    Player* player = getPlayerByIsSolo();
+    if (rule_ == Rule::Null) {
+      Player* player = getPlayerByIsSolo();
 
-    if (player->tricks_.empty() && gereizt_ <= spielwertGespielt_) {
-      player->score_ += spielwertGespielt_;
-      player->spieleGewonnen_++;
-    } else {
-      if (ueberreizt)
-        player->score_ -= 2 * gereizt_;
-      else
-        player->score_ -= 2 * spielwertGespielt_;
+      if (player->tricks_.empty() && gereizt_ <= spielwertGespielt_) {
+        player->score_ += spielwertGespielt_;
+        player->spieleGewonnen_++;
+      } else {
+        if (ueberreizt)
+          player->score_ -= 2 * gereizt_;
+        else
+          player->score_ -= 2 * spielwertGespielt_;
+        player->spieleVerloren_++;
+      }
+    }
+
+    // TODO 2 Spieler mit gleicher Punktzahl
+    if (rule_ == Rule::Ramsch) {
+      Player* player = getPlayerByMostTricksPoints();
+
+      player->score_ -= player->sumTricks();
       player->spieleVerloren_++;
     }
+
+    if (rule_ != Rule::Ramsch) {
+      assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
+                 player_3.tricksPoints_ ==
+             120);
+    }
+
+    emit resultat();
   }
-
-  // TODO 2 Spieler mit gleicher Punktzahl
-  if (rule_ == Rule::Ramsch) {
-    Player* player = getPlayerByMostTricksPoints();
-
-    player->score_ -= player->sumTricks();
-    player->spieleVerloren_++;
-  }
-
-  if (rule_ != Rule::Ramsch) {
-    assert(player_1.tricksPoints_ + player_2.tricksPoints_ +
-               player_3.tricksPoints_ ==
-           120);
-  }
-
-  emit resultat();
 }

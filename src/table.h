@@ -30,8 +30,8 @@ class Table : public QMainWindow {
   void start();
 
  protected:
-  void resetClicks();
   void mousePressEvent(QMouseEvent *event) override;
+  void setButtonLogic();
 
  public slots:
   void onGegeben();

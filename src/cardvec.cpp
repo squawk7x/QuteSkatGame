@@ -113,7 +113,7 @@ std::vector<Card> CardVec::filterSuits(
   return result;
 }
 
-std::vector<Card> CardVec::filterJacksSuits(
+std::vector<Card> CardVec::filterJacksAndSuits(
     const std::string& targetSuit) {
   std::vector<Card> result;
 
@@ -127,8 +127,8 @@ std::vector<Card> CardVec::filterJacksSuits(
   return result;
 }
 
-std::vector<int> CardVec::patternJacksAndSuit(
-    const std::string& targetSuit) {
+std::vector<int> CardVec::trumpPattern(
+    const std::string& trump) {
   std::vector<int> pattern(11, 0);
   int i = 0;
 
@@ -140,10 +140,17 @@ std::vector<int> CardVec::patternJacksAndSuit(
     i++;
   }
 
+  if (trump == "J") {
+    auto view = pattern | std::ranges::views::take(4);
+    pattern = std::vector(std::ranges::begin(view), std::ranges::end(view));
+
+    return pattern;
+  }
+
   // Set bits for trump cards (next 7 bits)
   for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
     for (const Card& card : cards_) {
-      if (card.rank() == rank && card.suit() == targetSuit) {
+      if (card.rank() == rank && card.suit() == trump) {
         pattern[i] = 1;
       }
     }
@@ -153,19 +160,29 @@ std::vector<int> CardVec::patternJacksAndSuit(
   return pattern;
 }
 
-int CardVec::sumPatternJacksAndSuit(
-    const std::string& targetSuit) {
-  return std::ranges::fold_left(patternJacksAndSuit(targetSuit), 0,
-                                std::plus<>());
-}
+// TODO calc separatly for suit and Grand
+int CardVec::mitOhne(
+    const std::string& trump) {
+  std::vector<int> pattern = trumpPattern(trump);
 
-int CardVec::countPatternJacksAndSuit(
-    const std::string& targetSuit) {
-  std::vector<int> pattern = patternJacksAndSuit(targetSuit);
+  auto mit = pattern | std::ranges::views::take_while(
+                           [](int value) { return value != 0; });
+  int count = std::ranges::count(mit, 1);  // mit => plus
 
-  int count = std::ranges::count(pattern, 1);
+  if (count == 0) {
+    auto ohne = pattern | std::ranges::views::take_while(
+                              [](int value) { return value != 1; });
+    count = -std::ranges::count(ohne, 0);  // ohne => minus
+  }
+
+  qDebug() << "mitOhne:" << count;
 
   return count;
+}
+
+int CardVec::sumTrump(
+    const std::string& trump) {
+  return std::ranges::fold_left(trumpPattern(trump), 0, std::plus<>());
 }
 
 std::map<std::string, int> CardVec::JandSuitNumMap() {
@@ -191,26 +208,6 @@ std::pair<std::string, int> CardVec::highestPairInMap(
       suitMap, {}, &std::pair<const std::string, int>::second);
 
   return *mostJorSuit;
-}
-
-// TODO calc separatly for suit and Grand
-int CardVec::mitOhne(
-    const std::string& trump) {
-  std::vector<int> pattern = patternJacksAndSuit(trump);
-
-  auto mit = pattern | std::ranges::views::take_while(
-                           [](int value) { return value != 0; });
-  int count = std::ranges::count(mit, 1);  // mit => plus
-
-  if (count == 0) {
-    auto ohne = pattern | std::ranges::views::take_while(
-                              [](int value) { return value != 1; });
-    count = -std::ranges::count(ohne, 0);  // ohne => minus
-  }
-
-  qDebug() << "mitOhne:" << count;
-
-  return count;
 }
 
 void CardVec::sortByJacksAndSuits() {
