@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QThread>
 #include <iterator>
+#include <random>
 #include <ranges>
 
 // #include "KI.h"
@@ -117,11 +118,12 @@ int Game::reizen(
     Reizen reizen) {
   static int counter = 0;
 
-  constexpr std::array<int, 58> gereizt = {
+  constexpr std::array<int, 73> gereizt = {
       0,   18,  20,  22,  23,  24,  27,  30,  33,  35,  36,  40,  44,  45,  46,
-      50,  55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,  90,  96,
-      99,  100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143, 144, 150,
-      153, 156, 162, 165, 168, 170, 180, 187, 192, 198, 204, 210, 216};
+      48,  50,  54,  55,  59,  60,  63,  66,  70,  72,  77,  80,  81,  84,  88,
+      90,  96,  99,  100, 108, 110, 117, 120, 121, 126, 130, 132, 135, 140, 143,
+      144, 150, 153, 154, 156, 160, 162, 165, 168, 170, 171, 176, 180, 187, 189,
+      190, 192, 198, 200, 204, 207, 209, 210, 216, 220, 228, 240, 264};
 
   if (reizen == Reizen::Reset) {
     counter = 0;
@@ -499,6 +501,12 @@ void Game::autoplay() {
 
     // if (player->isRobot()) {
     auto cards = playableCards(player->id());
+
+    // Create a random number generator
+    std::random_device rd;
+    std::mt19937 g(rd());
+    rng::shuffle(cards, g);
+
     Card card = cards.front();
     if (isCardValid(card)) playCard(card);
 

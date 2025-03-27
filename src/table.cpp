@@ -402,6 +402,7 @@ void Table::onFrageHand() {
 void Table::onRuleAndTrump(
     Rule rule, std::string trump) {
   ui->pbRamsch->setVisible(false);
+
   if (rule == Rule::Ramsch) {
     ui->pbRamsch->setVisible(true);
     ui->pbHand->setVisible(game_->hand_);  // should be false
@@ -691,12 +692,10 @@ Grand Hand Ouvert         ✅ Ja            ✅ Ja (automatisch)
 void Table::setButtonLogic() {
   if (game_->rule_ == Rule::Grand || game_->rule_ == Rule::Suit) {
     ui->pbHand->setVisible(game_->hand_);
-    // game_->ouvert_ = false;
     ui->pbOuvert->setVisible(game_->hand_);
 
     // Schneider is always announced if playing Grand Hand
     game_->schneiderAngesagt_ = game_->hand_;
-    // game_->schneiderAngesagt_ = true;
     ui->pbSchneider->setChecked(game_->hand_);
     ui->pbSchneider->setVisible(game_->hand_);
     ui->pbSchneider->setDisabled(game_->hand_);
