@@ -55,10 +55,10 @@ class Game : public QObject {
   int reizen(Reizen reizen = Reizen::Normal);
   int reizwert(Player* player, const std::string& suit = "");
   void setMaxBieten();
-  int counter();
+  int counter(Reset reset = Reset::No);
   void bieten(Passen passen = Passen::Nein);
-  void roboAufheben();
-  void roboDruecken();
+  // void roboAufheben();
+  void roboDruecken(Player* player);
   void druecken();
   void setSpielwertGereizt();
   void setSpielwertGespielt();
@@ -86,7 +86,7 @@ class Game : public QObject {
 
   void frageHand();
   void ruleAndTrump(Rule rule, std::string trump);
-  void gedrueckt();
+  void roboGedrueckt();
 
   void updateSkatLayout(
       LinkTo dest = LinkTo::Skat);  // connects only id LinkTo::SoloPlayer

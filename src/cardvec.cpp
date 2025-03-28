@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "definitions.h"
+#include "helperFunctions.h"
 
 // Constructor
 CardVec::CardVec(
@@ -185,29 +186,56 @@ int CardVec::sumTrump(
   return std::ranges::fold_left(trumpPattern(trump), 0, std::plus<>());
 }
 
-std::map<std::string, int> CardVec::JandSuitNumMap() {
-  std::map<std::string, int> JandSuitNumMap = {
-      {"J", 0}, {"♣", 0}, {"♠", 0}, {"♥", 0}, {"♦", 0}};
-
-  for (const Card& card : cards_) {
-    if (card.rank() == "J") {
-      JandSuitNumMap["J"]++;
-    } else {
-      JandSuitNumMap[card.suit()]++;
-    }
+std::map<std::string, int> CardVec::mapCards(
+    Rule rule) {
+  std::map<std::string, int> mapCards;
+  // Suit or Null
+  if (rule == Rule::Suit || rule == Rule::Null) {
+    mapCards = {{"♣", 0}, {"♠", 0}, {"♥", 0}, {"♦", 0}};
+    // Grand or Ramsch
+  } else {
+    mapCards = {{"J", 0}, {"♣", 0}, {"♠", 0}, {"♥", 0}, {"♦", 0}};
   }
 
-  return JandSuitNumMap;
+  for (const Card& card : cards_) {
+    if (rule == Rule::Null) {
+      mapCards[card.suit()]++;
+    }
+    if (rule == Rule::Suit) {
+      if (card.rank() == "J")
+        continue;
+      else
+        mapCards[card.suit()]++;
+    } else {
+      if (card.rank() == "J") {
+        mapCards["J"]++;
+      } else {
+        mapCards[card.suit()]++;
+      }
+    }
+  }
+  // printMap(mapCards);
+  return mapCards;
 }
 
-std::pair<std::string, int> CardVec::highestPairInMap(
-    const std::map<std::string, int>& suitMap) {
-  if (suitMap.empty()) return {"", 0};
+std::pair<std::string, int> CardVec::mostPairInMap(
+    const std::map<std::string, int>& cardMap) {
+  if (cardMap.empty()) return {"", 0};
 
-  auto mostJorSuit = std::ranges::max_element(
-      suitMap, {}, &std::pair<const std::string, int>::second);
+  auto most = std::ranges::max_element(
+      cardMap, {}, &std::pair<const std::string, int>::second);
 
-  return *mostJorSuit;
+  return *most;
+}
+
+std::pair<std::string, int> CardVec::fewestPairInMap(
+    const std::map<std::string, int>& cardMap) {
+  if (cardMap.empty()) return {"", 0};
+
+  auto fewest = std::ranges::min_element(
+      cardMap, {}, &std::pair<const std::string, int>::second);
+
+  return *fewest;
 }
 
 void CardVec::sortByJacksAndSuits() {

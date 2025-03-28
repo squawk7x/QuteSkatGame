@@ -26,15 +26,15 @@ std::string patternToString(
 }
 
 void printMap(
-    const std::map<std::string, int>& suitMap) {
+    const std::map<std::string, int>& cardMap) {
   QString output = "{ ";
 
-  for (const auto& [suit, count] : suitMap) {
+  for (const auto& [suit, count] : cardMap) {
     output += QString("(%1, %2) ").arg(QString::fromStdString(suit)).arg(count);
   }
 
   output += "}";
 
   
-  qDebug() << "suitMap:" << output;
+  qDebug() << "cardMap:" << output;
 }

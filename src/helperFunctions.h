@@ -9,7 +9,7 @@
 
 std::string cardsToString(std::vector<Card> cards);
 std::string patternToString(const std::vector<int>& pattern);
-void printMap(const std::map<std::string, int>& suitMap);
+void printMap(const std::map<std::string, int>& cardMap);
 
 template <std::size_t ROWS, std::size_t COLS>
 void printMatrix(

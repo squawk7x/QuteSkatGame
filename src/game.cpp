@@ -175,12 +175,12 @@ void Game::setMaxBieten() {
   for (Player* player : playerList_) {
     CardVec& hand = player->handdeck_;
 
-    std::pair favorite = hand.highestPairInMap(hand.JandSuitNumMap());
-    int numJacks = hand.JandSuitNumMap()["J"];
+    std::pair favorite = hand.mostPairInMap(hand.mapCards(Rule::Suit));
+    int numJacks = hand.mapCards(Rule::Grand)["J"];
 
     if (player->id() == 1) {
       player->maxBieten_ = 216;
-    } else if (numJacks + favorite.second >= 5) {
+    } else if (numJacks >= 1 && numJacks + favorite.second >= 5) {
       player->maxBieten_ = reizwert(player, favorite.first);
     } else
       player->maxBieten_ = 0;
@@ -190,8 +190,13 @@ void Game::setMaxBieten() {
 }
 
 // helperfunction für bieten antwortHoerer (== 0: höre / > 0: ja)
-int Game::counter() {
+int Game::counter(
+    Reset reset) {
   int static counts = 0;
+  if (reset == Reset::Yes) {
+    counts = 0;
+    return 0;
+  }
   return counts++;
 }
 
@@ -339,43 +344,194 @@ void Game::bieten(
   qDebug() << "gereizt bis:" << gereizt_;
 
   for (Player* player : playerList_) player->isSolo_ = false;
-  Player* player = getPlayerByHighestBid();
 
-  if (player) {
+  if (rule_ != Rule::Ramsch) {
+    Player* player = getPlayerByHighestBid();
     player->isSolo_ = true;
 
     qDebug() << QString::fromStdString(player->name()) + " isSolo:"
              << player->isSolo_;
 
     if (player->isRobot())
-      roboAufheben();  // hand wird in roboAufheben entschieden
+      roboDruecken(player);  // hand wird in roboDruecken entschieden
     else
       emit frageHand();
   }
 }
 
-void Game::roboAufheben() {
-  qDebug() << "roboAufheben...";
-
-  Player* player = getPlayerByIsSolo();
-
-  if (player->isRobot() && !hand_) {
-    roboDruecken();
-  } else
-    druecken();
-}
-
-void Game::roboDruecken() {
+void Game::roboDruecken(
+    Player* player) {
   qDebug() << "roboDruecken...";
 
-  Player* player = getPlayerByIsSolo();
+  if (rule_ == Rule::Ramsch) {
+    return;
+  }
 
-  if (player->isRobot()) {
-    emit ruleAndTrump(
-        Rule::Suit,
-        player->handdeck_.highestPairInMap(player->handdeck_.JandSuitNumMap())
-            .first);
-    emit gedrueckt();
+  if (hand_) {
+    emit roboGedrueckt();
+    return;
+  }
+
+  // if (!hand_)
+  skat_.moveTopCardTo(player->handdeck_);
+  skat_.moveTopCardTo(player->handdeck_);
+  qDebug() << "Handdeck size robo =" << player->handdeck_.cards().size();
+
+  std::map<std::string, int> map = player->handdeck_.mapCards(Rule::Suit);
+  printMap(map);
+  std::pair<std::string, int> most = player->handdeck_.mostPairInMap(map);
+  qDebug() << "mostPairInMap:" << most;
+
+  // TODO Decision Suit or Grand or Null
+
+  emit ruleAndTrump(Rule::Suit, trump_ = most.first);
+  qDebug() << "trump_set:" << QString::fromStdString(trump_);
+
+  if (rule_ == Rule::Null) {
+  }
+  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
+    std::vector<Card> candidates;
+
+    // 1. Search for individual 10s
+    auto tens_single =
+        player->handdeck_.cards() | std::views::filter([](const Card& card) {
+          return card.rank() == "10";
+        });
+
+    for (const Card& ten_card : tens_single) {
+      bool has_other_same_suit = std::ranges::any_of(
+          player->handdeck_.cards(), [&ten_card](const Card& card) {
+            return card.suit() == ten_card.suit() && card.rank() != "10" &&
+                   card.rank() != "J";
+          });
+
+      if (!has_other_same_suit) {
+        qDebug() << "druecken 1";
+        if (candidates.size() < 2) candidates.push_back(ten_card);
+      }
+    }
+
+    // 2. Search for individual 10s with exactly one other card of the same suit
+    auto tens_plus_one =
+        player->handdeck_.cards() | std::views::filter([](const Card& card) {
+          return card.rank() == "10";
+        });
+
+    for (const Card& ten_card : tens_plus_one) {
+      if (candidates.size() >= 2) break;
+
+      // Count the number of cards of the same suit, excluding Jacks
+      int same_suit_count = std::ranges::count_if(
+          player->handdeck_.cards(), [&ten_card](const Card& card) {
+            return card.suit() == ten_card.suit() && card.rank() != "J";
+          });
+
+      // If exactly one other card of the same suit exists, check for an Ace
+      if (same_suit_count == 2) {
+        // Check if there is an Ace in the same suit
+        bool hasAce = std::ranges::any_of(
+            player->handdeck_.cards(), [&ten_card](const Card& card) {
+              return card.suit() == ten_card.suit() && card.rank() == "A";
+            });
+
+        // Only add the 10 if there is no Ace of the same suit
+        if (!hasAce) {
+          qDebug() << "druecken 2";
+          candidates.push_back(ten_card);
+        }
+      }
+    }
+
+    // 3. Now add low cards from the weakest suit, but only if it's the only
+    // card left in the suit and not Ace or Jack
+    std::pair<std::string, int> fewest = player->handdeck_.fewestPairInMap(map);
+
+    for (const Card& card : player->handdeck_.cards()) {
+      if (candidates.size() >= 2) break;  // Stop once 2 cards have been found
+
+      // Check if the card belongs to the weakest suit and it is the only card
+      // of that suit (excluding Ace and Jack)
+      if (card.suit() == fewest.first && card.rank() != "A" &&
+          card.rank() != "J") {
+        // Check if it's the only card of the same suit
+        int same_suit_count = std::ranges::count_if(
+            player->handdeck_.cards(), [&card](const Card& other_card) {
+              return other_card.suit() == card.suit() &&
+                     other_card.rank() != "J" && other_card.rank() != "A";
+            });
+
+        if (same_suit_count == 0) {
+          qDebug() << "druecken 3";
+          candidates.push_back(card);
+        }
+      }
+    }
+
+    // Sort the cards by their power in descending order
+    std::vector<Card> sorted_cards = player->handdeck_.cards();
+
+    std::sort(
+        sorted_cards.begin(), sorted_cards.end(),
+        [](const Card& a, const Card& b) { return a.value() > b.value(); });
+
+    // 4. Iterate over the sorted cards
+    for (const Card& card : sorted_cards) {
+      if (candidates.size() >= 2) break;
+
+      // Ensure the card is not already in the candidates and that it fits the
+      // criteria
+      if (std::find(candidates.begin(), candidates.end(), card) ==
+              candidates.end() &&
+          card.suit() != trump_ && card.rank() != "J" &&
+          card.suit() == fewest.first && card.rank() != "A") {
+        qDebug() << "druecken 4";
+        candidates.push_back(card);
+      }
+    }
+
+    // 5. If still fewer than 2 candidates, just pick any 2 cards
+    // Sort the cards by their power in ascending order (lowest first)
+    sorted_cards = player->handdeck_.cards();
+    std::sort(
+        sorted_cards.begin(), sorted_cards.end(),
+        [](const Card& a, const Card& b) { return a.value() > b.value(); });
+
+    // Add cards to candidates until there are 2 cards
+    while (candidates.size() < 2) {
+      for (const Card& card : sorted_cards) {
+        if (std::find(candidates.begin(), candidates.end(), card) ==
+                candidates.end() &&
+            card.suit() != trump_ && card.rank() != "J" && card.rank() != "A") {
+          qDebug() << "druecken 5";
+          candidates.push_back(card);
+          if (candidates.size() == 2) break;
+        }
+      }
+    }
+
+    // 6. Now remove the selected candidates from the handdeck and move them
+    // to skat
+    for (const Card& card : candidates) {
+      qDebug() << "Robo drückt:" << QString::fromStdString(card.str());
+      player->handdeck_.moveCardTo(card, skat_);
+    }
+
+    // 7. Debug output of the cards that have been moved to skat
+    for (const Card& card : skat_.cards()) {
+      qDebug() << "Robo hat gedrückt:" << QString::fromStdString(card.str());
+    }
+
+    // 8. Recalculate the weakest suit based on the updated handdeck (after
+    // moving cards)
+    fewest =
+        player->handdeck_.fewestPairInMap(map);  // Recalculating after updates
+
+    // Optionally, you can re-use `fewest` for any further decisions after
+    // updating the handdeck
+    // Debug: Check the sizes of handdeck and skat_
+    qDebug() << "Handdeck size robo =" << player->handdeck_.cards().size();
+    qDebug() << "Skat_ size =" << skat_.cards().size();
+    emit roboGedrueckt();
   }
 }
 
@@ -385,12 +541,6 @@ void Game::druecken() {
   Player* player = getPlayerByIsSolo();
 
   if (player && skat_.cards().size() == 2) {
-    // TODO: KI Karten austauschen-druecken Robots
-    // TODO after testing: LinkTo::Trick only for player 1
-
-    // Skat in Ramsch handled in finishRound
-    // TODO: KI
-
     qDebug() << "soloPlayer:" << player->name();
 
     player->tricks_.push_back(std::move(skat_));
@@ -858,7 +1008,7 @@ void Game::finishRound() {
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
   }
-
+  // TODO Kontra / Re
   if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
     Player* player = getPlayerByIsSolo();
     int points = player->tricksPoints_;
@@ -870,7 +1020,7 @@ void Game::finishRound() {
         player->score_ += spielwertGespielt_;
         player->spieleGewonnen_++;
       } else {
-        player->score_ -= spielwertGespielt_;
+        player->score_ -= 2 * spielwertGespielt_;
         player->spieleVerloren_++;
       }
       return;
@@ -881,7 +1031,7 @@ void Game::finishRound() {
       player->spieleGewonnen_++;
     } else {
       if (ueberreizt)
-        player->score_ -= 2 * gereizt_;
+        player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
       else
         player->score_ -= 2 * spielwertGespielt_;
       player->spieleVerloren_++;
@@ -895,7 +1045,7 @@ void Game::finishRound() {
         player->spieleGewonnen_++;
       } else {
         if (ueberreizt)
-          player->score_ -= 2 * gereizt_;
+          player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
         else
           player->score_ -= 2 * spielwertGespielt_;
         player->spieleVerloren_++;
@@ -908,6 +1058,8 @@ void Game::finishRound() {
 
       player->score_ -= player->sumTricks();
       player->spieleVerloren_++;
+
+      // TODO Durchmarsch
     }
 
     if (rule_ != Rule::Ramsch) {

@@ -128,8 +128,8 @@ Table::Table(
 
     QObject::connect(game_, &Game::ruleAndTrump, this, &Table::onRuleAndTrump);
 
-    // Spiel Ouvert, Hand, Schneider, Schwarz
-    // overt muß immer hand gespielt werden - außer null hand
+    // Spiel Ouvert <=> Hand, Schneider, Schwarz
+    // außer Null Ouvert
     QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->ouvert_ = checked;
@@ -149,7 +149,7 @@ Table::Table(
         ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
           game_->schneiderAngesagt_ = checked;
 
-          // game_->setSpielwertGereizt();
+          game_->setSpielwertGereizt();
 
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
@@ -161,8 +161,10 @@ Table::Table(
     QObject::connect(
         ui->pbSchwarz, &QPushButton::toggled, this, [this](bool checked) {
           game_->schwarzAngesagt_ = checked;
+          game_->schneiderAngesagt_ = checked;
+          ui->pbSchneider->setChecked(checked);
 
-          // game_->setSpielwertGereizt();
+          game_->setSpielwertGereizt();
 
           ui->lblSpielwertGereizt->setText(
               "Spielwert gereizt: " +
@@ -208,11 +210,6 @@ Table::Table(
       ui->pbDruecken->click();  // even if not visible
     });
 
-    QObject::connect(game_, &Game::gedrueckt, this, [this]() {
-      ui->pbDruecken->click();
-      // ui->pbSpielen->click();
-    });
-
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.cards().size() == 2) {
         onUpdateSkatLayout(LinkTo::Skat);
@@ -234,6 +231,11 @@ Table::Table(
                                         QString::number(game_->gereizt_));
         ui->gbSpiel->show();
       }
+    });
+
+    QObject::connect(game_, &Game::roboGedrueckt, this, [this]() {
+      ui->pbDruecken->click();
+      // ui->pbSpielen->click();
     });
 
     QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
@@ -682,11 +684,11 @@ void Table::mousePressEvent(
 }
 
 /*
- *Spieltyp              Schneider	Schwarz
-Grand Hand                ❌ Nein          ❌ Nein
-Grand Hand mit Schneider  ✅ Ja            ❌ Nein
-Grand Hand mit Schwarz    ✅ Ja            ✅ Ja
-Grand Hand Ouvert         ✅ Ja            ✅ Ja (automatisch)
+ *Spieltyp              Schneider     Schwarz
+Grand Hand                Nein          Nein
+Grand Hand mit Schneider  Ja            Nein
+Grand Hand mit Schwarz    Ja            Ja
+Grand Hand Ouvert         Ja            Ja (automatisch)
  */
 
 void Table::setButtonLogic() {
@@ -695,16 +697,18 @@ void Table::setButtonLogic() {
     ui->pbOuvert->setVisible(game_->hand_);
 
     // Schneider is always announced if playing Grand Hand
-    game_->schneiderAngesagt_ = game_->hand_;
-    ui->pbSchneider->setChecked(game_->hand_);
     ui->pbSchneider->setVisible(game_->hand_);
-    ui->pbSchneider->setDisabled(game_->hand_);
+    game_->schneiderAngesagt_ = false;
+    ui->pbSchneider->setChecked(false || game_->ouvert_);
+    ui->pbSchneider->setDisabled(false || game_->ouvert_);
 
     // Schwarz is only announced if Grand Hand Ouvert is played
-    game_->schwarzAngesagt_ = game_->ouvert_;
-    ui->pbSchwarz->setChecked(game_->ouvert_);
-    ui->pbSchwarz->setVisible(game_->ouvert_);
-    ui->pbSchwarz->setDisabled(game_->ouvert_);
+    ui->pbSchwarz->setVisible(game_->hand_);
+    game_->schwarzAngesagt_ = false;
+    ui->pbSchwarz->setChecked(false || game_->ouvert_);
+    ui->pbSchwarz->setDisabled(false || game_->ouvert_);
+
+    ui->pbOuvert->setVisible(game_->hand_);
   }
 
   if (game_->rule_ == Rule::Null) {

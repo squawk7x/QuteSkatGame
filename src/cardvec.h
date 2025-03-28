@@ -60,11 +60,14 @@ class CardVec {
   int sumTrump(const std::string& trump);
 
   // e.g.  {"J", 1}, {"♣", 3}, {"♠", 3}, {"♥", 1}, {"♦", 2}};
-  std::map<std::string, int> JandSuitNumMap();
+  std::map<std::string, int> mapCards(Rule rule);
 
   // e.g. {"J", 4} or {"♣", 5}
-  std::pair<std::string, int> highestPairInMap(
-      const std::map<std::string, int>& suitMap);
+  std::pair<std::string, int> mostPairInMap(
+      const std::map<std::string, int>& cardMap);
+
+  std::pair<std::string, int> fewestPairInMap(
+      const std::map<std::string, int>& cardMap);
 
   void sortByJacksAndSuits();
 
