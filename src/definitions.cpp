@@ -11,27 +11,30 @@ const std::vector<std::string> ranks = {"J", "A", "10", "K",
 const std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
                                             "queen", "9",   "8",  "7"};
 
-// Trump values
+// Trump values H = Grand Hand J = Grand
 const std::unordered_map<std::string, int> trumpValue = {
-    {"J", 24}, {"♣", 12}, {"♠", 11}, {"♥", 10}, {"♦", 9}};
+    {"H", 36}, {"J", 24}, {"♣", 12}, {"♠", 11}, {"♥", 10}, {"♦", 9}};
 
 // Power priorities
 const std::unordered_map<std::string, int> PowerPriorityNull = {
-    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 4},
-    {"J", 5}, {"Q", 6}, {"K", 7}, {"A", 8}};
+    {"7", 0}, {"8", 1}, {"9", 2}, {"10", 3},
+    {"J", 4}, {"Q", 5}, {"K", 6}, {"A", 7}};
 
-const std::unordered_map<std::string, int> PowerPrioritySuit = {
-    {"7", 1}, {"8", 2}, {"9", 3}, {"10", 6},
-    {"J", 8}, {"Q", 4}, {"K", 5}, {"A", 7}};
+const std::unordered_map<std::string, int> PowerPriorityRanks = {
+    {"7", 0}, {"8", 1}, {"9", 2}, {"10", 5},
+    {"J", 7}, {"Q", 3}, {"K", 4}, {"A", 6}};
 
 // Sorting priorities
-const std::unordered_map<std::string, int> SortPriorityRank = {
-    {"J", 0}, {"A", 1}, {"10", 2}, {"K", 3},
-    {"Q", 4}, {"9", 5}, {"8", 6},  {"7", 7}};
+const std::unordered_map<std::string, int> SortPriorityNull = {
+    {"A", 1},  {"K", 2}, {"Q", 3}, {"J", 4},
+    {"10", 5}, {"9", 6}, {"8", 7}, {"7", 8}};
 
-const std::unordered_map<std::string, int> SortPrioritySuit = {
-    {"♣", 0}, {"♥", 1}, {"♠", 2}, {"♦", 3}};
+const std::unordered_map<std::string, int> SortPriorityRanks = {
+    {"A", 1}, {"10", 2}, {"K", 3}, {"Q", 4}, {"9", 5}, {"8", 6}, {"7", 7}};
+
+const std::unordered_map<std::string, int> SortPrioritySuits = {
+    {"♣", 1}, {"♥", 2}, {"♠", 3}, {"♦", 4}};
 
 // Special suit priority for Jokers (J)
 const std::unordered_map<std::string, int> SortPriorityJacks = {
-    {"♣", 0}, {"♠", 1}, {"♥", 2}, {"♦", 3}};
+    {"♣", 1}, {"♠", 2}, {"♥", 3}, {"♦", 4}};

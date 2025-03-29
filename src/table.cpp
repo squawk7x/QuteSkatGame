@@ -211,7 +211,7 @@ Table::Table(
     });
 
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
-      if (game_->skat_.cards().size() == 2) {
+      if (game_->skat_.size() == 2) {
         onUpdateSkatLayout(LinkTo::Skat);
 
         // onUpdatePlayerLayout(1, LinkTo::Trick);
@@ -475,7 +475,7 @@ void Table::onUpdateSkatLayout(
 
       connect(cardButton, &QPushButton::clicked, this,
               [&, this, cardButton, soloPlayer, playerId]() {
-                if (game_->skat_.cards().size() == 2) {
+                if (game_->skat_.size() == 2) {
                   game_->skat_.moveCardTo(card, soloPlayer->handdeck_);
 
                   ui->layoutSkatKarten->removeWidget(cardButton);
@@ -506,7 +506,10 @@ void Table::onUpdatePlayerLayout(
     delete item;
   }
 
-  player.handdeck_.sortByJacksAndSuits();
+  if (game_->rule_ == Rule::Null)
+    player.handdeck_.sortForNull();
+  else
+    player.handdeck_.sortByRanks();
 
   for (Card &card : player.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);
@@ -536,7 +539,7 @@ void Table::onUpdatePlayerLayout(
           cardButton, &QPushButton::clicked, this,
           [&, layout,
            cardButton]() {  // Bugfix: program crashed w/o layout, cardButton
-            if (game_->skat_.cards().size() == 1) {
+            if (game_->skat_.size() == 1) {
               player.handdeck_.moveCardTo(card, game_->skat_);
               layout->removeWidget(cardButton);
               cardButton->setParent(nullptr);

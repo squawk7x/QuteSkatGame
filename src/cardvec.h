@@ -38,22 +38,24 @@ class CardVec {
 
   // Public Methods
   std::vector<Card>& cards();
+  int size() const;
   void shuffle();
   bool isCardInside(const Card& card);
   void moveCardTo(const Card&, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
 
   std::vector<Card> filterJacks();
-  std::vector<Card> filterSuits(const std::string& targetSuit);
+
+  std::vector<Card> filterSuits(const std::string& targetSuit, Rule rule);
   std::vector<Card> filterJacksAndSuits(const std::string& targetSuit);
 
   // e.g. J J J J   A 10 K Q 9 8 7 =>
   //      1 0 0 1   1  0 0 1 1 0 0
-  std::vector<int> trumpPattern(const std::string& trump);
+  std::vector<int> toPattern(Rule rule, const std::string& targetSuit);
 
   // e.g. J J J J
   //      0 1 1 0 => -1
-  int mitOhne(const std::string& trump);
+  int spitzen(const std::string& trump);
 
   // e.g. J J J J   A 10 K Q 9 8 7 =>
   //      1 0 0 1   1  0 0 1 1 0 0
@@ -69,7 +71,8 @@ class CardVec {
   std::pair<std::string, int> fewestPairInMap(
       const std::map<std::string, int>& cardMap);
 
-  void sortByJacksAndSuits();
+  void sortByRanks();
+  void sortForNull();
 
   int value();
 };

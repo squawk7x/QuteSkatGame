@@ -23,9 +23,12 @@ extern const std::vector<std::string> ranknames;
 
 extern const std::unordered_map<std::string, int> trumpValue;
 extern const std::unordered_map<std::string, int> PowerPriorityNull;
-extern const std::unordered_map<std::string, int> PowerPrioritySuit;
-extern const std::unordered_map<std::string, int> SortPriorityRank;
-extern const std::unordered_map<std::string, int> SortPrioritySuit;
+extern const std::unordered_map<std::string, int> PowerPriorityRanks;
+// extern const std::unordered_map<std::string, int> SortPriorityRanks;
+extern const std::unordered_map<std::string, int> SortPriorityNull;
+extern const std::unordered_map<std::string, int> SortPriorityRanks;
+
+extern const std::unordered_map<std::string, int> SortPrioritySuits;
 extern const std::unordered_map<std::string, int> SortPriorityJacks;
 
 #endif  // DEFINITIONS_H

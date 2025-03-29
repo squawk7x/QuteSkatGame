@@ -55,6 +55,8 @@ CardVec& CardVec::operator=(
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
 
+int CardVec::size() const { return cards_.size(); }
+
 void CardVec::shuffle() {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -102,14 +104,40 @@ std::vector<Card> CardVec::filterJacks() {
 }
 
 std::vector<Card> CardVec::filterSuits(
-    const std::string& targetSuit) {
-  auto suits =
-      cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
-        return card.suit() == targetSuit && card.rank() != "J";
-      });
-
+    const std::string& targetSuit, Rule rule) {
   std::vector<Card> result;
-  result.insert(result.end(), suits.begin(), suits.end());
+
+  // Apply different filtering conditions based on the rule
+  if (rule != Rule::Null) {
+    auto filtered =
+        cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
+          return card.suit() == targetSuit && card.rank() != "J";
+        });
+
+    // Sortiere nach card.rank() (aufsteigend)
+    result.insert(result.end(), filtered.begin(), filtered.end());
+
+    // Sortiere nach SortPriorityNull
+    std::ranges::sort(result, [](const Card& a, const Card& b) {
+      return SortPriorityNull.at(a.rank()) < SortPriorityNull.at(b.rank());
+    });
+
+  } else if (rule != Rule::Suit) {
+    auto filtered =
+        cards_ | std::ranges::views::filter([&targetSuit](const Card& card) {
+          return card.suit() == targetSuit;
+        });
+
+    std::ranges::sort(result, [](const Card& a, const Card& b) {
+      return a.rank() > b.rank();
+    });
+    // Sortiere nach card.value() (aufsteigend)
+    std::ranges::sort(result, [](const Card& a, const Card& b) {
+      return a.value() > b.value();
+    });
+
+    result.insert(result.end(), filtered.begin(), filtered.end());
+  }
 
   return result;
 }
@@ -120,7 +148,7 @@ std::vector<Card> CardVec::filterJacksAndSuits(
 
   // Store filtered results before inserting
   std::vector<Card> jacks = filterJacks();
-  std::vector<Card> suits = filterSuits(targetSuit);
+  std::vector<Card> suits = filterSuits(targetSuit, Rule::Suit);
 
   result.insert(result.end(), jacks.begin(), jacks.end());
   result.insert(result.end(), suits.begin(), suits.end());
@@ -128,43 +156,52 @@ std::vector<Card> CardVec::filterJacksAndSuits(
   return result;
 }
 
-std::vector<int> CardVec::trumpPattern(
-    const std::string& trump) {
+std::vector<int> CardVec::toPattern(
+    Rule rule, const std::string& targetSuit) {
   std::vector<int> pattern(11, 0);
   int i = 0;
 
-  // Set bits for Jacks (first 4 bits)
-  for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
-    if (isCardInside(Card(suit, "J"))) {
-      pattern[i] = 1;
+  if (rule == Rule::Null) {
+    for (const std::string& rank : {"A", "K", "Q", "J", "10", "9", "8", "7"}) {
+      for (const Card& card : cards_)
+        if (isCardInside(Card(targetSuit, rank))) {
+          pattern[i] = 1;
+        }
+      i++;
     }
-    i++;
+    return {pattern.begin(), pattern.begin() + 8};
   }
 
-  if (trump == "J") {
-    auto view = pattern | std::ranges::views::take(4);
-    pattern = std::vector(std::ranges::begin(view), std::ranges::end(view));
-
-    return pattern;
-  }
-
-  // Set bits for trump cards (next 7 bits)
-  for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
-    for (const Card& card : cards_) {
-      if (card.rank() == rank && card.suit() == trump) {
+  // Grand and Suit
+  for (const std::string& suit : {"♣", "♠", "♥", "♦"}) {
+    for (const Card& card : cards_)
+      if (isCardInside(Card(suit, "J"))) {
         pattern[i] = 1;
       }
-    }
     i++;
   }
 
+  if (rule == Rule::Grand) {
+    return {pattern.begin(), pattern.begin() + 4};
+  }
+
+  for (const std::string& rank : {"A", "10", "K", "Q", "9", "8", "7"}) {
+    for (const Card& card : cards_)
+      if (isCardInside(Card(targetSuit, rank))) {
+        pattern[i] = 1;
+      }
+    i++;
+  }
+
+  qDebug() << QString::fromStdString(cardsToString(cards_));
+  printContainer(pattern);
   return pattern;
 }
 
 // TODO calc separatly for suit and Grand
-int CardVec::mitOhne(
+int CardVec::spitzen(
     const std::string& trump) {
-  std::vector<int> pattern = trumpPattern(trump);
+  std::vector<int> pattern = toPattern(Rule::Suit, trump);
 
   auto mit = pattern | std::ranges::views::take_while(
                            [](int value) { return value != 0; });
@@ -176,14 +213,14 @@ int CardVec::mitOhne(
     count = -std::ranges::count(ohne, 0);  // ohne => minus
   }
 
-  qDebug() << "mitOhne:" << count;
+  qDebug() << "spitzen:" << count;
 
   return count;
 }
 
 int CardVec::sumTrump(
     const std::string& trump) {
-  return std::ranges::fold_left(trumpPattern(trump), 0, std::plus<>());
+  return std::ranges::fold_left(toPattern(Rule::Suit, trump), 0, std::plus<>());
 }
 
 std::map<std::string, int> CardVec::mapCards(
@@ -238,27 +275,27 @@ std::pair<std::string, int> CardVec::fewestPairInMap(
   return *fewest;
 }
 
-void CardVec::sortByJacksAndSuits() {
-  // Step 1: Sort normally by suit and rank
-  std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
-    if (SortPrioritySuit.at(a.suit()) != SortPrioritySuit.at(b.suit())) {
-      return SortPrioritySuit.at(a.suit()) < SortPrioritySuit.at(b.suit());
-    }
-    return SortPriorityRank.at(a.rank()) < SortPriorityRank.at(b.rank());
+void CardVec::sortByRanks() {
+  std::ranges::sort(cards_, [](const Card& a, const Card& b) {
+    return std::tuple{
+               a.rank() == "J" ? 0 : 1,  // Jacks first (0), others second (1)
+               a.rank() == "J" ? SortPriorityJacks.at(a.suit())
+                               : SortPrioritySuits.at(a.suit()),  // Suit order
+               a.rank() == "J" ? 0 : SortPriorityRanks.at(a.rank())} <
+           std::tuple{b.rank() == "J" ? 0 : 1,
+                      b.rank() == "J" ? SortPriorityJacks.at(b.suit())
+                                      : SortPrioritySuits.at(b.suit()),
+                      b.rank() == "J" ? 0 : SortPriorityRanks.at(b.rank())};
   });
+}
 
-  // Step 2: Move all 'J' cards to the front, sorting by suit using
-  // SortPriorityJacks
-  std::stable_partition(cards_.begin(), cards_.end(),
-                        [](const Card& card) { return card.rank() == "J"; });
-
-  // Step 3: Sort the moved 'J' cards by their special suit priority
-  auto j_end = std::find_if(cards_.begin(), cards_.end(), [](const Card& card) {
-    return card.rank() != "J";
-  });
-
-  std::ranges::sort(cards_.begin(), j_end, [&](const Card& a, const Card& b) {
-    return SortPriorityJacks.at(a.suit()) < SortPriorityJacks.at(b.suit());
+void CardVec::sortForNull() {
+  std::ranges::sort(cards_, [](const Card& a, const Card& b) {
+    return std::tuple{
+               SortPrioritySuits.at(a.suit()),  // Suit order
+               SortPriorityNull.at(a.rank())    // Rank order (Null priority)
+           } < std::tuple{SortPrioritySuits.at(b.suit()),
+                          SortPriorityNull.at(b.rank())};
   });
 }
 

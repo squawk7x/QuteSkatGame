@@ -35,6 +35,7 @@ class Game : public QObject {
   int reizwert_{};
   int spielwertGereizt_{};
   int spielwertGespielt_{};
+  bool gedrueckt_{};
   bool hand_{};
   bool ouvert_{};
   bool schneiderAngesagt_{};
@@ -67,6 +68,7 @@ class Game : public QObject {
   void activateNextPlayer();
   void finishRound();
 
+  bool isNullOk(Player* player);
   std::vector<Card> playableCards(int playerId);
   bool isCardValid(const Card& card, bool preview = false);
   bool isCardStronger(const Card& card);
