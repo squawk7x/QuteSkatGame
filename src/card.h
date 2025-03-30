@@ -63,7 +63,7 @@ class Card : public QPushButton {
   std::string str() const;
   std::string name() const;
   int value() const;
-  int power(const std::string& trumpSuit = "", Rule rule = Rule::Suit) const;
+  int power(Rule rule = Rule::Suit, const std::string& trumpSuit = "") const;
   bool hasMoreValue(const Card& other);
   bool hasMorePower(const Card& other);
 };

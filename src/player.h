@@ -12,18 +12,17 @@ class Player : public QObject {
   std::string name_;
 
  public:
+  CardVec handdeck_ = CardVec(12);  // including 2 Skat cards
+  std::vector<CardVec> tricks_{};
+  bool isRobot_;
   int score_{};         // Gesamtpunktestand
-  int tricksPoints_{};  // sumTricks
+  int points_{};        // points
   int spieleGewonnen_{};
   int spieleVerloren_{};
-  bool isRobot_;
-  CardVec handdeck_ = CardVec(12);      // including 2 Skat cards
-  // CardVec skat_ = CardVec(2);           // active player will get the Skat
-
   bool hasTrick_{};
-  std::vector<CardVec> tricks_{};
   int maxBieten_{};
   bool isSolo_{};
+  // CardVec skat_ = CardVec(2);           // active player will get the Skat
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),
@@ -42,7 +41,7 @@ class Player : public QObject {
 
  public:
   // public setters
-  void setTricksPoints();
+  void setPoints();
 
   // public getters
   int id() const;
@@ -50,7 +49,7 @@ class Player : public QObject {
   bool isRobot() const;
   int score() const;
   int points() const;
-  int sumTricks();
+  // int points();
 
   // public class methods
 

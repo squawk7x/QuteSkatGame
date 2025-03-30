@@ -42,18 +42,15 @@ int Player::id() const { return id_; }
 std::string Player::name() const { return name_; }
 bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
-int Player::points() const { return tricksPoints_; }
+int Player::points() const { return points_; }
 
-int Player::sumTricks() {
-  int totalSum = 0;
-
-  // Iterate over each inner vector and sum its elements
-  for (CardVec &trick :
-       tricks_) {  // Pass by reference to avoid unnecessary copies
-    totalSum += trick.value();
-  }
-  return totalSum;
-}
+// int Player::points() { return points_; }
 
 // public class methods
-void Player::setTricksPoints() { tricksPoints_ = sumTricks(); }
+void Player::setPoints() {
+  points_ = 0;
+
+  for (CardVec &trick : tricks_) {
+    points_ += trick.points();
+  }
+}

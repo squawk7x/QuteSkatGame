@@ -196,7 +196,7 @@ int Card::value() const { return value_; }
 
 // public methods
 int Card::power(
-    const std::string& trumpSuit, Rule rule) const {
+    Rule rule, const std::string& trumpSuit) const {
   if (rule == Rule::Suit || rule == Rule::Grand || rule == Rule::Ramsch) {
     auto it = PowerPriorityRanks.find(rank_);
     power_ = (it != PowerPriorityRanks.end()) ? it->second : 0;

@@ -12,7 +12,10 @@ enum class LinkTo { Skat, Handdeck, SoloPlayer, Trick };
 enum class Rule { Unset, Suit, Grand, Null, Ramsch };
 enum class Reizen { Normal, Reset, Preview, Last };
 enum class Passen { Ja, Nein };
+enum class Preview { Yes, No };
 enum class Reset { Yes, No };
+enum class Order { Increase, Decrease };
+
 // enum class Jacks { Ja, Nein };
 
 // Extern declarations for global constants

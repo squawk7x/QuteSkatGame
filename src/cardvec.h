@@ -43,9 +43,9 @@ class CardVec {
   bool isCardInside(const Card& card);
   void moveCardTo(const Card&, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
+  void erase(Card card);  // used in cardsInGame_
 
   std::vector<Card> filterJacks();
-
   std::vector<Card> filterSuits(const std::string& targetSuit, Rule rule);
   std::vector<Card> filterJacksAndSuits(const std::string& targetSuit);
 
@@ -71,10 +71,11 @@ class CardVec {
   std::pair<std::string, int> fewestPairInMap(
       const std::map<std::string, int>& cardMap);
 
-  void sortByRanks();
-  void sortForNull();
+  void sortCardsFor(Rule rule, const std::string& trump);
+  void sortCardsByPower(Rule rule, const std::string& suit, Order order);
 
-  int value();
+  int points();
+  void print();
 };
 
 #endif  // CARDVEC_H

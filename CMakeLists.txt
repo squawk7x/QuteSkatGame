@@ -38,8 +38,6 @@ set(PROJECT_SOURCES
     src/definitions.cpp
     src/matrix.h
     src/matrix.cpp
-    src/KI.cpp
-    src/KI.h
     src/helperFunctions.cpp
     src/helperFunctions.h
     README.md

@@ -17,6 +17,7 @@ class Game : public QObject {
   CardVec blind_{32};
   CardVec trick_{3};
   CardVec skat_{2};
+  CardVec cardsInGame_{30};
   CardVec urSkat_{2};
   Player player_1{1, "Player-1", false};  // isRobot = false
   Player player_2{2, "Player-2", true};
@@ -43,6 +44,8 @@ class Game : public QObject {
   bool schwarzAngesagt_{};
   bool schwarz_{};
 
+  int pointsSolo_{};
+  int pointsOpponents_{};
   Matrix matrix{};
 
   // constructor
@@ -63,14 +66,20 @@ class Game : public QObject {
   void druecken();
   void setSpielwertGereizt();
   void setSpielwertGespielt();
+
+  bool nullComparator(const Card& a, const Card& b);
+  bool ramschComparator(const Card& a, const Card& b);
+  bool grandComparator(const Card& a, const Card& b);
+  bool suitComparator(const Card& a, const Card& b);
   void autoplay();
   void playCard(const Card& card);
   void activateNextPlayer();
+
   void finishRound();
 
   bool isNullOk(Player* player);
-  std::vector<Card> playableCards(int playerId);
-  bool isCardValid(const Card& card, bool preview = false);
+  std::vector<Card> validCards(int playerId);
+  bool isCardValid(const Card& card, Preview preview = Preview::No);
   bool isCardStronger(const Card& card);
 
   Player& getPlayerById(int id);

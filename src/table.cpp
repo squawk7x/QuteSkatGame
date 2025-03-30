@@ -25,6 +25,9 @@ Table::Table(
         ui->pbKaro, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♦" : "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -43,6 +46,9 @@ Table::Table(
         ui->pbHerz, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♥" : "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -61,6 +67,9 @@ Table::Table(
         ui->pbPik, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♠" : "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -78,6 +87,9 @@ Table::Table(
         ui->pbKreuz, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Suit : Rule::Unset;
           game_->trump_ = checked ? "♣" : "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -94,6 +106,9 @@ Table::Table(
         ui->pbGrand, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Grand : Rule::Unset;
           game_->trump_ = checked ? "J" : "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -113,6 +128,9 @@ Table::Table(
         ui->pbNull, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Null : Rule::Unset;
           game_->trump_ = "";
+          for (int playerId = 1; playerId <= 3; playerId++) {
+            onUpdatePlayerLayout(playerId, LinkTo::Trick);
+          }
           game_->ouvert_ = false;
           ui->pbOuvert->setChecked(false);
 
@@ -506,10 +524,7 @@ void Table::onUpdatePlayerLayout(
     delete item;
   }
 
-  if (game_->rule_ == Rule::Null)
-    player.handdeck_.sortForNull();
-  else
-    player.handdeck_.sortByRanks();
+  player.handdeck_.sortCardsFor(game_->rule_, game_->trump_);
 
   for (Card &card : player.handdeck_.cards()) {
     QPushButton *cardButton = new QPushButton(this);

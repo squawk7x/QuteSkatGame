@@ -1,8 +1,8 @@
 #include "definitions.h"
 
 // Suits and suit names
-const std::vector<std::string> suits = {"♣", "♠", "♥", "♦"};
-const std::vector<std::string> suitnames = {"clubs", "spades", "hearts",
+const std::vector<std::string> suits = {"♣", "♥", "♠", "♦"};
+const std::vector<std::string> suitnames = {"clubs", "hearts", "spades",
                                             "diamonds"};
 
 // Ranks and rank names
