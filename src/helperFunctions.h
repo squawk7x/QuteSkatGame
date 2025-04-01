@@ -3,7 +3,6 @@
 
 #include <QDebug>
 #include <array>
-#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
@@ -23,11 +22,23 @@ void printContainer(
   oss << "{ ";
 
   auto it = container.begin();
-  oss << it->str();  // Convert Card to string manually
+
+  // Use << operator if possible, otherwise fall back to another method
+  if constexpr (std::is_same_v<typename Container::value_type, Card>) {
+    oss << it->str();  // Card has a str() method
+  } else {
+    oss << *it;  // For int, string, etc.
+  }
+
   ++it;
 
   for (; it != container.end(); ++it) {
-    oss << separator << it->str();
+    oss << separator;
+    if constexpr (std::is_same_v<typename Container::value_type, Card>) {
+      oss << it->str();
+    } else {
+      oss << *it;
+    }
   }
 
   oss << " }";

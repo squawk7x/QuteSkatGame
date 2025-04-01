@@ -9,11 +9,27 @@
 class CardVec {
  private:
   std::vector<Card> cards_;
-  // std::vector<Card> valids_;
   bool isCardFaceVisible_;
   CardFace cardFace_;
 
  public:
+  std::vector<Card> validCards_{};
+
+  Card highestPowerCard_{};
+  Card higherPowerCard_{};
+  Card lowerPowerCard_{};
+  Card lowestPowerCard_{};
+
+  Card highestRankPowerCard_{};
+  Card higherRankPowerCard_{};
+  Card lowerRankPowerCard_{};
+  Card lowestRankPowerCard_{};
+
+  Card highestValueCard_{};
+  Card higherValueCard_{};
+  Card lowerValueCard_{};
+  Card lowestValueCard_{};
+
   // Constructors & Destructor
   explicit CardVec(int length);
   ~CardVec() = default;
@@ -29,6 +45,8 @@ class CardVec {
 
   // Move Assignment Operator
   CardVec& operator=(CardVec&& other) noexcept;
+
+  // explicit CardVec(const std::vector<Card>& cards) : cards_(cards)  {}
 
   // Universal Forwarding of card
   template <typename T>
@@ -74,13 +92,27 @@ class CardVec {
       const std::map<std::string, int>& cardMap);
 
   void sortCardsFor(Rule rule, const std::string& trumpSuit);
-  void sortCardsByPower(Rule rule, const std::string& trumpSuit, Order order);
 
-  std::vector<Card> validCards(Rule rule, const std::string& trumpSuit,
-                               const Card& trickFirstCard);
+  void sortCardsByPower(std::vector<Card>& cards, Rule rule,
+                        const std::string& trumpSuit, Order order);
 
-  // Card& cardPowerJustBelow(Rule rule, const std::string& trumpSuit, const
-  // Card& refCard); Card& cardPowerJustAbove(Rule rule, const Card& card);
+  void sortCardsByRankPower(std::vector<Card>& cards, Rule rule, Order order);
+
+  void sortCardsByValue(std::vector<Card>& cards, Order order);
+
+  void setValidCards(Rule rule, const std::string& trumpSuit,
+                     const Card& trickCardFirst, Order order = Order::Increase);
+
+  void setPowerCards(Rule rule, const std::string& trumpSuit,
+                     Order order = Order::Decrease);
+
+  void setRankPowerCards(Rule rule, Order order = Order::Decrease);
+
+  void setValueCards(Order order = Order::Decrease);
+
+  Card& cardPowerJustBelow(Rule rule, const std::string& trumpSuit,
+                           const Card& referenceCard);
+  // Card& cardPowerJustAbove(Rule rule, const Card& card);
 
   int points();
   void print();

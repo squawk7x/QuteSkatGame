@@ -10,6 +10,8 @@
 
 #include "definitions.h"
 
+namespace rng = std::ranges;
+
 class Card : public QPushButton {
   Q_OBJECT
 

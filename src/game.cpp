@@ -736,32 +736,35 @@ void Game::autoplay() {
                                !player_3.handdeck_.cards().empty())) {
     Player* player = playerList_.front();
 
-    auto cards = player->handdeck_.validCards(rule_, trump_, trickCardFirst_);
+    // player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+    //                                 Order::Decrease);
+    // auto cards = player->handdeck_.validCards(rule_, trump_,
+    // trickCardFirst_);
 
-    if (rule_ == Rule::Null)
-      std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-        return nullComparator(a, b);
-      });
+    // if (rule_ == Rule::Null)
+    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
+    //     return nullComparator(a, b);
+    //   });
 
-    if (rule_ == Rule::Ramsch)
-      std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-        return ramschComparator(a, b);
-      });
+    // if (rule_ == Rule::Ramsch)
+    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
+    //     return ramschComparator(a, b);
+    //   });
 
-    if (rule_ == Rule::Suit)
-      std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-        return suitComparator(a, b);
-      });
+    // if (rule_ == Rule::Suit)
+    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
+    //     return suitComparator(a, b);
+    //   });
 
-    if (rule_ == Rule::Grand)
-      std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-        return grandComparator(a, b);
-      });
+    // if (rule_ == Rule::Grand)
+    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
+    //     return grandComparator(a, b);
+    //   });
 
-    qDebug() << "Proposed order:"
-             << QString::fromStdString(cardsToString(cards));
+    // qDebug() << "Proposed order:"
+    //          << QString::fromStdString(cardsToString(cards));
 
-    Card card = cards.front();
+    Card card = player->handdeck_.validCards_.front();
     if (isCardValid(card)) playCard(card);
 
     emit updateTrickLayout(card, player->id());
@@ -827,9 +830,12 @@ void Game::activateNextPlayer() {
     rng::rotate(playerList_, playerList_.begin() + 1);
   }
 
-  qDebug() << "Next player:"
-           << QString::fromStdString(playerList_.front()->name());
-  playerList_.front()->handdeck_.validCards(rule_, trump_, trickCardFirst_);
+  Player* player = playerList_.front();
+  qDebug() << "Next player:" << QString::fromStdString(player->name());
+
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  Order::Decrease);
+  printContainer(playerList_.front()->handdeck_.validCards_);
   // autoplay();
 }
 
@@ -837,14 +843,15 @@ bool Game::isCardValid(
     const Card& card) {
   if (trick_.size() == 3) {
     trick_.cards().clear();
-    emit clearTrickLayout();
     trickCardFirst_ = Card();
+    emit clearTrickLayout();
+    return true;
   }
 
   Player* player = playerList_.front();
-
-  std::vector<Card> validCards =
-      player->handdeck_.validCards(rule_, trump_, trickCardFirst_);
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  Order::Decrease);
+  std::vector<Card>& validCards = player->handdeck_.validCards_;
 
   if (std::ranges::find(validCards, card) != validCards.end()) {
     return true;
@@ -852,105 +859,12 @@ bool Game::isCardValid(
 
   return false;
 }
-// // First card in the trick determines the required suit
-// const auto& trickFirstCard = trick_.cards().front();
-// std::string requiredSuit = trickFirstCard.suit();
-
-// if (rule_ == Rule::Suit) {
-//   // Check if the first card is a Jack ('J')
-//   bool trickFirstCardIsJack = (trickFirstCard.rank() == "J");
-
-//   // Check if the first card is a trump suit card
-//   bool trickFirstCardIsTrump = (trickFirstCard.suit() == trump_);
-
-//   // Check if the player has a Jack ('J') or trump suit card in hand
-//   bool hasJackOrTrump = std::ranges::any_of(
-//       playerList_.front()->handdeck_.cards(), [this](const Card& c) {
-//         return c.rank() == "J" || c.suit() == trump_;
-//       });
-
-//   // If the first card is a Jack ('J'), enforce Jack/trump-following rule
-//   if (trickFirstCardIsJack) {
-//     if (hasJackOrTrump) {
-//       return (card.rank() == "J" || card.suit() == trump_);
-//     }
-//     return true;  // No Jacks or trump cards in hand, any card can be
-//     played
-//   }
-
-//   // If the first card is a trump suit, allow Jacks ('J') to be played
-//   if (trickFirstCardIsTrump) {
-//     if (hasJackOrTrump) {
-//       return (card.rank() == "J" || card.suit() == trump_);
-//     }
-//     return true;  // No Jacks or trump cards in hand, any card is valid
-//   }
-
-//   // Normal suit-following rules
-//   bool hasRequiredSuitInHand = std::ranges::any_of(
-//       playerList_.front()->handdeck_.cards(), [&](const Card& c) {
-//         return (c.suit() == requiredSuit) && (c.rank() != "J");
-//       });
-
-//   // If player has a card of the required suit, they must play it
-//   if (hasRequiredSuitInHand)
-//     return (card.suit() == requiredSuit) && (card.rank() != "J");
-
-//   // Otherwise, they can play any card
-//   return true;
-// }
-
-// // Grand oder Ramsch
-// else if (rule_ == Rule::Grand || rule_ == Rule::Ramsch) {
-//   if (trickFirstCard.rank() == "J") {
-//     bool hasJackInHand =
-//         std::ranges::any_of(playerList_.front()->handdeck_.cards(),
-//                             [](const Card& c) { return c.rank() == "J"; });
-
-//     // If the player has a Jack card, they must play them
-//     if (hasJackInHand)
-//       return card.rank() == "J";
-//     else
-//       return true;  // No Jacks or trump cards in hand, any card is valid
-//   }
-
-//   // Case 2: First card is neither a Jack nor a trump suit card
-//   bool hasRequiredSuitInHand = std::ranges::any_of(
-//       playerList_.front()->handdeck_.cards(), [&](const Card& c) {
-//         return (c.suit() == requiredSuit) && (c.rank() != "J");
-//       });
-
-//   // If the player has a card of the required suit, they must play them
-//   if (hasRequiredSuitInHand)
-//     return (card.suit() == requiredSuit) && (card.rank() != "J");
-//   else
-//     return true;  // No card of the required suit in hand, any card is
-//     valid
-// }
-
-// // Null
-// else if (rule_ == Rule::Null) {
-//   bool hasRequiredSuitInHand = std::ranges::any_of(
-//       playerList_.front()->handdeck_.cards(),
-//       [&](const Card& c) { return c.suit() == requiredSuit; });
-
-//   // If the player has a card of the required suit, they must play it
-//   if (hasRequiredSuitInHand)
-//     return card.suit() == requiredSuit;
-//   else
-//     return true;
-// }
-
-// return false;
-// }
 
 bool Game::isCardStronger(
     const Card& card) {
   if (trick_.cards().empty()) {
     return true;  // First played card is always strongest
   }
-
-  // const auto& trickFirstCard = trick_.cards().front();
 
   if (rule_ == Rule::Suit) {
     // Jacks are always trump in "Suit" games

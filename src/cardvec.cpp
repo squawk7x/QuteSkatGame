@@ -14,6 +14,7 @@ CardVec::CardVec(
     int length)
     : isCardFaceVisible_(false), cardFace_(CardFace::Closed) {
   cards_.reserve(length);
+  validCards_.reserve(10);
 }
 
 // Copy Constructor
@@ -203,7 +204,7 @@ std::vector<int> CardVec::toPattern(
   }
 
   qDebug() << QString::fromStdString(cardsToString(cards_));
-  // printContainer(pattern);
+  printContainer(pattern);
   return pattern;
 }
 
@@ -328,25 +329,53 @@ void CardVec::sortCardsFor(
 }
 
 void CardVec::sortCardsByPower(
-    Rule rule, const std::string& trumpSuit, Order order) {
-  std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
+    std::vector<Card>& cards, Rule rule, const std::string& trumpSuit,
+    Order order) {
+  std::ranges::sort(validCards_, [&](const Card& a, const Card& b) {
     int powerA = a.power(rule, trumpSuit);
     int powerB = b.power(rule, trumpSuit);
-
     return order == Order::Increase ? powerA < powerB : powerA > powerB;
   });
 }
 
-std::vector<Card> CardVec::validCards(
-    Rule rule, const std::string& trumpSuit, const Card& trickCardFirst) {
-  qDebug() << "validCards...";
-  std::vector<Card> validCards{};
+void CardVec::sortCardsByValue(
+    std::vector<Card>& cards, Order order) {
+  std::ranges::sort(validCards_, [&](const Card& a, const Card& b) {
+    int valueA = a.value();
+    int valueB = b.value();
 
-  // If trick is empty, all cards are valid
-  if (trickCardFirst == Card()) {
-    validCards = cards_;
-    printContainer(validCards);
-    return validCards;
+    return order == Order::Increase ? valueA <= valueB : valueA > valueB;
+  });
+}
+
+void CardVec::sortCardsByRankPower(
+    std::vector<Card>& cards, Rule rule, Order order) {
+  std::ranges::sort(cards, [&](const Card& a, const Card& b) {
+    const auto& rankMap =
+        (rule == Rule::Null) ? PowerPriorityNull : PowerPriorityRanks;
+
+    int rankA = rankMap.at(a.rank());
+    int rankB = rankMap.at(b.rank());
+
+    return order == Order::Increase ? rankA < rankB : rankA > rankB;
+  });
+}
+
+/*
+ *    cards_ => validCards
+ */
+void CardVec::setValidCards(
+    Rule rule, const std::string& trumpSuit, const Card& trickCardFirst,
+    Order order) {
+  qDebug() << "validCards...";
+  validCards_ = {};
+
+  if (trickCardFirst.isEmpty()) {
+    // If trick is empty, all cards are valid
+    validCards_ = cards_;
+    // sortCardsByPower(validCards_, rule, trumpSuit, order);
+    printContainer(validCards_);
+    return;
   }
 
   std::string requiredSuit = trickCardFirst.suit();
@@ -366,11 +395,11 @@ std::vector<Card> CardVec::validCards(
     for (const Card& card : cards_) {
       if (hasTrump && requiredSuit == trumpSuit) {
         if (card.rank() == "J" || card.suit() == requiredSuit)
-          validCards.push_back(card);
+          validCards_.push_back(card);
       }
       if (hasSuit && requiredSuit != trumpSuit) {
         if (hasSuit && card.suit() == requiredSuit && card.rank() != "J")
-          validCards.push_back(card);
+          validCards_.push_back(card);
       }
     }
   }
@@ -388,10 +417,10 @@ std::vector<Card> CardVec::validCards(
 
     for (const Card& card : cards_) {
       if (hasJack && trickCardFirst.rank() == "J" && card.rank() == "J") {
-        validCards.push_back(card);
+        validCards_.push_back(card);
       }
       if (hasSuit && card.suit() == requiredSuit && card.rank() != "J")
-        validCards.push_back(card);
+        validCards_.push_back(card);
     }
   }
 
@@ -402,18 +431,78 @@ std::vector<Card> CardVec::validCards(
 
     for (const Card& card : cards_) {
       if (hasSuit && card.suit() == requiredSuit) {
-        validCards.push_back(card);
+        validCards_.push_back(card);
       }
     }
   }
 
   // If no valid cards were found, allow any card to be played
-  if (validCards.empty()) validCards = cards_;
+  if (validCards_.empty()) validCards_ = cards_;
 
-  printContainer(validCards);
+  // sortCardsByPower(validCards_, rule, trumpSuit, order);
+  printContainer(validCards_);
 
-  return validCards;
+  setPowerCards(rule, trumpSuit);
+  setRankPowerCards(rule);
+  setValueCards();
 }
+
+void CardVec::setPowerCards(
+    Rule rule, const std::string& trumpSuit, Order order) {
+  sortCardsByPower(validCards_, rule, trumpSuit, Order::Increase);
+
+  qDebug() << "sorted by Power:";
+  printContainer(validCards_);
+
+  lowestPowerCard_ = validCards_.front();
+  qDebug() << "lowestPowerCard_"
+           << QString::fromStdString(lowestPowerCard_.str());
+
+  highestPowerCard_ = validCards_.back();
+  qDebug() << "highestPowerCard_"
+           << QString::fromStdString(highestPowerCard_.str());
+}
+
+void CardVec::setRankPowerCards(
+    Rule rule, Order order) {
+  sortCardsByRankPower(validCards_, rule, Order::Increase);
+
+  qDebug() << "sorted by Rank power:";
+  printContainer(validCards_);
+
+  lowestRankPowerCard_ = validCards_.front();
+  qDebug() << "lowestRankPowerCard_"
+           << QString::fromStdString(lowestRankPowerCard_.str());
+
+  highestRankPowerCard_ = validCards_.back();
+  qDebug() << "highestRankPowerCard_"
+           << QString::fromStdString(highestRankPowerCard_.str());
+}
+
+void CardVec::setValueCards(
+    Order order) {
+  qDebug() << "sorted by Value:";
+  sortCardsByValue(validCards_, Order::Increase);
+
+  lowestValueCard_ = validCards_.front();
+  qDebug() << "lowestValueCard_"
+           << QString::fromStdString(lowestValueCard_.str());
+
+  highestValueCard_ = validCards_.back();
+  qDebug() << "highestValueCard_"
+           << QString::fromStdString(highestValueCard_.str());
+}
+
+// used to sort validCards by power
+
+/*
+ *    validCards => sortByPower => return the next Card lower by power
+ */
+// Card& CardVec::cardPowerJustBelow(
+//     Rule rule, const std::string& trumpSuit, const Card& referenceCard) {
+//   std::vector<Card> valids{10};
+//   std::vector<Card> sorted{10};
+// }
 
 // Card& CardVec::cardPowerJustBelow(
 //     Rule rule, const std::string& trumpSuit, const Card& refCard) {
