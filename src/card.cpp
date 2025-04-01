@@ -5,6 +5,8 @@
 
 #include "definitions.h"
 
+Card::Card() : suit_(""), rank_("") {}
+
 // Constructor: Card("♥", "Q")
 Card::Card(
     const std::string& suit, const std::string& rank)
@@ -192,6 +194,8 @@ std::string Card::suitname() const { return suitname_; }
 std::string Card::rankname() const { return rankname_; }
 std::string Card::str() const { return str_; }
 std::string Card::name() const { return name_; }
+bool Card::isEmpty() const { return (suit_ == "" && rank_ == ""); }
+
 int Card::value() const { return value_; }
 
 // public methods

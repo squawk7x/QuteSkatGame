@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <array>
+#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
@@ -13,17 +14,20 @@
 template <typename Container>
 void printContainer(
     const Container& container, const std::string& separator = ", ") {
-  if (container.empty()) qDebug() << "{}";
+  if (container.empty()) {
+    qDebug() << "{}";
+    return;
+  }
 
   std::ostringstream oss;
   oss << "{ ";
 
   auto it = container.begin();
-  oss << *it;
+  oss << it->str();  // Convert Card to string manually
   ++it;
 
   for (; it != container.end(); ++it) {
-    oss << separator << *it;
+    oss << separator << it->str();
   }
 
   oss << " }";

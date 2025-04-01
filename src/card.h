@@ -36,7 +36,7 @@ class Card : public QPushButton {
 
  public:
   // Constructors
-  // Card() = default;  // Default constructor
+  Card();
   explicit Card(const std::string& suit, const std::string& rank);
   explicit Card(const std::string& cardStr);
   explicit Card(const std::pair<std::string, std::string>& pair);
@@ -62,6 +62,7 @@ class Card : public QPushButton {
   std::string rankname() const;
   std::string str() const;
   std::string name() const;
+  bool isEmpty() const;
   int value() const;
   int power(Rule rule = Rule::Suit, const std::string& trumpSuit = "") const;
   bool hasMoreValue(const Card& other);

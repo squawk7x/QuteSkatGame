@@ -44,6 +44,8 @@ class Game : public QObject {
   bool schwarzAngesagt_{};
   bool schwarz_{};
 
+  Card trickCardFirst_{};
+  Card trickCardStrongest_{};
   int pointsSolo_{};
   int pointsOpponents_{};
   Matrix matrix{};
@@ -78,8 +80,7 @@ class Game : public QObject {
   void finishRound();
 
   bool isNullOk(Player* player);
-  std::vector<Card> validCards(int playerId);
-  bool isCardValid(const Card& card, Preview preview = Preview::No);
+  bool isCardValid(const Card& card);
   bool isCardStronger(const Card& card);
 
   Player& getPlayerById(int id);

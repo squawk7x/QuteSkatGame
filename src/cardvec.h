@@ -9,6 +9,7 @@
 class CardVec {
  private:
   std::vector<Card> cards_;
+  // std::vector<Card> valids_;
   bool isCardFaceVisible_;
   CardFace cardFace_;
 
@@ -38,6 +39,7 @@ class CardVec {
 
   // Public Methods
   std::vector<Card>& cards();
+  // std::vector<Card>& valids();
   int size() const;
   void shuffle();
   bool isCardInside(const Card& card);
@@ -71,8 +73,14 @@ class CardVec {
   std::pair<std::string, int> fewestPairInMap(
       const std::map<std::string, int>& cardMap);
 
-  void sortCardsFor(Rule rule, const std::string& trump);
-  void sortCardsByPower(Rule rule, const std::string& suit, Order order);
+  void sortCardsFor(Rule rule, const std::string& trumpSuit);
+  void sortCardsByPower(Rule rule, const std::string& trumpSuit, Order order);
+
+  std::vector<Card> validCards(Rule rule, const std::string& trumpSuit,
+                               const Card& trickFirstCard);
+
+  // Card& cardPowerJustBelow(Rule rule, const std::string& trumpSuit, const
+  // Card& refCard); Card& cardPowerJustAbove(Rule rule, const Card& card);
 
   int points();
   void print();

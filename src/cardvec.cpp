@@ -55,6 +55,8 @@ CardVec& CardVec::operator=(
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
 
+// std::vector<Card>& CardVec::valids() { return valids_; }
+
 int CardVec::size() const { return cards_.size(); }
 
 void CardVec::shuffle() {
@@ -201,7 +203,7 @@ std::vector<int> CardVec::toPattern(
   }
 
   qDebug() << QString::fromStdString(cardsToString(cards_));
-  printContainer(pattern);
+  // printContainer(pattern);
   return pattern;
 }
 
@@ -285,7 +287,7 @@ std::pair<std::string, int> CardVec::fewestPairInMap(
 }
 
 void CardVec::sortCardsFor(
-    Rule rule, const std::string& trump) {
+    Rule rule, const std::string& trumpSuit) {
   std::vector<std::string> suits = {"♣", "♥", "♠", "♦"};
 
   std::unordered_map<std::string, int> suitPriority;
@@ -304,7 +306,7 @@ void CardVec::sortCardsFor(
   }
 
   if (rule == Rule::Suit) {
-    while (suits[0] != trump) {
+    while (suits[0] != trumpSuit) {
       std::rotate(suits.begin(), suits.begin() + 1, suits.end());
     }
     for (size_t i = 0; i < suits.size(); ++i) {
@@ -326,14 +328,111 @@ void CardVec::sortCardsFor(
 }
 
 void CardVec::sortCardsByPower(
-    Rule rule, const std::string& suit, Order order) {
+    Rule rule, const std::string& trumpSuit, Order order) {
   std::ranges::sort(cards_, [&](const Card& a, const Card& b) {
-    int powerA = a.power(rule, suit);
-    int powerB = b.power(rule, suit);
+    int powerA = a.power(rule, trumpSuit);
+    int powerB = b.power(rule, trumpSuit);
 
     return order == Order::Increase ? powerA < powerB : powerA > powerB;
   });
 }
+
+std::vector<Card> CardVec::validCards(
+    Rule rule, const std::string& trumpSuit, const Card& trickCardFirst) {
+  qDebug() << "validCards...";
+  std::vector<Card> validCards{};
+
+  // If trick is empty, all cards are valid
+  if (trickCardFirst == Card()) {
+    validCards = cards_;
+    printContainer(validCards);
+    return validCards;
+  }
+
+  std::string requiredSuit = trickCardFirst.suit();
+
+  // ---- Rule: Suit (Trump Game) ----
+  if (rule == Rule::Suit) {
+    if (trickCardFirst.rank() == "J") requiredSuit = trumpSuit;
+
+    bool hasTrump = std::ranges::any_of(cards_, [&](const Card& c) {
+      return c.rank() == "J" || c.suit() == trumpSuit;
+    });
+
+    bool hasSuit = std::ranges::any_of(cards_, [&](const Card& c) {
+      return c.rank() != "J" && c.suit() == requiredSuit;
+    });
+
+    for (const Card& card : cards_) {
+      if (hasTrump && requiredSuit == trumpSuit) {
+        if (card.rank() == "J" || card.suit() == requiredSuit)
+          validCards.push_back(card);
+      }
+      if (hasSuit && requiredSuit != trumpSuit) {
+        if (hasSuit && card.suit() == requiredSuit && card.rank() != "J")
+          validCards.push_back(card);
+      }
+    }
+  }
+
+  // ---- Rule: Grand / Ramsch (Only Jacks are Trumps) ----
+  else if (rule == Rule::Grand || rule == Rule::Ramsch) {
+    if (trickCardFirst.rank() == "J") requiredSuit = "";
+
+    bool hasJack = std::ranges::any_of(
+        cards_, [](const Card& c) { return c.rank() == "J"; });
+
+    bool hasSuit = std::ranges::any_of(cards_, [&](const Card& c) {
+      return c.rank() != "J" && c.suit() == requiredSuit;
+    });
+
+    for (const Card& card : cards_) {
+      if (hasJack && trickCardFirst.rank() == "J" && card.rank() == "J") {
+        validCards.push_back(card);
+      }
+      if (hasSuit && card.suit() == requiredSuit && card.rank() != "J")
+        validCards.push_back(card);
+    }
+  }
+
+  // ---- Rule: Null (No Trumps, Must Follow Suit) ----
+  else if (rule == Rule::Null) {
+    bool hasSuit = std::ranges::any_of(
+        cards_, [&](const Card& c) { return c.suit() == requiredSuit; });
+
+    for (const Card& card : cards_) {
+      if (hasSuit && card.suit() == requiredSuit) {
+        validCards.push_back(card);
+      }
+    }
+  }
+
+  // If no valid cards were found, allow any card to be played
+  if (validCards.empty()) validCards = cards_;
+
+  printContainer(validCards);
+
+  return validCards;
+}
+
+// Card& CardVec::cardPowerJustBelow(
+//     Rule rule, const std::string& trumpSuit, const Card& refCard) {
+//   sortCardsByPower(rule, trumpSuit, Order::Decrease);
+
+//   Card* bestCandidate = nullptr;
+
+//   for (auto& card : cards_) {
+//     if (card.power(rule) < refCard.power(rule)) {
+//       bestCandidate = &card;
+//       break;
+//     }
+//   }
+//   return *bestCandidate;
+// }
+
+// Card& CardVec::cardPowerJustAbove(
+//     Rule rule, const Card& card) {
+// }
 
 int CardVec::points() {
   int sum{0};
@@ -346,5 +445,4 @@ void CardVec::print() {
   for (const Card& card : cards_) {
     str += card.str() + " ";
   }
-  qDebug() << "cardsInGame:" << QString::fromStdString(str);
 }
