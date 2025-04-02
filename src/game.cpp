@@ -37,8 +37,8 @@ void Game::start() {
   schwarzAngesagt_ = false;
   schneider_ = false;
   schwarz_ = false;
-  reizen(Reizen::Reset);  // reset static int counter in reizen
   gereizt_ = 0;
+  reizen(Reizen::Reset);  // reset static int counter in reizen
   matrix.reset();
 
   player_1.isRobot_ = false;
@@ -834,7 +834,7 @@ void Game::activateNextPlayer() {
   qDebug() << "Next player:" << QString::fromStdString(player->name());
 
   player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
-                                  Order::Decrease);
+                                  trickCardStrongest_);
   printContainer(playerList_.front()->handdeck_.validCards_);
   // autoplay();
 }
@@ -842,15 +842,16 @@ void Game::activateNextPlayer() {
 bool Game::isCardValid(
     const Card& card) {
   if (trick_.size() == 3) {
-    trick_.cards().clear();
     trickCardFirst_ = Card();
+    trick_.cards().clear();
     emit clearTrickLayout();
     return true;
   }
 
   Player* player = playerList_.front();
   player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
-                                  Order::Decrease);
+                                  trickCardStrongest_);
+
   std::vector<Card>& validCards = player->handdeck_.validCards_;
 
   if (std::ranges::find(validCards, card) != validCards.end()) {

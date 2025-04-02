@@ -15,20 +15,20 @@ class CardVec {
  public:
   std::vector<Card> validCards_{};
 
-  Card highestPowerCard_{};
-  Card higherPowerCard_{};
-  Card lowerPowerCard_{};
   Card lowestPowerCard_{};
+  Card highestPowerCard_{};
+  Card nextLowerPowerCard_{};
+  Card nextHigherPowerCard_{};
 
-  Card highestRankPowerCard_{};
-  Card higherRankPowerCard_{};
-  Card lowerRankPowerCard_{};
-  Card lowestRankPowerCard_{};
+  Card lowestRankCard_{};
+  Card highestRankCard_{};
+  Card nextLowerRankCard_{};
+  Card nextHigherRankCard_{};
 
-  Card highestValueCard_{};
-  Card higherValueCard_{};
-  Card lowerValueCard_{};
   Card lowestValueCard_{};
+  Card highestValueCard_{};
+  Card nextLowerValueCard_{};
+  Card nextHigherValueCard_{};
 
   // Constructors & Destructor
   explicit CardVec(int length);
@@ -93,26 +93,24 @@ class CardVec {
 
   void sortCardsFor(Rule rule, const std::string& trumpSuit);
 
+  void setValidCards(Rule rule, const std::string& trumpSuit,
+                     const Card& trickCardFirst, const Card& trickCardStrongest,
+                     Order order = Order::Increase);
+
   void sortCardsByPower(std::vector<Card>& cards, Rule rule,
                         const std::string& trumpSuit, Order order);
 
-  void sortCardsByRankPower(std::vector<Card>& cards, Rule rule, Order order);
+  void sortCardsByPowerPriorityRule(std::vector<Card>& cards, Rule rule,
+                                    Order order);
 
   void sortCardsByValue(std::vector<Card>& cards, Order order);
 
-  void setValidCards(Rule rule, const std::string& trumpSuit,
-                     const Card& trickCardFirst, Order order = Order::Increase);
-
   void setPowerCards(Rule rule, const std::string& trumpSuit,
-                     Order order = Order::Decrease);
+                     const Card& trickCardStrongest, Order order);
 
-  void setRankPowerCards(Rule rule, Order order = Order::Decrease);
+  void setRankCards(Rule rule, const Card& trickCardStrongest, Order order);
 
-  void setValueCards(Order order = Order::Decrease);
-
-  Card& cardPowerJustBelow(Rule rule, const std::string& trumpSuit,
-                           const Card& referenceCard);
-  // Card& cardPowerJustAbove(Rule rule, const Card& card);
+  void setValueCards(const Card& trickCardStrongest, Order order);
 
   int points();
   void print();

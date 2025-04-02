@@ -44,11 +44,11 @@ class Game : public QObject {
   bool schwarzAngesagt_{};
   bool schwarz_{};
 
-  Card trickCardFirst_{};
-  Card trickCardStrongest_{};
   int pointsSolo_{};
   int pointsOpponents_{};
   Matrix matrix{};
+  Card trickCardFirst_{};
+  Card trickCardStrongest_{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);
