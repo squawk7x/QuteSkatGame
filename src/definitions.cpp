@@ -13,7 +13,7 @@ const std::vector<std::string> ranknames = {"jack",  "ace", "10", "king",
 
 // Trump values H = Grand Hand J = Grand
 const std::unordered_map<std::string, int> trumpValue = {
-    {"H", 36}, {"J", 24}, {"♣", 12}, {"♠", 11}, {"♥", 10}, {"♦", 9}};
+    {"♣", 12}, {"♠", 11}, {"♥", 10}, {"♦", 9}};
 
 // Power priorities
 const std::unordered_map<std::string, int> PowerPriorityNull = {

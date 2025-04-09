@@ -44,6 +44,25 @@ bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
 int Player::points() const { return points_; }
 
+void Player::setDesiredGame() {
+  // TODO Null
+
+  // TODO better KI
+  std::pair favorite = handdeck_.mostPairInMap(handdeck_.mapCards(Rule::Suit));
+  int numJacks = handdeck_.mapCards(Rule::Grand)["J"];
+
+  if (numJacks >= 2 && numJacks + favorite.second >= 3) {
+    desiredRule_ = Rule::Suit;
+    desiredTrump_ = favorite.first;
+    spitzen_ = abs(handdeck_.spitzen(desiredRule_, desiredTrump_));
+  } else if (numJacks >= 3) {
+    desiredRule_ = Rule::Grand;
+    spitzen_ = abs(handdeck_.spitzen(desiredRule_));
+  } else {
+    desiredRule_ = Rule::Ramsch;
+  }
+}
+
 // int Player::points() { return points_; }
 
 // public class methods

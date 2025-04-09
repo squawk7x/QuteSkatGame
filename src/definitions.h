@@ -15,6 +15,7 @@ enum class Passen { Ja, Nein };
 enum class Preview { Yes, No };
 enum class Reset { Yes, No };
 enum class Order { Increase, Decrease };
+enum class Spielwert { Desired, Played };
 
 // enum class Jacks { Ja, Nein };
 

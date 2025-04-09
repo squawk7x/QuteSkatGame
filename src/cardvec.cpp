@@ -210,10 +210,10 @@ std::vector<int> CardVec::toPattern(
 
 // TODO calc separatly for suit and Grand
 int CardVec::spitzen(
-    const std::string& trump) {
-  // pattern(4) Rule::Grand:  J J J J
-  // pattern(11) Rule::Suit:  J J J J A K Q 10 9 8 7
-  std::vector<int> pattern = toPattern(Rule::Suit, trump);
+    Rule rule, const std::string& trump) {
+  // pattern(4) Rule::Grand:  J J J J => 1 1 1 1
+  // pattern(11) Rule::Suit:  J J J J A K Q 10 9 8 7 => 1 1 1 1 1 1 1 1 1 1 1
+  std::vector<int> pattern = toPattern(rule, trump);
 
   auto mit = pattern | std::ranges::views::take_while(
                            [](int value) { return value != 0; });

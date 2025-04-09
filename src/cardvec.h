@@ -75,7 +75,7 @@ class CardVec {
 
   // e.g. J J J J
   //      0 1 1 0 => -1
-  int spitzen(const std::string& trump);
+  int spitzen(Rule rule, const std::string& trump = "");
 
   // e.g. J J J J   A 10 K Q 9 8 7 =>
   //      1 0 0 1   1  0 0 1 1 0 0

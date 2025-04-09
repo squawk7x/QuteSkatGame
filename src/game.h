@@ -28,27 +28,25 @@ class Game : public QObject {
   // geberHoererSagerPos_[0][1][2] == player.id
   std::vector<int> geberHoererSagerPos_{1, 2, 3};
   // first rotation before 1st round starts -> first round {2, 3, 1}
+
   int soloSpieler_id{};
   Rule rule_{};
   std::string trump_{};
-  int gereizt_{};
-  int mitOhne_{};
-  int reizwert_{};
-  int spielwertGereizt_{};
-  int spielwertGespielt_{};
-  bool gedrueckt_{};
   bool hand_{};
-  bool ouvert_{};
-  bool schneiderAngesagt_{};
   bool schneider_{};
-  bool schwarzAngesagt_{};
+  bool schneiderAngesagt_{};
   bool schwarz_{};
+  bool schwarzAngesagt_{};
+  bool ouvert_{};
 
-  int pointsSolo_{};
-  int pointsOpponents_{};
-  Matrix matrix{};
+  bool gedrueckt_{};  // used in bieten
+
+  int gereizt_{};
+  int spielwert_{};
+
   Card trickCardFirst_{};
   Card trickCardStrongest_{};
+  Matrix matrix{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);
@@ -59,20 +57,18 @@ class Game : public QObject {
   void geben();
 
   int reizen(Reizen reizen = Reizen::Normal);
-  int reizwert(Player* player, const std::string& suit = "");
+  int spielwert(Player* player, Spielwert wert);
   void setMaxBieten();
   int counter(Reset reset = Reset::No);
   void bieten(Passen passen = Passen::Nein);
-  // void roboAufheben();
   void roboDruecken(Player* player);
   void druecken();
-  void setSpielwertGereizt();
-  void setSpielwertGespielt();
 
   bool nullComparator(const Card& a, const Card& b);
   bool ramschComparator(const Card& a, const Card& b);
   bool grandComparator(const Card& a, const Card& b);
   bool suitComparator(const Card& a, const Card& b);
+
   void autoplay();
   void playCard(const Card& card);
   void activateNextPlayer();

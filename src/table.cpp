@@ -33,13 +33,6 @@ Table::Table(
 
           setButtonLogic();
 
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
-
-          // resetClicks();
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
     QObject::connect(
@@ -53,13 +46,6 @@ Table::Table(
           ui->pbOuvert->setChecked(false);
 
           setButtonLogic();
-
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
-
-          // resetClicks();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
@@ -75,12 +61,6 @@ Table::Table(
 
           setButtonLogic();
 
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
-          // resetClicks();
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
     QObject::connect(
@@ -95,11 +75,6 @@ Table::Table(
 
           setButtonLogic();
 
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
     QObject::connect(
@@ -113,11 +88,6 @@ Table::Table(
           ui->pbOuvert->setChecked(false);
 
           setButtonLogic();
-
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
 
@@ -136,11 +106,6 @@ Table::Table(
 
           setButtonLogic();
 
-          game_->setSpielwertGereizt();
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
-
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
 
@@ -154,24 +119,12 @@ Table::Table(
 
                        setButtonLogic();
 
-                       game_->setSpielwertGereizt();
-
-                       ui->lblSpielwertGereizt->setText(
-                           "Spielwert gereizt: " +
-                           QString::number(game_->spielwertGereizt_));
-
                        qDebug() << "ouvert_ set to" << game_->ouvert_;
                      });
 
     QObject::connect(
         ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
           game_->schneiderAngesagt_ = checked;
-
-          game_->setSpielwertGereizt();
-
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
 
           qDebug() << "schneider_ set to" << game_->schneiderAngesagt_;
         });
@@ -181,12 +134,6 @@ Table::Table(
           game_->schwarzAngesagt_ = checked;
           game_->schneiderAngesagt_ = checked;
           ui->pbSchneider->setChecked(checked);
-
-          game_->setSpielwertGereizt();
-
-          ui->lblSpielwertGereizt->setText(
-              "Spielwert gereizt: " +
-              QString::number(game_->spielwertGereizt_));
 
           qDebug() << "schneider_/schwarz_ set to" << game_->schneiderAngesagt_
                    << "/" << game_->schwarzAngesagt_;
@@ -225,6 +172,7 @@ Table::Table(
       game_->hand_ = true;
       ui->pbHand->setText("Hand");
       ui->gbFrageHand->hide();
+      // ui->gbDruecken->show();
       ui->pbDruecken->click();  // even if not visible
     });
 
@@ -257,7 +205,7 @@ Table::Table(
     });
 
     QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
-      game_->setSpielwertGereizt();
+      // game_->setSpielwert();
 
       // ui->gbSpiel->hide(); // shown for testing
       ui->pbBieten2->hide();
@@ -332,12 +280,17 @@ void Table::onGegeben() {
 
   ui->gbRule->setEnabled(true);
 
-  ui->pbKaro->setChecked(false);
-  ui->pbHerz->setChecked(false);
-  ui->pbPik->setChecked(false);
-  ui->pbKreuz->setChecked(false);
-  ui->pbGrand->setChecked(false);
-  ui->pbNull->setChecked(false);
+  QList<QPushButton *> suitButtons = {ui->pbKaro,  ui->pbHerz,  ui->pbPik,
+                                      ui->pbKreuz, ui->pbGrand, ui->pbNull};
+
+  for (auto *btn : suitButtons) {
+    btn->setAutoExclusive(false);  // Deaktiviert Gruppenzwang
+    btn->setChecked(false);        // Setzt auf nicht gedrückt
+  }
+
+  for (auto *btn : suitButtons) {
+    btn->setAutoExclusive(true);  // Gruppenzwang wieder aktivieren
+  }
 
   // ui-pbHand is already set
   ui->pbOuvert->setVisible(false);
@@ -426,7 +379,7 @@ void Table::onRuleAndTrump(
   if (rule == Rule::Ramsch) {
     ui->pbRamsch->setVisible(true);
     ui->pbHand->setVisible(game_->hand_);  // should be false
-    ui->lblSpielwertGereizt->setText("Ramsch!");
+    // ui->lblSpielwertGereizt->setText("Ramsch!");
   } else if (rule == Rule::Grand) {
     ui->pbGrand->click();
   } else if (rule == Rule::Null) {
@@ -643,8 +596,8 @@ void Table::onResultat() {
   Player *player = game_->getPlayerByIsSolo();
   QString resultat;
   if (player) {
-    bool ueberreizt = game_->gereizt_ > game_->spielwertGespielt_;
-    bool gewonnen = (player->points() > 60 && !ueberreizt);
+    bool ueberreizt = game_->gereizt_ > game_->spielwert_;
+    bool gewonnen = (player->success_ && not ueberreizt);
 
     resultat = QString(
                    "%7\n%1 %2\nmit %3 zu %4 Augen.\nGereizt bis %5.\n"
@@ -654,7 +607,7 @@ void Table::onResultat() {
                    .arg(player->points())
                    .arg(120 - player->points())
                    .arg(game_->gereizt_)
-                   .arg(game_->spielwertGespielt_)
+                   .arg(game_->spielwert_)
                    .arg(ueberreizt ? "\nÜberreizt !" : "");
   }
 

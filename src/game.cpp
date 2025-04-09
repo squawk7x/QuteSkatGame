@@ -113,7 +113,7 @@ void Game::geben() {
     for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
   }
 
-  emit gegeben();
+  emit gegeben();  // to Table
   setMaxBieten();
   bieten();
 }
@@ -150,49 +150,82 @@ int Game::reizen(
   return gereizt[counter];
 }
 
-int Game::reizwert(
-    Player* player, const std::string& suit) {
-  int reizwert;
+int Game::spielwert(
+    Player* player, Spielwert wert) {
+  Rule rule;
+  std::string trump;
+  bool hand, schneider, schneiderAngesagt, schwarz, schwarzAngesagt, ouvert;
 
-  if (rule_ == Rule::Null) {
-    if (ouvert_ && hand_)
+  if (wert == Spielwert::Desired) {
+    rule = player->desiredRule_;
+    trump = player->desiredTrump_;
+    hand = player->desiredHand_;
+    schneider = player->desiredSchneider_;
+    schneiderAngesagt = player->desiredSchneiderAngesagt_;
+    schwarz = player->desiredSchwarz_;
+    schwarzAngesagt = player->desiredSchwarzAngesagt_;
+    ouvert = player->desiredOuvert_;
+  }
+
+  else {
+    schneider_ = player->points_ >= 90 ||       // Gegenspielr Schneider
+                 player->points_ <= 30;         // Spieler selbst Schneider
+    schwarz_ = player->tricks_.size() == 11 ||  // Gegenspieler Schwarz
+               player->tricks_.size() == 1;     // Spieler selbst Schwarz
+
+    rule = rule_;
+    trump = trump_;
+    hand = hand_;
+    schneider = schneider_;
+    schneiderAngesagt = schneiderAngesagt_;
+    schwarz = schwarz_;
+    schwarzAngesagt = schwarzAngesagt_;
+    ouvert = ouvert_;
+  }
+
+  if (rule == Rule::Grand || rule == Rule::Suit) {
+    int stufenzahl = 0;
+
+    if (hand) {
+      stufenzahl += hand +               //
+                    schneider +          //
+                    schneiderAngesagt +  //
+                    schwarz +            //
+                    schwarzAngesagt +    //
+                    ouvert;
+    }
+
+    int value = (rule == Rule::Grand) ? 24 : trumpValue.at(trump);
+
+    return (player->spitzen_ + 1 + stufenzahl) * value;
+  }
+
+  else if (rule == Rule::Null) {
+    if (ouvert && hand)
       return 59;
-    else if (ouvert_)
+    else if (ouvert && not hand)
       return 46;
-    else if (hand_)
+    else if (not ouvert && hand)
       return 35;
     else
       return 23;
-  } else if (rule_ == Rule::Ramsch) {
+
+  } else
+    // Ramsch set in finishRound();
     return 0;
-  }
-
-  reizwert = (abs(player->handdeck_.spitzen(suit)) + 1 + hand_ + ouvert_ +
-              2 * schneiderAngesagt_ + 2 * schwarzAngesagt_) *
-             trumpValue.at(suit);
-
-  return reizwert;
 }
 
 void Game::setMaxBieten() {
-  // TODO: KI
   for (Player* player : playerList_) {
-    CardVec& hand = player->handdeck_;
+    player->setDesiredGame();
 
-    if (isNullOk(player)) {
-      player->maxBieten_ = 59;
-      return;
+    if (not player->isRobot_) {
+      player->maxBieten_ = 216;
     }
 
-    std::pair favorite = hand.mostPairInMap(hand.mapCards(Rule::Suit));
-    int numJacks = hand.mapCards(Rule::Grand)["J"];
-
-    if (player->id() == 1) {
-      player->maxBieten_ = 216;
-    } else if (numJacks >= 1 && numJacks + favorite.second >= 5) {
-      player->maxBieten_ = reizwert(player, favorite.first);
-    } else
-      player->maxBieten_ = 0;
+    else {
+      player->maxBieten_ = spielwert(player, Spielwert::Desired);
+    }
 
     qDebug() << "Player" << player->id() << "bietet bis:" << player->maxBieten_;
   }
@@ -416,6 +449,7 @@ void Game::roboDruecken(
     if (gereizt_ <= 59 && hand_ && ouvert_) emit ruleAndTrump(Rule::Null, "");
     if (gereizt_ <= 35 && hand_) emit ruleAndTrump(Rule::Null, "");
 
+    player->desiredRule_ = Rule::Null;
     gedrueckt_ = true;
     emit roboGedrueckt();
     return;
@@ -453,7 +487,6 @@ void Game::roboDruecken(
   qDebug() << "Handdeck size robo =" << player->handdeck_.size();
 
   // ================= Suit / Grand =================
-  // Suit or Grand
 
   // TODO Decision Suit or Grand
   map = player->handdeck_.mapCards(Rule::Suit);
@@ -591,104 +624,28 @@ void Game::druecken() {
   Player* player = getPlayerByIsSolo();
 
   if (player && skat_.size() == 2) {
-    qDebug() << "soloPlayer:" << player->name();
+    // player->spitzen_ neu berechnen fall 'J' im Skat ist
+    player->spitzen_ = abs(
+        player->handdeck_.spitzen(player->desiredRule_, player->desiredTrump_));
 
-    pointsSolo_ += skat_.points();
-    qDebug() << player->name() << "drückt" << pointsSolo_ << "points";
+    qDebug() << "spitzen_" << player->name() << ":" << player->spitzen_;
+
+    // Skat wegdrücken
     player->tricks_.push_back(std::move(skat_));
-  }
-}
+    player->setPoints();
+    qDebug() << player->name() << "drückt" << player->points() << "points";
 
-void Game::setSpielwertGereizt() {
-  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
-    Player* player = getPlayerByIsSolo();
-
-    mitOhne_ = player->handdeck_.spitzen(trump_);
-
-    int counter = 0;
-
-    if (ouvert_) counter++;
-    if (schneiderAngesagt_) counter++;  // Schneider angesagt
-    if (schwarzAngesagt_) counter++;    // Schwarz angesagt
-
-    if (rule_ == Rule::Suit)
-      spielwertGereizt_ =
-          (abs(mitOhne_) + 1 + hand_ + counter) * trumpValue.at(trump_);
-
-    else if (rule_ == Rule::Grand) {
-      // Grand Hand 36
-      if (hand_ && !ouvert_)
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
-      // Grand ouvert immer hand schneider schwarz
-      else if (ouvert_)
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + 4) * 24;
-      // Grand 24
-      else
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 24;
+    // for player 1 setup interactiv
+    if (not player->isRobot_) {
+      rule_ = player->desiredRule_;
+      trump_ = player->desiredTrump_;
+      hand_ = player->desiredHand_;
+      schneider_ = player->desiredSchneider_;
+      schneiderAngesagt_ = player->desiredSchneiderAngesagt_;
+      schwarz_ = player->desiredSchwarz_;
+      schwarzAngesagt_ = player->desiredSchwarzAngesagt_;
+      ouvert_ = player->desiredOuvert_;
     }
-  }
-
-  else if (rule_ == Rule::Null) {
-    if (!hand_ && !ouvert_)
-      spielwertGereizt_ = 23;
-    else if (hand_ && !ouvert_)
-      spielwertGereizt_ = 35;
-    else if (ouvert_ && !hand_)
-      spielwertGereizt_ = 46;
-    else if (ouvert_ && hand_)
-      spielwertGereizt_ = 59;
-  }
-
-  else if (rule_ == Rule::Ramsch) {
-    // Spielwert Gespielt: Verlierer mit max Trickpoints Minuspunkte
-  }
-}
-
-void Game::setSpielwertGespielt() {
-  if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
-    Player* player = getPlayerByIsSolo();
-    int counter = 0;
-
-    // hand_ separatly evaluated for suit and Grand
-    if (ouvert_) counter++;
-    if (player->points_ >= 90) counter++;  // Schneider erreicht
-    if (schneiderAngesagt_) counter++;     // Schneider angesagt
-    if (player->tricks_.size() == 11)
-      counter++;                      // Schwarz erreicht (11 = 10 + skat)
-    if (schwarzAngesagt_) counter++;  // Schwarz angesagt +2!
-
-    // TODO use handdeck/cards from player
-    if (rule_ == Rule::Suit)
-      spielwertGespielt_ =
-          (abs(mitOhne_) + 1 + hand_ + counter) * trumpValue.at(trump_);
-
-    if (rule_ == Rule::Grand) {
-      // Grand Hand 36
-      if (hand_ && !ouvert_)
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 36;
-      // Grand ouvert immer hand schneider schwarz
-      else if (ouvert_)
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + 6) * 24;
-      // Grand 24
-      else
-        spielwertGereizt_ = (abs(mitOhne_) + 1 + counter) * 24;
-    }
-  }
-
-  else if (rule_ == Rule::Null) {
-    if (!hand_ && !ouvert_)
-      spielwertGespielt_ = 23;
-    else if (hand_ && !ouvert_)
-      spielwertGespielt_ = 35;
-    else if (ouvert_ && !hand_)
-      spielwertGespielt_ = 46;
-    else if (ouvert_ && hand_)
-      spielwertGespielt_ = 59;
-  }
-
-  else if (rule_ == Rule::Ramsch) {
-    Player* player = getPlayerByMostTricksPoints();
-    spielwertGespielt_ = player->points_;
   }
 }
 
@@ -806,12 +763,6 @@ void Game::playCard(
 void Game::activateNextPlayer() {
   if (trick_.size() == 3) {
     Player* trickholder = getPlayerByHasTrick();
-    if (rule_ != Rule::Ramsch && rule_ != Rule::Null) {
-      if (trickholder->isSolo_)
-        pointsSolo_ += trick_.points();
-      else
-        pointsOpponents_ += trick_.points();
-    }
 
     trickholder->tricks_.push_back(trick_);
     trickholder->setPoints();
@@ -995,79 +946,78 @@ Player* Game::getPlayerByMostTricksPoints() {
 }
 
 void Game::finishRound() {
+  // TODO Kontra / Re
   qDebug() << "finishing round ...\n";
-
-  setSpielwertGespielt();
-  bool ueberreizt = gereizt_ < spielwertGespielt_;
-  qDebug() << "Spielwert Gespielt: " << spielwertGespielt_;
 
   for (const auto& player : playerList_) {
     player->setPoints();
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
   }
-  // TODO Kontra / Re
-  if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
-    Player* player = getPlayerByIsSolo();
-    int points = player->points_;
-
-    // Grand hand ouvert
-    if (rule_ == Rule::Grand && hand_ && ouvert_) {
-      // Spieler muß scharz erreichen um zu gewinnen
-      if (player->tricks_.size() == 11) {  // 10 tricks + skat
-        player->score_ += spielwertGespielt_;
-        player->spieleGewonnen_++;
-      } else {
-        player->score_ -= 2 * spielwertGespielt_;
-        player->spieleVerloren_++;
-      }
-      emit resultat();
-      return;
-    }
-
-    if (points > 60 && !ueberreizt) {
-      player->score_ += spielwertGespielt_;
-      player->spieleGewonnen_++;
-    } else {
-      if (ueberreizt)
-        player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
-      else
-        player->score_ -= 2 * spielwertGespielt_;
-      player->spieleVerloren_++;
-    }
-  }
-
-  if (rule_ == Rule::Null) {
-    Player* player = getPlayerByIsSolo();
-
-    if (player->tricks_.empty() && gereizt_ <= spielwertGespielt_) {
-      player->score_ += spielwertGespielt_;
-      player->spieleGewonnen_++;
-    } else {
-      if (ueberreizt)
-        player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
-      else
-        player->score_ -= 2 * spielwertGespielt_;
-      player->spieleVerloren_++;
-    }
-  }
-
-  // TODO 2 Spieler mit gleicher Punktzahl
-  if (rule_ == Rule::Ramsch) {
-    Player* player = getPlayerByMostTricksPoints();
-
-    player->score_ -= player->points();
-    player->spieleVerloren_++;
-
-    // TODO Durchmarsch
-  }
 
   assert(skat_.points() + player_1.points_ + player_2.points_ +
              player_3.points_ ==
          120);
-  // assert(player_1.points_ + player_2.points_ + player_3.points_ ==
-  //        pointsSolo_ + pointsOpponents_);
-  // assert(skat_.points() + pointsSolo_ + pointsOpponents_ == 120);
+
+  if (rule_ == Rule::Ramsch) {
+    Player* player = getPlayerByMostTricksPoints();
+
+    spielwert_ = player->points();
+
+    player->score_ -= spielwert_;
+    player->spieleVerloren_++;
+
+    // TODO 2 Spieler mit gleicher Punktzahl
+    // TODO Durchmarsch
+
+    emit resultat();
+    return;
+  }
+
+  Player* player = getPlayerByIsSolo();
+
+  spielwert_ = spielwert(player, Spielwert::Played);
+
+  qDebug() << "spielwert_: " << spielwert_;
+  bool ueberreizt = gereizt_ > spielwert_;
+
+  if (rule_ == Rule::Null) {
+    player->success_ = player->tricks_.empty();
+
+    if (ueberreizt)
+      player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
+    else if (not player->success_)
+      player->score_ -= 2 * spielwert_;
+    else
+      player->score_ += spielwert_;
+
+  } else if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
+    player->success_ = player->points_ > 60;
+
+    // Grand hand ouvert
+    // if (rule_ == Rule::Grand && hand_ && ouvert_) {
+    //   // Spieler muß scharz erreichen um zu gewinnen
+    //   if (player->tricks_.size() == 11) {  // 10 tricks + skat
+    //     player->score_ += spielwert_;
+    //     player->spieleGewonnen_++;
+    //   } else {
+    //     player->score_ -= 2 * spielwert_;
+    //     player->spieleVerloren_++;
+    //   }
+    //   emit resultat();
+    //   return;
+    // }
+
+    if (ueberreizt)
+      player->score_ -= 2 * gereizt_;  // TODO acc Skatregeln
+    else if (not player->success_)
+      player->score_ -= 2 * spielwert_;
+    else
+      player->score_ += spielwert_;
+  }
+
+  player->success_ && not ueberreizt ? player->spieleGewonnen_++
+                                     : player->spieleVerloren_++;
 
   emit resultat();
 }
