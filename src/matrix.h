@@ -13,17 +13,17 @@ class Matrix {
   static constexpr std::size_t ROWS = 4;
   static constexpr std::size_t COLS = 8;
 
-  // Constructor: initializes the matrix with all false (not played)
+  // Constructor: initializes the matrix_ with all false (not played)
   Matrix();
 
   // Mark a card as played using a Card object
   void setField(const Card& card);
   bool isFieldSet(const Card& card);
 
-  // Print the matrix to the debug output
+  // Print the matrix_ to the debug output
   void print() const;
 
-  // Reset the matrix (mark all cards as not played)
+  // Reset the matrix_ (mark all cards as not played)
   void reset();
 
  private:

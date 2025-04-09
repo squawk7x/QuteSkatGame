@@ -57,11 +57,11 @@ inline void printMap(
 
 template <std::size_t ROWS, std::size_t COLS>
 void printMatrix(
-    const std::array<std::array<bool, COLS>, ROWS>& matrix) {
+    const std::array<std::array<bool, COLS>, ROWS>& matrix_) {
   qDebug() << "   J A 1 K Q 9 8 7";
-  for (std::size_t i = 0; i < matrix.size(); ++i) {
+  for (std::size_t i = 0; i < matrix_.size(); ++i) {
     QString line = QString::fromStdString(suits[i] + " ");
-    for (bool value : matrix[i]) {
+    for (bool value : matrix_[i]) {
       line.append(value ? "X " : "- ");
     }
     qDebug().noquote() << line;

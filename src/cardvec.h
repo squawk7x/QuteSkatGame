@@ -46,6 +46,8 @@ class CardVec {
   // Move Assignment Operator
   CardVec& operator=(CardVec&& other) noexcept;
 
+  void clone(CardVec other);
+
   // explicit CardVec(const std::vector<Card>& cards) : cards_(cards)  {}
 
   // Universal Forwarding of card

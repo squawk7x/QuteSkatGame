@@ -35,6 +35,13 @@ CardVec& CardVec::operator=(
   return *this;
 }
 
+void CardVec::clone(
+    CardVec other) {
+  cards_ = other.cards_;
+  isCardFaceVisible_ = other.isCardFaceVisible_;
+  cardFace_ = other.cardFace_;
+}
+
 // Move Constructor
 CardVec::CardVec(
     CardVec&& other) noexcept
@@ -170,6 +177,8 @@ std::vector<int> CardVec::toPattern(
     Rule rule, const std::string& targetSuit) {
   std::vector<int> pattern(11, 0);
   int i = 0;
+
+  sortCardsFor(rule, targetSuit);
 
   if (rule == Rule::Null) {
     for (const std::string& rank : {"A", "K", "Q", "J", "10", "9", "8", "7"}) {
@@ -646,4 +655,5 @@ void CardVec::print() {
   for (const Card& card : cards_) {
     str += card.str() + " ";
   }
+  qDebug() << QString::fromStdString(str);
 }

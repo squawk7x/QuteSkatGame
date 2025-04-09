@@ -172,7 +172,6 @@ Table::Table(
       game_->hand_ = true;
       ui->pbHand->setText("Hand");
       ui->gbFrageHand->hide();
-      // ui->gbDruecken->show();
       ui->pbDruecken->click();  // even if not visible
     });
 

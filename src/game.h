@@ -40,13 +40,16 @@ class Game : public QObject {
   bool ouvert_{};
 
   bool gedrueckt_{};  // used in bieten
-
   int gereizt_{};
   int spielwert_{};
 
+  bool kontra_{};
+  bool re_{};
+  bool bock_{};
+
   Card trickCardFirst_{};
   Card trickCardStrongest_{};
-  Matrix matrix{};
+  Matrix matrix_{};
 
   // constructor
   explicit Game(QObject* parent = nullptr);

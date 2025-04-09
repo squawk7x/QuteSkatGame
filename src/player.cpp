@@ -54,10 +54,10 @@ void Player::setDesiredGame() {
   if (numJacks >= 2 && numJacks + favorite.second >= 3) {
     desiredRule_ = Rule::Suit;
     desiredTrump_ = favorite.first;
-    spitzen_ = abs(handdeck_.spitzen(desiredRule_, desiredTrump_));
+    // spitzen_ = handdeck_.spitzen(desiredRule_, desiredTrump_);
   } else if (numJacks >= 3) {
     desiredRule_ = Rule::Grand;
-    spitzen_ = abs(handdeck_.spitzen(desiredRule_));
+    // spitzen_ = handdeck_.spitzen(desiredRule_);
   } else {
     desiredRule_ = Rule::Ramsch;
   }
