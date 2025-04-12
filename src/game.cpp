@@ -185,9 +185,11 @@ int Game::spielwert(
     schwarz = player->desiredSchwarz_;
     schwarzAngesagt = player->desiredSchwarzAngesagt_;
     ouvert = player->desiredOuvert_;
+
+    spitzen = player->handdeck_.spitzen(rule, trump);
   }
 
-  // Auswertung
+  // finishRound
   else {
     rule = rule_;
     trump = trump_;
@@ -198,11 +200,7 @@ int Game::spielwert(
     schwarzAngesagt = schwarzAngesagt_;
     ouvert = ouvert_;
 
-    if (ouvert) hand = true;
-    if (schwarzAngesagt) schneiderAngesagt = true;
-    // Wenn Spieler verliert dann Berechnung ohne:
-    if (schneiderAngesagt && !schneider) schneiderAngesagt = false;
-    if (schwarzAngesagt && !schwarz) schwarzAngesagt = false;
+    spitzen = player->urHanddeck_.spitzen(rule, trump);
   }
 
   if (rule == Rule::Grand || rule == Rule::Suit) {
@@ -215,9 +213,10 @@ int Game::spielwert(
                   schwarzAngesagt +    //
                   ouvert;              //
 
+    // Auch bei Hand zählt der Skat mit bei Spielwertberechnung
     value = (rule == Rule::Grand) ? 24 : trumpValue.at(trump);
 
-    spitzen = player->urHanddeck_.spitzen(rule, trump);
+    // spitzen = player->urHanddeck_.spitzen(rule, trump);
     player->urHanddeck_.print();
     qDebug() << "spitzen:" << spitzen << "\n"
              << "hand:" << hand << "\n"
@@ -748,7 +747,7 @@ void Game::autoplay() {
     // qDebug() << "Proposed order:"
     //          << QString::fromStdString(cardsToString(cards));
 
-    Card card = player->handdeck_.validCards_.front();
+    Card& card = player->handdeck_.validCards_.front();
     if (isCardValid(card)) playCard(card);
 
     emit updateTrickLayout(card, player->id());
@@ -988,9 +987,10 @@ void Game::finishRound() {
   // Ramsch
   if (rule_ == Rule::Ramsch) {
     Player* player = getPlayerByMostTricksPoints();
+    player->success_ = false;
 
-    spielwert_ = player->points();
-
+    // spielwert_ = player->points();
+    spielwertFinishRound_ = player->points();
     player->score_ -= spielwert_;
     player->spieleVerloren_++;
 
@@ -1000,10 +1000,33 @@ void Game::finishRound() {
 
   Player* player = getPlayerByIsSolo();
 
+  spielwert_ = spielwert(player, Spielwert::Played);
+  qDebug() << "spielwert_: " << spielwert_;
+  bool ueberreizt = gereizt_ > spielwert_;
+
+  int multiplicator = 1;
+  if (kontra_) multiplicator *= 2;
+  if (re_) multiplicator *= 2;
+  if (bock_) multiplicator *= 2;
+
   // Null
   if (rule_ == Rule::Null) {
     player->success_ = player->tricks_.empty();
 
+    // Spielwert ist Wert bis zu dem gereizt wurde
+    if (ueberreizt) {
+      spielwertFinishRound_ = gereizt_;
+      player->score_ -= 2 * gereizt_ * multiplicator;  // TODO acc Skatregeln
+    }
+
+    else if (not player->success_) {
+      spielwertFinishRound_ = spielwert_;
+      player->score_ -= 2 * spielwert_ * multiplicator;
+
+    } else {
+      spielwertFinishRound_ = spielwert_;
+      player->score_ += spielwert_ * multiplicator;
+    }
   }
   // Grand or Suit
   else if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
@@ -1013,26 +1036,46 @@ void Game::finishRound() {
     // Garnd Hand Ouvert muß schwarz erreichen
     if (rule_ == Rule::Grand && hand_ && ouvert_)
       player->success_ = player->tricks_.size() == 11;
+
+    if (schwarzAngesagt_) schneiderAngesagt_ = true;
+
+    bool verloren = (not player->success_ ||                  //
+                     ueberreizt ||                            //
+                     schneiderAngesagt_ && not schneider_ ||  //
+                     schwarzAngesagt_ && not schwarz_);       //
+
+    // Spiel ist verloren wenn angesagt nicht erreicht wird
+    // Dann wird Spielwert ohne schneider / schwarz / ansagen gerechnet
+    if (verloren) {
+      player->success_ = false;
+      schneider_ = false;
+      schneiderAngesagt_ = false;
+      schwarz_ = false;
+      schwarzAngesagt_ = false;
+    }
+
+    // Spielwert ist ein Vielfaches vom Grundwert
+    if (ueberreizt) {
+      int stufenzahl = 1;
+      int grundwert = (rule_ == Rule::Grand) ? 24 : trumpValue.at(trump_);
+
+      spielwertFinishRound_ = grundwert;
+      // Vielfaches vom Grundwert muß >= gereizt sein
+      while (spielwertFinishRound_ < gereizt_) {
+        stufenzahl++;
+        spielwertFinishRound_ = stufenzahl * grundwert;
+      }
+      player->score_ -= 2 * spielwertFinishRound_ * multiplicator;
+
+    } else if (verloren) {
+      spielwertFinishRound_ = spielwert_;
+      player->score_ -= 2 * spielwert_ * multiplicator;
+
+    } else {
+      spielwertFinishRound_ = spielwert_;
+      player->score_ += spielwert_ * multiplicator;
+    }
   }
-
-  if (schneiderAngesagt_ && player->points_ < 90) player->success_ = false;
-  if (schwarzAngesagt_ && player->tricks_.size() < 11) player->success_ = false;
-
-  spielwert_ = spielwert(player, Spielwert::Played);
-  qDebug() << "spielwert_: " << spielwert_;
-  bool ueberreizt = gereizt_ > spielwert_;
-
-  int multiplicator = 0;
-  if (kontra_) multiplicator *= 2;
-  if (kontra_ && re_) multiplicator *= 2;
-  if (kontra_ && re_ && bock_) multiplicator *= 2;
-
-  if (ueberreizt)
-    player->score_ -= 2 * gereizt_ * multiplicator;  // TODO acc Skatregeln
-  else if (not player->success_)
-    player->score_ -= 2 * spielwert_ * multiplicator;
-  else
-    player->score_ += spielwert_ * multiplicator;
 
   player->success_ && not ueberreizt ? player->spieleGewonnen_++
                                      : player->spieleVerloren_++;

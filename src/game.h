@@ -42,6 +42,7 @@ class Game : public QObject {
   bool gedrueckt_{};  // used in bieten
   int gereizt_{};
   int spielwert_{};
+  int spielwertFinishRound_{};
 
   bool kontra_{};
   bool re_{};

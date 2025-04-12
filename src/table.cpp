@@ -591,24 +591,43 @@ void Table::onClearTrickLayout() {
 
 void Table::onResultat() {
   qDebug() << "onResultat";
+  Player *player;
 
-  Player *player = game_->getPlayerByIsSolo();
+  if (game_->rule_ == Rule::Ramsch)
+    player = game_->getPlayerByMostTricksPoints();
+  else
+    player = game_->getPlayerByIsSolo();
+
   QString resultat;
-  if (player) {
-    bool ueberreizt = game_->gereizt_ > game_->spielwert_;
-    bool gewonnen = (player->success_ && not ueberreizt);
+  bool ueberreizt = game_->gereizt_ > game_->spielwert_;
+  bool gewonnen = (player->success_ && not ueberreizt);
 
-    resultat = QString(
-                   "%7\n%1 %2\nmit %3 zu %4 Augen.\nGereizt bis %5.\n"
-                   "Der Spielwert ist %6.\n")
-                   .arg(QString::fromStdString(player->name()))
-                   .arg(gewonnen ? "gewinnt" : "verliert")
-                   .arg(player->points())
-                   .arg(120 - player->points())
-                   .arg(game_->gereizt_)
-                   .arg(game_->spielwert_)
-                   .arg(ueberreizt ? "\nÜberreizt !" : "");
-  }
+  QString spielZeile;
+  if (game_->rule_ == Rule::Grand || game_->rule_ == Rule::Suit)
+    spielZeile = QString("mit %1 zu %2 Augen.\n")
+                     .arg(player->points())
+                     .arg(120 - player->points());
+  else if (game_->rule_ == Rule::Null)
+    spielZeile = "das Nullspiel.\n";
+  else
+    spielZeile = QString("den Ramsch.\n");
+
+  resultat = QString(
+                 "%7\n"
+                 "%1 %2\n"
+                 "%3"
+                 "Gereizt bis %4.\n"
+                 "Der Spielwert ist %5.\n"
+                 "%6 %8 %9\n")
+                 .arg(QString::fromStdString(player->name()))  // %1
+                 .arg(gewonnen ? "gewinnt" : "verliert")       // %2
+                 .arg(spielZeile)                              // %3
+                 .arg(game_->gereizt_)                         // %4
+                 .arg(game_->spielwertFinishRound_)            // %5
+                 .arg(ueberreizt ? "\nÜberreizt !" : "")       // %6
+                 .arg(game_->kontra_ ? "kontra!" : "")         // %7
+                 .arg(game_->re_ ? "re!" : "")                 // %8
+                 .arg(game_->bock_ ? "bock!" : "");            // %9
 
   ui->lblScore1->setText(QString::number(game_->player_1.score()));
   ui->lblScore2->setText(QString::number(game_->player_2.score()));

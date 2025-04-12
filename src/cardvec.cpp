@@ -343,7 +343,7 @@ void CardVec::sortCardsFor(
 void CardVec::setValidCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardFirst,
     const Card& trickCardStrongest, Order order) {
-  qDebug() << "validCards...";
+  qDebug() << "CardVec::setValidCards...";
   validCards_ = {};
 
   if (trickCardFirst.isEmpty()) {
