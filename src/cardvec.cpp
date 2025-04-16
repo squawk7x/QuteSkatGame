@@ -75,10 +75,27 @@ void CardVec::shuffle() {
 
 bool CardVec::isCardInside(
     const Card& card) {
-  if (std::find(cards().begin(), cards().end(), card) < cards().end()) {
-    return true;
+  return std::find(cards().begin(), cards().end(), card) != cards().end();
+}
+
+bool CardVec::isRankInside(
+    const std::string& rank) {
+  return std::any_of(cards().begin(), cards().end(),
+                     [&](const Card& card) { return card.rank() == rank; });
+}
+
+bool CardVec::isSuitInside(
+    const std::string& suit) {
+  return std::any_of(cards().begin(), cards().end(),
+                     [&](const Card& card) { return card.suit() == suit; });
+}
+
+Card& CardVec::getCardWithRank(
+    const std::string& rank) {
+  for (Card& card : cards_) {
+    if (card.rank() == rank) return card;
   }
-  return false;
+  throw std::runtime_error("Card with given rank not found");
 }
 
 void CardVec::moveCardTo(
@@ -478,13 +495,15 @@ void CardVec::setValidCards(
 void CardVec::setPowerCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardStrongest,
     Order order) {
-  // qDebug() << "validCards:";
-  // printContainer(validCards_);
-  // Filter validCards_ to include only:
-  // - Cards with suit == trumpSuit
-  // - Cards with suit == trickCardStrongest.suit()
-  // - Cards with rank == "J"
+  qDebug() << "setPowerCards...";
+
+  lowestPowerCard_ = Card();
+  highestPowerCard_ = Card();
+  nextLowerPowerCard_ = Card();
+  nextHigherPowerCard_ = Card();
+
   std::vector<Card> filteredCards;
+
   std::copy_if(validCards_.begin(), validCards_.end(),
                std::back_inserter(filteredCards), [&](const Card& card) {
                  return card.suit() == trickCardStrongest.suit() ||
@@ -497,7 +516,7 @@ void CardVec::setPowerCards(
   printContainer(filteredCards);
 
   if (filteredCards.empty()) {
-    qDebug() << "No valid cards after filtering.";
+    qDebug() << "No power cards after filtering.";
     return;
   }
 
@@ -557,6 +576,12 @@ void CardVec::setPowerCards(
 void CardVec::setRankCards(
     Rule rule, const Card& trickCardStrongest, Order order) {
   qDebug() << "setRankCards...";
+
+  lowestRankCard_ = Card();
+  highestRankCard_ = Card();
+  nextLowerRankCard_ = Card();
+  nextHigherRankCard_ = Card();
+
   sortCardsByPowerPriorityRule(validCards_, rule, Order::Increase);
 
   qDebug() << "sorted by Rank power:";
@@ -608,7 +633,13 @@ void CardVec::setRankCards(
 
 void CardVec::setValueCards(
     const Card& trickCardStrongest, Order order) {
-  qDebug() << "sorted by Value:";
+  qDebug() << "setValueCards...";
+
+  lowestValueCard_ = Card();
+  highestValueCard_ = Card();
+  nextLowerValueCard_ = Card();
+  nextHigherValueCard_ = Card();
+
   sortCardsByValue(validCards_, Order::Increase);
   printContainer(validCards_);
 

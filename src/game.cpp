@@ -679,6 +679,17 @@ void Game::druecken() {
   }
 }
 
+/*
+ * empty trick
+ *
+ * 1 card played     hasSoloPlayed          not hasSoloPlayed
+ *                                        (Player could be Solo)
+ *
+ * 2 cards played    hasSoloPlayed          not hasSoloPlayed
+ *                  |             |                |
+ *                hasTrick  not hasTrick      Player == Solo
+ */
+
 Card& Game::cardByNull_KI() {
   Player* player = playerList_.front();
 
@@ -686,51 +697,85 @@ Card& Game::cardByNull_KI() {
                                   trickCardStrongest_, Order::Increase);
 
   // noch keine Karte ausgespielt
-  if (trick_.cards().empty() &&
-      not player->handdeck_.lowestRankCard_.isEmpty()) {
+  if (trick_.cards().empty())
+    // && not player->handdeck_.lowestRankCard_.isEmpty()) {
     return player->handdeck_.lowestRankCard_;
+  // }
+
+  // 1 card played
+  else if (trick_.cards().size() == 1) {
+    // Solo war Ausspieler, Solo hat Trick
+    if (hasSoloPlayed_) {
+      // versuche drunter
+      if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+        return player->handdeck_.nextLowerPowerCard_;
+      // wenn bedienen dann mit höchster Power den Stich nehmen
+      else if (not player->handdeck_.highestPowerCard_.isEmpty())
+        return player->handdeck_.highestPowerCard_;
+      // höchsten Rang abwerfen
+      else
+        return player->handdeck_.highestRankCard_;
+    }
+    if (not hasSoloPlayed_) {
+      // Mitspieler hat Trick, drunter bleiben
+      if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+        return player->handdeck_.nextLowerPowerCard_;
+      // nächst höhere power Karte
+      else if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      // //
+      // else if (not player->handdeck_.highestPowerCard_.isEmpty())
+      //   return player->handdeck_.highestPowerCard_;
+      // abwerfen
+      else
+        return player->handdeck_.highestRankCard_;
+    }
   }
 
-  // Mitspieler hat ausgespielt, Solo Hinterhand
-  // -> nextLowerPowerCard is defined
-  else if (!hasSoloPlayed_ &&
-           not player->handdeck_.nextLowerPowerCard_.isEmpty()) {
-    return player->handdeck_.nextLowerPowerCard_;
-  }
-
-  // Mitspieler hat noch nicht ausgespielt, Solo Mittelhand
-  // -> nextLowerPowerCard is not defined
-  // == if (trick_.cards().empty()
-  else if (!hasSoloPlayed_ && not player->handdeck_.lowestRankCard_.isEmpty()) {
-    return player->handdeck_.lowestRankCard_;
-
-  }
-  // Solo hat Trick (Solo Vorhand mit 1. Karte im Spiel)
-  else if (hasSoloPlayed_ && hasSoloTrick_) {
-    // versuche drunter
-    if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
-      return player->handdeck_.nextLowerPowerCard_;
-    // sonst höchste PowerCard
-    else if (not player->handdeck_.highestPowerCard_.isEmpty())
-      return player->handdeck_.highestPowerCard_;
-    // sonst höchste RankCard
-    else
-      return player->handdeck_.highestRankCard_;
-  }
-
-  // Solo hat nicht trick dann spiele höchsten rank
-  else if (hasSoloPlayed_ && !hasSoloTrick_) {
-    if (not player->handdeck_.highestPowerCard_.isEmpty())
-      return player->handdeck_.highestPowerCard_;
-    // sonst höchste RankCard
-    else
-      return player->handdeck_.highestRankCard_;
+  // 2 cards played
+  else if (trick_.cards().size() == 2) {
+    // player is not solo player
+    if (hasSoloPlayed_) {
+      if (hasSoloTrick_) {
+        // versuche drunter
+        if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+          return player->handdeck_.nextLowerPowerCard_;
+        // wenn bedienen dann mit höchster Power den Stich nehmen
+        // else if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        //   return player->handdeck_.nextHigherPowerCard_;
+        // höchsten Rang abwerfen bzw. Spiel gewonnen da keine Power Karte in
+        // der Hand
+        else
+          return player->handdeck_.highestRankCard_;
+      }
+      if (not hasSoloTrick_) {
+        // nimm Stich oder höchste Power Karte spielen
+        if (not player->handdeck_.highestPowerCard_.isEmpty())
+          return player->handdeck_.highestPowerCard_;
+        // sonst abwerfen
+        else
+          return player->handdeck_.highestRankCard_;
+      }
+    }
+    // player himself is solo player
+    if (not hasSoloPlayed_) {
+      // drunter bleiben
+      if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+        return player->handdeck_.nextLowerPowerCard_;
+      // nächst höhere power Karte - verloren
+      else if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      // verloren
+      else if (not player->handdeck_.highestPowerCard_.isEmpty())
+        return player->handdeck_.highestPowerCard_;
+      // abwerfen
+      else
+        return player->handdeck_.highestRankCard_;
+    }
   }
 
   // Fallback
-  else {
-    return player->handdeck_.lowestRankCard_;
-  }
+  return player->handdeck_.lowestRankCard_;
 }
 
 Card& Game::cardByGrand_KI() {
@@ -738,7 +783,59 @@ Card& Game::cardByGrand_KI() {
 
   player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
-  return player->handdeck_.validCards_.front();
+
+  if (trick_.cards().empty()) {
+    // höchsten Buben anspielen wenn vorhanden
+    if (not player->handdeck_.highestPowerCard_.isEmpty())
+      return player->handdeck_.highestPowerCard_;
+    // sonst höchsten Rang anspielen
+    else
+      return player->handdeck_.highestRankCard_;
+  }
+
+  // 1 card played
+  else if (trick_.cards().size() == 1) {
+    // Solo has the trick
+    if (hasSoloPlayed_) {
+      if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      else
+        return player->handdeck_.lowestRankCard_;
+    }
+    if (not hasSoloPlayed_) {
+      // if stronger card in cardsInGame_
+      if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+        return player->handdeck_.nextLowerPowerCard_;
+      // else
+      return player->handdeck_.lowestValueCard_;
+    }
+  }
+
+  else if (trick_.cards().size() == 2) {
+    // actual player is not solo player
+    if (hasSoloPlayed_) {
+      if (hasSoloTrick_) {
+        if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+          return player->handdeck_.nextHigherPowerCard_;
+      }
+      if (not hasSoloTrick_) {
+        // if stronger card in cardsInGame_
+        return player->handdeck_.highestValueCard_;
+      }
+    }
+
+    // actual player is solo player
+    if (not hasSoloPlayed_) {
+      // versuche drüber
+      if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      // sonst Karte mit kleinstem Wert
+      else
+        return player->handdeck_.lowestValueCard_;
+    }
+  }
+  // Fallback
+  return player->handdeck_.highestRankCard_;
 }
 
 Card& Game::cardBySuit_KI() {
@@ -746,14 +843,104 @@ Card& Game::cardBySuit_KI() {
 
   player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
-  return player->handdeck_.validCards_.front();
+
+  if (trick_.cards().empty()) {
+    // höchsten Buben anspielen wenn vorhanden
+    if (not player->handdeck_.highestPowerCard_.isEmpty()) {
+      if (player->handdeck_.highestPowerCard_.rank() == "J")
+        return player->handdeck_.highestPowerCard_;
+    }
+    // sonst höchsten Rang anspielen der nicht trump und nicht 10 ist
+    else if (player->handdeck_.highestRankCard_.suit() != trump_ &&
+             player->handdeck_.highestRankCard_.rank() != "10")
+      return player->handdeck_.highestRankCard_;
+    else if (not player->handdeck_.lowestPowerCard_.isEmpty())
+      return player->handdeck_.lowestPowerCard_;
+    else
+      return player->handdeck_.lowestValueCard_;
+  }
+
+  // 1 card played
+  else if (trick_.cards().size() == 1) {
+    // Solo has the trick
+    if (hasSoloPlayed_) {
+      if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      else
+        return player->handdeck_.lowestRankCard_;
+    }
+    if (not hasSoloPlayed_) {
+      // if stronger card in cardsInGame_
+      if (not player->handdeck_.lowestPowerCard_.isEmpty())
+        return player->handdeck_.lowestPowerCard_;
+      // else
+      return player->handdeck_.lowestRankCard_;
+    }
+  }
+
+  else if (trick_.cards().size() == 2) {
+    // actual player is not solo player
+    if (hasSoloPlayed_) {
+      if (hasSoloTrick_) {
+        if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+          return player->handdeck_.nextHigherPowerCard_;
+      }
+      if (not hasSoloTrick_) {
+        // if stronger card in cardsInGame_
+        return player->handdeck_.highestValueCard_;
+      }
+    }
+
+    // actual player is solo player
+    if (not hasSoloPlayed_) {
+      // versuche drüber
+      if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+        return player->handdeck_.nextHigherPowerCard_;
+      // sonst Karte mit kleinstem Wert
+      else
+        return player->handdeck_.lowestValueCard_;
+    }
+  }
+  // Fallback
+  return player->handdeck_.lowestRankCard_;
 }
+
+// kein Solo player bei Ramsch
 Card& Game::cardByRamsch_KI() {
   Player* player = playerList_.front();
 
   player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
-  return player->handdeck_.validCards_.front();
+
+  if (trick_.cards().empty()) {
+    // Buben anspielen
+    if (not player->handdeck_.highestPowerCard_.isEmpty() &&
+        player->handdeck_.highestPowerCard_.rank() == "J")
+      return player->handdeck_.highestPowerCard_;
+    // sonst kleinsten Rang anspielen
+    else
+      return player->handdeck_.lowestRankCard_;
+  }
+
+  // 1 card played
+  else if (trick_.cards().size() == 1 || trick_.cards().size() == 2) {
+    // knapp drunter bleiben
+    if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+      return player->handdeck_.nextLowerPowerCard_;
+    // knapp drüber gehen
+    else if (not player->handdeck_.nextHigherPowerCard_.isEmpty())
+      return player->handdeck_.nextHigherPowerCard_;
+    // bei wenig Punkten im Stich Buben spielen
+    // else if (trick_.cards().size() == 2 && trick_.points() <= 4 &&
+    //          player->handdeck_.highestPowerCard_.rank() == "J")
+    //   return player->handdeck_.highestPowerCard_;
+    // höchste Punkte abwerfen
+    else
+      return player->handdeck_.highestValueCard_;
+  }
+
+  // Fallback
+  return player->handdeck_.lowestRankCard_;
 }
 
 void Game::autoplay() {
@@ -771,9 +958,9 @@ void Game::autoplay() {
     if (rule_ == Rule::Null)
       card = cardByNull_KI();
     else if (rule_ == Rule::Grand)
-      card = cardBySuit_KI();
-    else if (rule_ == Rule::Suit)
       card = cardByGrand_KI();
+    else if (rule_ == Rule::Suit)
+      card = cardBySuit_KI();
     else if (rule_ == Rule::Ramsch)
       card = cardByRamsch_KI();
 
@@ -823,13 +1010,25 @@ void Game::playCard(
 }
 
 void Game::activateNextPlayer() {
+  // Spiel beenden, sobald Player bei Null Stich gemacht hat
+
   if (trick_.size() == 3) {
     Player* trickholder = getPlayerByHasTrick();
 
+    // Auch für Null für success in finishRound
     trickholder->tricks_.push_back(trick_);
+
+    if (rule_ == Rule::Null && trickholder->isSolo_) {
+      finishRound();
+      return;
+    }
+
     trickholder->setPoints();
 
-    if (playerList_.front()->handdeck_.size() == 0) finishRound();
+    if (playerList_.front()->handdeck_.size() == 0) {
+      finishRound();
+      return;
+    }
 
     auto trickholderIt = std::ranges::find(playerList_, trickholder);
     // Ensure iterator is valid before rotating
@@ -850,31 +1049,13 @@ void Game::activateNextPlayer() {
   Player* player = playerList_.front();
   qDebug() << "Next player:" << QString::fromStdString(player->name());
 
-  player->handdeck_.lowestPowerCard_ = Card();
-  player->handdeck_.highestPowerCard_ = Card();
-  player->handdeck_.nextLowerPowerCard_ = Card();
-  player->handdeck_.nextHigherPowerCard_ = Card();
-
-  player->handdeck_.lowestRankCard_ = Card();
-  player->handdeck_.highestRankCard_ = Card();
-  player->handdeck_.nextLowerRankCard_ = Card();
-  player->handdeck_.nextHigherRankCard_ = Card();
-
-  player->handdeck_.lowestValueCard_ = Card();
-  player->handdeck_.highestValueCard_ = Card();
-  player->handdeck_.nextLowerValueCard_ = Card();
-  player->handdeck_.nextHigherValueCard_ = Card();
-
-  // player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
-  //                                 trickCardStrongest_);
-  // printContainer(playerList_.front()->handdeck_.validCards_);
   // autoplay();
 }
 
 bool Game::isCardValid(
     const Card& card) {
   if (trick_.size() == 3) {
-    trickCardFirst_ = Card();
+    // trickCardFirst_ = Card();
     trick_.cards().clear();
     emit clearTrickLayout();
     return true;
@@ -1007,8 +1188,6 @@ Player* Game::getPlayerByHighestBid() {
   if (highestBidder != playerList_.end() && (*highestBidder)->maxBieten_ > 0)
     return *highestBidder;
 
-  qDebug() << "No player has placed a bid.";
-
   return nullptr;
 }
 
@@ -1066,7 +1245,8 @@ void Game::finishRound() {
 
   // Null
   if (rule_ == Rule::Null) {
-    player->success_ = player->tricks_.empty();
+    player->success_ =
+        (player->tricks_.size() == 1);  // only Skat cards in tricks
 
     // Spielwert ist Wert bis zu dem gereizt wurde
     if (ueberreizt) {

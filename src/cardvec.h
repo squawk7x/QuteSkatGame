@@ -63,6 +63,9 @@ class CardVec {
   int size() const;
   void shuffle();
   bool isCardInside(const Card& card);
+  bool isRankInside(const std::string& rank);
+  bool isSuitInside(const std::string& suit);
+  Card& getCardWithRank(const std::string& rank);
   void moveCardTo(const Card&, CardVec& targetVec);
   void moveTopCardTo(CardVec& targetVec);
   void erase(Card card);  // used in cardsInGame_

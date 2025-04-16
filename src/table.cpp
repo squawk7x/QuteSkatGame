@@ -189,9 +189,12 @@ Table::Table(
         ui->gbFrageHand->hide();
         ui->gbDruecken->hide();
         ui->gbSkat->hide();
-        ui->gbTrick2->hide();
-        ui->gbTrick1->hide();
-        ui->gbTrick3->hide();
+
+        // ui->gbTricks->show();
+        // ui->gbTrick2->hide();
+        // ui->gbTrick1->hide();
+        // ui->gbTrick3->hide();
+
         ui->lblSpielGereiztBis->setText("Gereizt bis: " +
                                         QString::number(game_->gereizt_));
         ui->gbSpiel->show();
@@ -211,9 +214,11 @@ Table::Table(
       ui->pbBieten3->hide();
       ui->lblHand2->setText("");
       ui->lblHand3->setText("");
-      ui->gbTrick2->show();
-      ui->gbTrick1->show();
-      ui->gbTrick3->show();
+
+      ui->gbTricks->show();
+      // ui->gbTrick2->show();
+      // ui->gbTrick1->show();
+      // ui->gbTrick3->show();
     });
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
@@ -264,6 +269,7 @@ Table::Table(
 void Table::onGegeben() {
   ui->lblUrsprungsSkat->hide();
 
+  ui->gbTricks->hide();
   ui->gbSkat->show();
 
   ui->gbSagenPassen->show();
@@ -296,9 +302,10 @@ void Table::onGegeben() {
   ui->pbSchneider->setVisible(false);
   ui->pbSchwarz->setVisible(false);
 
-  ui->gbTrick2->hide();
-  ui->gbTrick1->hide();
-  ui->gbTrick3->hide();
+  ui->gbTricks->hide();
+  // ui->gbTrick2->hide();
+  // ui->gbTrick1->hide();
+  // ui->gbTrick3->hide();
 
   // ui->gbFrageEnde->hide();
   ui->gbResultat->hide();
@@ -395,6 +402,11 @@ void Table::onRuleAndTrump(
 
   ui->pbDruecken->click();
   ui->gbRule->setDisabled(true);
+
+  ui->gbTricks->show();
+  ui->gbTrick2->show();
+  ui->gbTrick1->show();
+  ui->gbTrick3->show();
 
   qDebug() << "Trump:" << QString::fromStdString(game_->trump_);
 }
@@ -648,9 +660,10 @@ void Table::onResultat() {
   ui->lblSpielwert->setText(resultat);
   ui->gbResultat->show();
 
-  ui->gbTrick2->hide();
-  ui->gbTrick1->hide();
-  ui->gbTrick3->hide();
+  // ui->gbTricks->hide();
+  // ui->gbTrick2->hide();
+  // ui->gbTrick1->hide();
+  // ui->gbTrick3->hide();
 
   ui->lblUrsprungsSkat->show();
 

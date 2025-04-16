@@ -1,7 +1,28 @@
-The German Card Game "SKAT"
+# QuteSkatGame License
 
-UNDER CONSTRUCTION
+**QuteSkatGame**  
+Copyright (C) 2025 Andreas Ottburg
 
-![Screenshot_20250320_202410](https://github.com/user-attachments/assets/9a629fb0-413f-4be4-8722-ec5c618ba87e)
-![Screenshot_20250320_202448](https://github.com/user-attachments/assets/18849762-95e3-46c2-a3ac-f5fd9061e991)
-![Screenshot_20250320_202511](https://github.com/user-attachments/assets/e2a00efa-fb32-463f-b9b9-a8b356c7fe2e)
+This card game software is free software; you may use, copy, modify, and redistribute it freely.
+
+It is provided **AS IS**, without warranty of any kind — use at your own risk.
+
+---
+
+## Redistribution of Modified Versions
+
+Redistribution of modified versions is allowed under the following conditions:
+
+1. This notice and all original copyright and permission notices  
+   must be preserved in full.
+
+2. One of the following must apply to any modified version:  
+   **a)** Changes are limited to packaging, platform adaptation, or porting.  
+   **OR**  
+   **b)** A clear note is included stating who made the modifications  
+   and what was changed.
+
+---
+
+Have fun!
+
