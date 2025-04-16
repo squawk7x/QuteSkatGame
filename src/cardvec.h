@@ -95,10 +95,6 @@ class CardVec {
 
   void sortCardsFor(Rule rule, const std::string& trumpSuit);
 
-  void setValidCards(Rule rule, const std::string& trumpSuit,
-                     const Card& trickCardFirst, const Card& trickCardStrongest,
-                     Order order = Order::Increase);
-
   void sortCardsByPower(std::vector<Card>& cards, Rule rule,
                         const std::string& trumpSuit, Order order);
 
@@ -106,6 +102,10 @@ class CardVec {
                                     Order order);
 
   void sortCardsByValue(std::vector<Card>& cards, Order order);
+
+  void setValidCards(Rule rule, const std::string& trumpSuit,
+                     const Card& trickCardFirst, const Card& trickCardStrongest,
+                     Order order = Order::Increase);
 
   void setPowerCards(Rule rule, const std::string& trumpSuit,
                      const Card& trickCardStrongest, Order order);

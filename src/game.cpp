@@ -425,6 +425,10 @@ void Game::bieten(
     qDebug() << QString::fromStdString(player->name()) + " isSolo:"
              << player->isSolo_;
 
+    // für Spielwertberechnung:
+    std::ranges::copy(skat_.cards(),
+                      std::back_inserter(player->urHanddeck_.cards()));
+
     if (player->isRobot())
       roboDruecken(player);  // hand wird in roboDruecken entschieden
     else
@@ -654,14 +658,14 @@ void Game::roboDruecken(
 }
 
 void Game::druecken() {
-  qDebug() << "druecken...";
+  qDebug() << "Game::druecken()...";
 
   Player* player = getPlayerByIsSolo();
 
   if (player && skat_.size() == 2) {
     // für Spielwertberechnung falls 'J' oder Trumpf im Skat
-    std::ranges::copy(skat_.cards(),
-                      std::back_inserter(player->urHanddeck_.cards()));
+    // std::ranges::copy(skat_.cards(),
+    //                   std::back_inserter(player->urHanddeck_.cards()));
 
     // Skat wegdrücken
     player->tricks_.push_back(std::move(skat_));
@@ -675,38 +679,81 @@ void Game::druecken() {
   }
 }
 
-bool Game::nullComparator(
-    const Card& a, const Card& b) {
+Card& Game::cardByNull_KI() {
   Player* player = playerList_.front();
-  Player* solo = getPlayerByIsSolo();
-  Player* trick = getPlayerByHasTrick();
 
-  // auto cards = validCards(player->id());
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  trickCardStrongest_, Order::Increase);
 
-  // wenn solo den Trick hat drunter bleiben / hier kleinste Karte
-  if (solo == trick) {
-    return a.power(Rule::Null, "") < b.power(Rule::Null, "");
+  // noch keine Karte ausgespielt
+  if (trick_.cards().empty() &&
+      not player->handdeck_.lowestRankCard_.isEmpty()) {
+    return player->handdeck_.lowestRankCard_;
   }
-  // wenn solo noch nicht gespielt hat kleinste Karte
-  if (solo->handdeck_.size() == player->handdeck_.size())
-    return a.power(Rule::Null, "") < b.power(Rule::Null, "");
 
-  // if (solo != trick && solo->handdeck_.size() < player->handdeck_.size())
-  //   return a.power(Rule::Null, "") > b.power(Rule::Null, "");
-  //
-  return a.power(Rule::Null, "") > b.power(Rule::Null, "");
+  // Mitspieler hat ausgespielt, Solo Hinterhand
+  // -> nextLowerPowerCard is defined
+  else if (!hasSoloPlayed_ &&
+           not player->handdeck_.nextLowerPowerCard_.isEmpty()) {
+    return player->handdeck_.nextLowerPowerCard_;
+  }
+
+  // Mitspieler hat noch nicht ausgespielt, Solo Mittelhand
+  // -> nextLowerPowerCard is not defined
+  // == if (trick_.cards().empty()
+  else if (!hasSoloPlayed_ && not player->handdeck_.lowestRankCard_.isEmpty()) {
+    return player->handdeck_.lowestRankCard_;
+
+  }
+  // Solo hat Trick (Solo Vorhand mit 1. Karte im Spiel)
+  else if (hasSoloPlayed_ && hasSoloTrick_) {
+    // versuche drunter
+    if (not player->handdeck_.nextLowerPowerCard_.isEmpty())
+      return player->handdeck_.nextLowerPowerCard_;
+    // sonst höchste PowerCard
+    else if (not player->handdeck_.highestPowerCard_.isEmpty())
+      return player->handdeck_.highestPowerCard_;
+    // sonst höchste RankCard
+    else
+      return player->handdeck_.highestRankCard_;
+  }
+
+  // Solo hat nicht trick dann spiele höchsten rank
+  else if (hasSoloPlayed_ && !hasSoloTrick_) {
+    if (not player->handdeck_.highestPowerCard_.isEmpty())
+      return player->handdeck_.highestPowerCard_;
+    // sonst höchste RankCard
+    else
+      return player->handdeck_.highestRankCard_;
+  }
+
+  // Fallback
+  else {
+    return player->handdeck_.lowestRankCard_;
+  }
 }
-bool Game::ramschComparator(
-    const Card& a, const Card& b) {
-  return a.power(Rule::Ramsch, "") <= b.power(Rule::Ramsch, "");
+
+Card& Game::cardByGrand_KI() {
+  Player* player = playerList_.front();
+
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  trickCardStrongest_, Order::Decrease);
+  return player->handdeck_.validCards_.front();
 }
-bool Game::grandComparator(
-    const Card& a, const Card& b) {
-  return a.power(Rule::Grand, "") >= b.power(Rule::Grand, "");
+
+Card& Game::cardBySuit_KI() {
+  Player* player = playerList_.front();
+
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  trickCardStrongest_, Order::Decrease);
+  return player->handdeck_.validCards_.front();
 }
-bool Game::suitComparator(
-    const Card& a, const Card& b) {
-  return a.power(Rule::Suit, "") >= b.power(Rule::Suit, "");
+Card& Game::cardByRamsch_KI() {
+  Player* player = playerList_.front();
+
+  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+                                  trickCardStrongest_, Order::Decrease);
+  return player->handdeck_.validCards_.front();
 }
 
 void Game::autoplay() {
@@ -719,41 +766,23 @@ void Game::autoplay() {
                                !player_3.handdeck_.cards().empty())) {
     Player* player = playerList_.front();
 
-    // player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
-    //                                 Order::Decrease);
-    // auto cards = player->handdeck_.validCards(rule_, trump_,
-    // trickCardFirst_);
+    Card&& card = Card{};
 
-    // if (rule_ == Rule::Null)
-    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-    //     return nullComparator(a, b);
-    //   });
+    if (rule_ == Rule::Null)
+      card = cardByNull_KI();
+    else if (rule_ == Rule::Grand)
+      card = cardBySuit_KI();
+    else if (rule_ == Rule::Suit)
+      card = cardByGrand_KI();
+    else if (rule_ == Rule::Ramsch)
+      card = cardByRamsch_KI();
 
-    // if (rule_ == Rule::Ramsch)
-    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-    //     return ramschComparator(a, b);
-    //   });
+    if (isCardValid(card)) playCard(std::move(card));
 
-    // if (rule_ == Rule::Suit)
-    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-    //     return suitComparator(a, b);
-    //   });
-
-    // if (rule_ == Rule::Grand)
-    //   std::ranges::sort(cards, [&, this](const Card& a, const Card& b) {
-    //     return grandComparator(a, b);
-    //   });
-
-    // qDebug() << "Proposed order:"
-    //          << QString::fromStdString(cardsToString(cards));
-
-    Card& card = player->handdeck_.validCards_.front();
-    if (isCardValid(card)) playCard(card);
-
-    emit updateTrickLayout(card, player->id());
     emit updatePlayerLayout(player->id(), LinkTo::Trick);
+    emit updateTrickLayout(card, player->id());
   }
-  // }
+  //}
 }
 
 void Game::playCard(
@@ -780,6 +809,13 @@ void Game::playCard(
   matrix_.print();
 
   if (trick_.cards().empty()) trickCardFirst_ = card;
+
+  if (playerList_.front()->isSolo_) {
+    cardBySolo_ = card;
+    hasSoloPlayed_ = true;
+    hasSoloTrick_ = playerList_.front()->hasTrick_;
+  }
+
   playerList_.front()->handdeck_.moveCardTo(card, trick_);
 
   // Rotate playerlist
@@ -801,7 +837,11 @@ void Game::activateNextPlayer() {
       std::ranges::rotate(playerList_, trickholderIt);
     }
 
+    // Reset to empty Card;
     trickCardFirst_ = Card();
+    cardBySolo_ = Card();
+    hasSoloPlayed_ = false;
+    hasSoloTrick_ = false;
 
   } else {
     rng::rotate(playerList_, playerList_.begin() + 1);
@@ -810,9 +850,24 @@ void Game::activateNextPlayer() {
   Player* player = playerList_.front();
   qDebug() << "Next player:" << QString::fromStdString(player->name());
 
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
-                                  trickCardStrongest_);
-  printContainer(playerList_.front()->handdeck_.validCards_);
+  player->handdeck_.lowestPowerCard_ = Card();
+  player->handdeck_.highestPowerCard_ = Card();
+  player->handdeck_.nextLowerPowerCard_ = Card();
+  player->handdeck_.nextHigherPowerCard_ = Card();
+
+  player->handdeck_.lowestRankCard_ = Card();
+  player->handdeck_.highestRankCard_ = Card();
+  player->handdeck_.nextLowerRankCard_ = Card();
+  player->handdeck_.nextHigherRankCard_ = Card();
+
+  player->handdeck_.lowestValueCard_ = Card();
+  player->handdeck_.highestValueCard_ = Card();
+  player->handdeck_.nextLowerValueCard_ = Card();
+  player->handdeck_.nextHigherValueCard_ = Card();
+
+  // player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  //                                 trickCardStrongest_);
+  // printContainer(playerList_.front()->handdeck_.validCards_);
   // autoplay();
 }
 

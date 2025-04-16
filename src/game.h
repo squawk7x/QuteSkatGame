@@ -48,8 +48,14 @@ class Game : public QObject {
   bool re_{};
   bool bock_{};
 
+  // Fields for Decisions:
   Card trickCardFirst_{};
   Card trickCardStrongest_{};
+
+  Card cardBySolo_{};
+  bool hasSoloPlayed_{};
+  bool hasSoloTrick_{};
+
   Matrix matrix_{};
 
   // constructor
@@ -68,10 +74,10 @@ class Game : public QObject {
   void roboDruecken(Player* player);
   void druecken();
 
-  bool nullComparator(const Card& a, const Card& b);
-  bool ramschComparator(const Card& a, const Card& b);
-  bool grandComparator(const Card& a, const Card& b);
-  bool suitComparator(const Card& a, const Card& b);
+  Card& cardByNull_KI();
+  Card& cardByGrand_KI();
+  Card& cardBySuit_KI();
+  Card& cardByRamsch_KI();
 
   void autoplay();
   void playCard(const Card& card);
