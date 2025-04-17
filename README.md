@@ -17,9 +17,9 @@ Redistribution of modified versions is allowed under the following conditions:
    must be preserved in full.
 
 2. One of the following must apply to any modified version:  
-   **a)** Changes are limited to packaging, platform adaptation, or porting.  
-   **OR**  
-   **b)** A clear note is included stating who made the modifications  
+   a) Changes are limited to packaging, platform adaptation, or porting.  
+   OR  
+   b) A clear note is included stating who made the modifications  
    and what was changed.
 
 ---
