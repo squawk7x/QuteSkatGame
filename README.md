@@ -26,3 +26,6 @@ Redistribution of modified versions is allowed under the following conditions:
 
 Have fun!
 
+![Screenshot_1](https://github.com/user-attachments/assets/c2b7a48e-3f36-478f-8314-510a5ab7c81c)
+![Screenshot_2](https://github.com/user-attachments/assets/19019741-6d34-4b97-9b7c-5992d6dddf9f)
+![Screenshot_3](https://github.com/user-attachments/assets/7757edef-cda3-47bd-a1f8-cfedcfcc16ab)
