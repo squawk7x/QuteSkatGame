@@ -60,6 +60,13 @@ CardVec& CardVec::operator=(
   return *this;
 }
 
+// Insert cards_ of other CardVec
+CardVec& CardVec::operator+=(
+    const CardVec& other) noexcept {
+  cards_.insert(cards_.end(), other.cards_.begin(), other.cards_.end());
+  return *this;
+}
+
 // public class methods
 std::vector<Card>& CardVec::cards() { return cards_; }
 
@@ -396,10 +403,10 @@ void CardVec::sortCardsByPowerPriorityRule(
 /*
  *    cards_ => validCards
  */
-void CardVec::setValidCards(
+void CardVec::evaluateCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardFirst,
     const Card& trickCardStrongest, Order order) {
-  qDebug() << "CardVec::setValidCards...";
+  qDebug() << "CardVec::evaluateCards...";
   validCards_ = {};
 
   if (trickCardFirst.isEmpty()) {
@@ -492,6 +499,7 @@ void CardVec::setValidCards(
   setValueCards(trickCardStrongest, order);
 }
 
+//
 void CardVec::setPowerCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardStrongest,
     Order order) {

@@ -15,10 +15,13 @@ class Game : public QObject {
 
  public:
   CardVec blind_{32};
-  CardVec trick_{3};
-  CardVec skat_{2};
-  CardVec cardsInGame_{30};
   CardVec urSkat_{2};
+  CardVec skat_{2};
+  CardVec trick_{3};
+  CardVec cardsInGame_{32};
+  CardVec othersCards_{22};
+  // 22 if player not isSolo,
+  // 20 if player isSolo (Solo knows his cards in skat)
   Player player_1{1, "Player-1", false};  // isRobot = false
   Player player_2{2, "Player-2", true};
   Player player_3{3, "Player-3", true};
@@ -74,6 +77,7 @@ class Game : public QObject {
   void roboDruecken(Player* player);
   void druecken();
 
+  void evaluateOthersCards();
   Card& cardByNull_KI();
   Card& cardByGrand_KI();
   Card& cardBySuit_KI();

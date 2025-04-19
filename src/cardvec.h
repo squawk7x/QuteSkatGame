@@ -46,6 +46,9 @@ class CardVec {
   // Move Assignment Operator
   CardVec& operator=(CardVec&& other) noexcept;
 
+  // Insert cards_ of other CardVec
+  CardVec& operator+=(const CardVec& other) noexcept;
+
   void clone(CardVec other);
 
   // explicit CardVec(const std::vector<Card>& cards) : cards_(cards)  {}
@@ -106,7 +109,7 @@ class CardVec {
 
   void sortCardsByValue(std::vector<Card>& cards, Order order);
 
-  void setValidCards(Rule rule, const std::string& trumpSuit,
+  void evaluateCards(Rule rule, const std::string& trumpSuit,
                      const Card& trickCardFirst, const Card& trickCardStrongest,
                      Order order = Order::Increase);
 

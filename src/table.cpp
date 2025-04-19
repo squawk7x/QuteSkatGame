@@ -667,11 +667,10 @@ void Table::onResultat() {
 
   ui->lblUrsprungsSkat->show();
 
-  CardVec skat = game_->skat_;
   game_->skat_ = game_->urSkat_;
   onUpdateSkatLayout();
   ui->gbSkat->show();
-  game_->skat_ = skat;
+  game_->skat_.cards().clear();
 }
 
 void Table::mousePressEvent(

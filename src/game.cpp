@@ -49,6 +49,7 @@ void Game::start() {
   bock_ = false;
 
   reizen(Reizen::Reset);  // reset static int counter in reizen
+  cardsInGame_.cards().clear();
   matrix_.reset();
 
   player_1.isRobot_ = false;
@@ -56,36 +57,47 @@ void Game::start() {
   player_2.maxBieten_ = 0;
   player_3.maxBieten_ = 0;
 
-  // Players' tricks to blind
-
+  // skat_.cards().clear();
+  // urSkat_.cards().clear();
+  qDebug() << "blind_.size():" << blind_.size();
+  // alle Karten einsammeln
   qDebug() << "Moving cards from players' tricks to blind.";
-
-  int cardsMovedFromPlayerTricks = 0;
-
   for (Player* player : playerList_) {
     for (CardVec& trick : player->tricks_) {
       std::vector<Card> cardsToMove = trick.cards();
 
       for (Card& card : cardsToMove) {
         trick.moveCardTo(card, blind_);
-        cardsMovedFromPlayerTricks++;
       }
     }
   }
 
-  qDebug() << "Cards moved from players' tricks to blind:"
-           << cardsMovedFromPlayerTricks;
-
-  // for restart of a new round inbetween:
+  qDebug() << "game.urSkat_.size():" << urSkat_.size();
+  qDebug() << "game.skat_.size():" << skat_.size();
+  qDebug() << "Moving cards from players' skat to blind.";
   for (Player* player : playerList_) {
+    for (const Card& card : player->skat_.cards())
+      player->skat_.moveTopCardTo(blind_);
+  }
+
+  // early new start:
+  qDebug() << "Moving cards from players' handdeck to blind.";
+  for (Player* player : playerList_) {
+    qDebug() << "player-Handdeck.size" << player->handdeck_.size();
     for (const Card& card : player->handdeck_.cards())
       player->handdeck_.moveTopCardTo(blind_);
   }
 
-  for (const Card& card : skat_.cards()) skat_.moveTopCardTo(blind_);
+  if (blind_.size() == 30)
+    for (const Card& card : urSkat_.cards()) urSkat_.moveTopCardTo(blind_);
 
-  for (const Card card : blind_.cards()) cardsInGame_.addCard(card);
-  cardsInGame_.sortCardsFor(rule_, trump_);
+  blind_.sortCardsFor(Rule::Grand, "J");
+  blind_.print();
+  qDebug() << "blind_.size()" << blind_.size();
+  assert(blind_.size() == 32);
+
+  // for (const Card card : blind_.cards()) cardsInGame_.addCard(card);
+  // cardsInGame_.sortCardsFor(rule_, trump_);
   // cardsInGame_.print();
 
   // rotate geberHoererSager
@@ -104,29 +116,42 @@ void Game::start() {
 
 void Game::geben() {
   qDebug() << "geben...";
+
+  cardsInGame_ = blind_;
+  cardsInGame_.sortCardsFor(Rule::Grand, "J");
+
+  qDebug() << "cardsInGame_:";
+  cardsInGame_.print();
+
   blind_.shuffle();
 
   // qDebug() << "Blind size after shuffling:" << blind_.size();
 
+  for (Player* player : playerList_) {
+    player->urHanddeck_.cards().clear();
+    // player->urSkat_.cards().clear();
+  }
+
   // Distribuite cards 3 - skat(2) - 4 - 3
   for (Player* player : playerList_) {
-    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
+    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->urHanddeck_);
   }
 
-  blind_.moveTopCardTo(skat_);
-  blind_.moveTopCardTo(skat_);
-  urSkat_ = skat_;  // Copy for finishRound / Result
+  urSkat_.cards().clear();
+  blind_.moveTopCardTo(urSkat_);
+  blind_.moveTopCardTo(urSkat_);
+  skat_ = urSkat_;
 
   for (Player* player : playerList_) {
-    for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->handdeck_);
+    for (int i = 1; i <= 4; i++) blind_.moveTopCardTo(player->urHanddeck_);
   }
   for (Player* player : playerList_) {
-    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->handdeck_);
+    for (int i = 1; i <= 3; i++) blind_.moveTopCardTo(player->urHanddeck_);
   }
 
   // Copies for replay and spielwert
   for (Player* player : playerList_) {
-    player->urHanddeck_ = player->handdeck_;
+    player->handdeck_ = player->urHanddeck_;
     // player->urHanddeck_.clone(player->handdeck_);
     // player->urHanddeck_.print();
   }
@@ -170,6 +195,7 @@ int Game::reizen(
 
 int Game::spielwert(
     Player* player, Spielwert wert) {
+  CardVec cards{12};
   Rule rule;
   std::string trump;
   bool hand, schneider, schneiderAngesagt, schwarz, schwarzAngesagt, ouvert;
@@ -177,6 +203,8 @@ int Game::spielwert(
 
   // Reizen
   if (wert == Spielwert::Desired) {
+    cards = player->handdeck_;
+
     rule = player->desiredRule_;
     trump = player->desiredTrump_;
     hand = player->desiredHand_;
@@ -186,11 +214,14 @@ int Game::spielwert(
     schwarzAngesagt = player->desiredSchwarzAngesagt_;
     ouvert = player->desiredOuvert_;
 
-    spitzen = player->handdeck_.spitzen(rule, trump);
+    spitzen = cards.spitzen(rule, trump);
   }
 
   // finishRound
   else {
+    cards = player->urHanddeck_;
+    cards += urSkat_;
+
     rule = rule_;
     trump = trump_;
     hand = hand_;
@@ -200,7 +231,7 @@ int Game::spielwert(
     schwarzAngesagt = schwarzAngesagt_;
     ouvert = ouvert_;
 
-    spitzen = player->urHanddeck_.spitzen(rule, trump);
+    spitzen = cards.spitzen(rule, trump);
   }
 
   if (rule == Rule::Grand || rule == Rule::Suit) {
@@ -426,8 +457,8 @@ void Game::bieten(
              << player->isSolo_;
 
     // für Spielwertberechnung:
-    std::ranges::copy(skat_.cards(),
-                      std::back_inserter(player->urHanddeck_.cards()));
+    // std::ranges::copy(skat_.cards(),
+    //                   std::back_inserter(player->urHanddeck_.cards()));
 
     if (player->isRobot())
       roboDruecken(player);  // hand wird in roboDruecken entschieden
@@ -663,12 +694,10 @@ void Game::druecken() {
   Player* player = getPlayerByIsSolo();
 
   if (player && skat_.size() == 2) {
-    // für Spielwertberechnung falls 'J' oder Trumpf im Skat
-    // std::ranges::copy(skat_.cards(),
-    //                   std::back_inserter(player->urHanddeck_.cards()));
-
     // Skat wegdrücken
-    player->tricks_.push_back(std::move(skat_));
+    // player->urSkat_ = urSkat_;
+    player->skat_ = skat_;
+    skat_.cards().clear();
     // Punkte setzen
     player->setPoints();
 
@@ -690,10 +719,33 @@ void Game::druecken() {
  *                hasTrick  not hasTrick      Player == Solo
  */
 
+void Game::evaluateOthersCards() {
+  Player* player = playerList_.front();
+
+  othersCards_.cards().clear();
+
+  othersCards_ += playerList_[1]->handdeck_;
+  othersCards_ += playerList_[2]->handdeck_;
+  if (rule_ != Rule::Ramsch && not player->isSolo_) {
+    Player* solo = getPlayerByIsSolo();
+    othersCards_ += solo->skat_;  // Todo: add skat of solo Player
+  }
+
+  if (rule_ == Rule::Ramsch) othersCards_ += urSkat_;
+
+  qDebug() << "=== othersCards_ ===";
+  othersCards_.print();
+
+  othersCards_.evaluateCards(rule_, trump_, trickCardFirst_,
+                             trickCardStrongest_, Order::Increase);
+}
+
 Card& Game::cardByNull_KI() {
   Player* player = playerList_.front();
 
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  evaluateOthersCards();
+
+  player->handdeck_.evaluateCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Increase);
 
   // noch keine Karte ausgespielt
@@ -781,7 +833,9 @@ Card& Game::cardByNull_KI() {
 Card& Game::cardByGrand_KI() {
   Player* player = playerList_.front();
 
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  evaluateOthersCards();
+
+  player->handdeck_.evaluateCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
 
   if (trick_.cards().empty()) {
@@ -841,7 +895,9 @@ Card& Game::cardByGrand_KI() {
 Card& Game::cardBySuit_KI() {
   Player* player = playerList_.front();
 
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  evaluateOthersCards();
+
+  player->handdeck_.evaluateCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
 
   if (trick_.cards().empty()) {
@@ -909,7 +965,9 @@ Card& Game::cardBySuit_KI() {
 Card& Game::cardByRamsch_KI() {
   Player* player = playerList_.front();
 
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  evaluateOthersCards();
+
+  player->handdeck_.evaluateCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_, Order::Decrease);
 
   if (trick_.cards().empty()) {
@@ -952,6 +1010,10 @@ void Game::autoplay() {
                                !player_2.handdeck_.cards().empty() ||
                                !player_3.handdeck_.cards().empty())) {
     Player* player = playerList_.front();
+
+    // to compare with player->handdeck_ cards in cardBy ... functions
+    // qDebug() << "          === cardsInGame_ ===";
+    // cardsInGame_.print();
 
     Card&& card = Card{};
 
@@ -1062,7 +1124,7 @@ bool Game::isCardValid(
   }
 
   Player* player = playerList_.front();
-  player->handdeck_.setValidCards(rule_, trump_, trickCardFirst_,
+  player->handdeck_.evaluateCards(rule_, trump_, trickCardFirst_,
                                   trickCardStrongest_);
 
   std::vector<Card>& validCards = player->handdeck_.validCards_;
@@ -1208,22 +1270,34 @@ Player* Game::getPlayerByMostTricksPoints() {
 void Game::finishRound() {
   qDebug() << "finishing round ...\n";
 
+  qDebug() << "game.urSkat_.size():" << urSkat_.size();
+  qDebug() << "game.skat_.size():" << skat_.size();
+  qDebug() << "Moving cards from players' skat to blind.";
+  for (Player* player : playerList_) {
+    qDebug() << "handdeck_.size():" << player->handdeck_.size();
+    qDebug() << "player->skat_.size():" << player->skat_.size();
+  }
+
   for (const auto& player : playerList_) {
     player->setPoints();
     qDebug() << QString::fromStdString(player->name())
              << " - Total Points: " << QString::number(player->points());
   }
 
-  // assert(skat_.points() + player_1.points_ + player_2.points_ +
-  //            player_3.points_ ==
-  //        120);
+  if (rule_ != Rule::Ramsch)
+    assert(player_1.points_ + player_2.points_ + player_3.points_ == 120);
+
+  if (rule_ == Rule::Ramsch)
+    assert(player_1.points_ + player_2.points_ + player_3.points_ +
+               urSkat_.points() ==
+           120);
 
   // Ramsch
   if (rule_ == Rule::Ramsch) {
     Player* player = getPlayerByMostTricksPoints();
     player->success_ = false;
 
-    // spielwert_ = player->points();
+    spielwert_ = player->points();
     spielwertFinishRound_ = player->points();
     player->score_ -= spielwert_;
     player->spieleVerloren_++;
@@ -1246,7 +1320,7 @@ void Game::finishRound() {
   // Null
   if (rule_ == Rule::Null) {
     player->success_ =
-        (player->tricks_.size() == 1);  // only Skat cards in tricks
+        (player->tricks_.size() == 0);  // only Skat cards in tricks
 
     // Spielwert ist Wert bis zu dem gereizt wurde
     if (ueberreizt) {
@@ -1267,10 +1341,10 @@ void Game::finishRound() {
   else if (rule_ == Rule::Grand || rule_ == Rule::Suit) {
     player->success_ = player->points_ >= 61;
     schneider_ = player->points_ >= 90;
-    schwarz_ = player->tricks_.size() == 11;
+    schwarz_ = player->tricks_.size() == 10;
     // Garnd Hand Ouvert muß schwarz erreichen
     if (rule_ == Rule::Grand && hand_ && ouvert_)
-      player->success_ = player->tricks_.size() == 11;
+      player->success_ = player->tricks_.size() == 10;
 
     if (schwarzAngesagt_) schneiderAngesagt_ = true;
 

@@ -69,6 +69,9 @@ void Player::setDesiredGame() {
 void Player::setPoints() {
   points_ = 0;
 
+  // if (isSolo_) points_ += skat_.points();
+  points_ += skat_.points();
+
   for (CardVec &trick : tricks_) {
     points_ += trick.points();
   }

@@ -12,8 +12,10 @@ class Player : public QObject {
   std::string name_;
 
  public:
-  CardVec handdeck_ = CardVec(12);  // including 2 Skat cards
-  CardVec urHanddeck_ = CardVec{12};
+  CardVec handdeck_ = CardVec(12);  // incl. 2 Karten Austausch für druecken
+  CardVec urHanddeck_ = CardVec{10};
+  // CardVec urSkat_ = CardVec{2};
+  CardVec skat_ = CardVec{2};
   std::vector<CardVec> tricks_{};
 
   Rule desiredRule_ = Rule::Unset;
@@ -27,7 +29,6 @@ class Player : public QObject {
 
   // int spitzen_{};
   int maxBieten_{};
-  bool success_{};
   int points_{};  // Spiel
   int spieleGewonnen_{};
   int spieleVerloren_{};
@@ -36,6 +37,7 @@ class Player : public QObject {
   bool isRobot_{};
   bool isSolo_{};
   bool hasTrick_{};
+  bool success_{};
 
   explicit Player(int id = 0, std::string name = "", bool isRobot = true,
                   int score = 0, CardVec handdeck = CardVec(10),
