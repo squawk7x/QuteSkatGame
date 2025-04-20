@@ -595,6 +595,11 @@ void CardVec::setRankCards(
   qDebug() << "sorted by Rank power:";
   printContainer(validCards_);
 
+  if (validCards_.empty()) {
+    qDebug() << "No cards available to determine rank.";
+    return;
+  }
+
   lowestRankCard_ = validCards_.front();
   qDebug() << "lowestRankCard_"
            << QString::fromStdString(lowestRankCard_.str());
@@ -603,34 +608,44 @@ void CardVec::setRankCards(
   qDebug() << "highestRankCard_"
            << QString::fromStdString(highestRankCard_.str());
 
+  // Only proceed if a valid trickCardStrongest is provided
   if (trickCardStrongest != Card()) {
-    int reference = PowerPriorityRanks.at(trickCardStrongest.rank());
+    auto refIt = PowerPriorityRanks.find(trickCardStrongest.rank());
+    if (refIt == PowerPriorityRanks.end()) {
+      qDebug() << "Rank not found in PowerPriorityRanks:"
+               << QString::fromStdString(trickCardStrongest.rank());
+      return;  // Or handle error
+    }
 
+    int reference = refIt->second;
     nextLowerRankCard_ = {};
     nextHigherRankCard_ = {};
 
+    // Find next lower rank card
     for (const auto& card : validCards_) {
-      int cardRank = PowerPriorityRanks.at(card.rank());
+      auto it = PowerPriorityRanks.find(card.rank());
+      if (it == PowerPriorityRanks.end()) continue;
 
+      int cardRank = it->second;
       if (cardRank < reference) {
         nextLowerRankCard_ = card;
       } else {
-        // nextLowerRankCard_ = Card();
         break;
       }
     }
     qDebug() << "nextLowerRankCard_"
              << QString::fromStdString(nextLowerRankCard_.str());
 
+    // Find next higher rank card
     sortCardsByPowerPriorityRule(validCards_, rule, Order::Decrease);
-
     for (const auto& card : validCards_) {
-      int cardRank = PowerPriorityRanks.at(card.rank());
+      auto it = PowerPriorityRanks.find(card.rank());
+      if (it == PowerPriorityRanks.end()) continue;
 
+      int cardRank = it->second;
       if (cardRank > reference) {
         nextHigherRankCard_ = card;
       } else {
-        // nextHigherRankCard_ = Card();
         break;
       }
     }

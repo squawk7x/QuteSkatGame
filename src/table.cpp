@@ -223,6 +223,7 @@ Table::Table(
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
                      &Game::start);
+
     QObject::connect(ui->pbResultatEnde, &QPushButton::clicked, this, [this]() {
       ui->gbSkat->hide();
       ui->gbResultat->hide();
