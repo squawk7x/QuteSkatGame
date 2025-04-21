@@ -199,6 +199,7 @@ std::vector<Card> CardVec::filterJacksAndSuits(
 
 std::vector<int> CardVec::toPattern(
     Rule rule, const std::string& targetSuit) {
+  qDebug() << "CardVec::toPattern ...";
   std::vector<int> pattern(11, 0);
   int i = 0;
 
@@ -212,7 +213,11 @@ std::vector<int> CardVec::toPattern(
         }
       i++;
     }
-    return {pattern.begin(), pattern.begin() + 8};
+    qDebug() << "Null pattern for suit" << QString::fromStdString(targetSuit)
+             << ":";
+    pattern = {pattern.begin(), pattern.begin() + 8};
+    printContainer(pattern);
+    return pattern;
   }
 
   // Grand and Suit

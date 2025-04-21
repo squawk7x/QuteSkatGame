@@ -38,7 +38,9 @@ class Table : public QMainWindow {
   void onGeboten(int idSager, int idHoerer, QString antwortSager,
                  QString antwortHoerer);
   void onFrageHand();
-  void onRuleAndTrump(Rule rule, std::string trump);
+  void onRuleAndTrump(Rule rule, std::string trump, bool hand,
+                      bool schneiderAngesagt, bool schwarzAngesagt,
+                      bool ouvert);
   // void onRoboGedrueckt(); // direct
   void onResultat();
 

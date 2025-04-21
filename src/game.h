@@ -89,7 +89,6 @@ class Game : public QObject {
 
   void finishRound();
 
-  bool isNullOk(Player* player);
   bool isCardValid(const Card& card);
   bool isCardStronger(const Card& card);
 
@@ -107,7 +106,9 @@ class Game : public QObject {
                QString antwortHoerer);
 
   void frageHand();
-  void ruleAndTrump(Rule rule, std::string trump);
+  void ruleAndTrump(Rule rule, std::string trump, bool hand = false,
+                    bool schneiderAngesagt = false,
+                    bool schwarzAngesagt = false, bool ouvert = false);
   void roboGedrueckt();
 
   void updateSkatLayout(

@@ -91,8 +91,6 @@ Table::Table(
           setButtonLogic();
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
-
-
         });
 
     QObject::connect(
@@ -370,12 +368,14 @@ void Table::onFrageHand() {
 
 // Robots will emit
 void Table::onRuleAndTrump(
-    Rule rule, std::string trump) {
+    Rule rule, std::string trump, bool hand = false,
+    bool schneiderAngesagt = false, bool schwarzAngesagt = false,
+    bool ouvert = false) {
   ui->pbRamsch->setVisible(false);
 
   if (rule == Rule::Ramsch) {
     ui->pbRamsch->setVisible(true);
-    ui->pbHand->setVisible(game_->hand_);  // should be false
+    ui->pbHand->setVisible(false);
     // ui->lblSpielwertGereizt->setText("Ramsch!");
   } else if (rule == Rule::Grand) {
     ui->pbGrand->click();
@@ -391,13 +391,19 @@ void Table::onRuleAndTrump(
     ui->pbKreuz->click();
   }
 
+  ui->pbHand->setVisible(hand);
+  if (hand == true) ui->pbHandJa->click();
+  if (schneiderAngesagt == true) ui->pbSchneider->click();
+  if (schwarzAngesagt == true) ui->pbSchwarz->click();
+  if (ouvert == true) ui->pbOuvert->click();
+
   ui->pbDruecken->click();
   ui->gbRule->setDisabled(true);
 
   ui->gbTricks->show();
-  ui->gbTrick2->show();
-  ui->gbTrick1->show();
-  ui->gbTrick3->show();
+  // ui->gbTrick2->show();
+  // ui->gbTrick1->show();
+  // ui->gbTrick3->show();
 
   qDebug() << "Trump:" << QString::fromStdString(game_->trump_);
 }

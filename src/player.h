@@ -66,7 +66,9 @@ class Player : public QObject {
   int points() const;
 
   // public class methods
-
+  void checkForNull();
+  void checkForGrand();
+  void checkForSuit();
   void setDesiredGame();
 
   // Slots
