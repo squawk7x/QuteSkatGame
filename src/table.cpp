@@ -77,6 +77,7 @@ Table::Table(
 
           qDebug() << "trump_ set to" << QString::fromStdString(game_->trump_);
         });
+
     QObject::connect(
         ui->pbGrand, &QPushButton::clicked, this, [this](bool checked) {
           game_->rule_ = checked ? Rule::Grand : Rule::Unset;
@@ -175,25 +176,24 @@ Table::Table(
       ui->pbDruecken->click();  // even if not visible
     });
 
+    QObject::connect(game_, &Game::roboGedrueckt, this, [this]() {
+      ui->pbDruecken->click();
+      // ui->pbSpielen->click();
+    });
+
     QObject::connect(ui->pbDruecken, &QPushButton::clicked, this, [this]() {
       if (game_->skat_.size() == 2) {
-        onUpdateSkatLayout(LinkTo::Skat);
+        game_->druecken();
+        // onUpdateSkatLayout(LinkTo::Skat);
 
         // onUpdatePlayerLayout(1, LinkTo::Trick);
         // For testing all 3 players are connected
         for (int playerId = 1; playerId <= 3; playerId++)
           onUpdatePlayerLayout(playerId, LinkTo::Trick);
 
-        game_->druecken();
-
         ui->gbFrageHand->hide();
         ui->gbDruecken->hide();
         ui->gbSkat->hide();
-
-        // ui->gbTricks->show();
-        // ui->gbTrick2->hide();
-        // ui->gbTrick1->hide();
-        // ui->gbTrick3->hide();
 
         ui->lblSpielGereiztBis->setText("Gereizt bis: " +
                                         QString::number(game_->gereizt_));
@@ -201,14 +201,7 @@ Table::Table(
       }
     });
 
-    QObject::connect(game_, &Game::roboGedrueckt, this, [this]() {
-      ui->pbDruecken->click();
-      // ui->pbSpielen->click();
-    });
-
     QObject::connect(ui->pbSpielen, &QPushButton::clicked, this, [this]() {
-      // game_->setSpielwert();
-
       // ui->gbSpiel->hide(); // shown for testing
       ui->pbBieten2->hide();
       ui->pbBieten3->hide();
@@ -216,9 +209,6 @@ Table::Table(
       ui->lblHand3->setText("");
 
       ui->gbTricks->show();
-      // ui->gbTrick2->show();
-      // ui->gbTrick1->show();
-      // ui->gbTrick3->show();
     });
 
     QObject::connect(ui->pbResultatWeiter, &QPushButton::clicked, game_,
@@ -671,7 +661,7 @@ void Table::onResultat() {
   game_->skat_ = game_->urSkat_;
   onUpdateSkatLayout();
   ui->gbSkat->show();
-  game_->skat_.cards().clear();
+  // game_->skat_.cards().clear();
 }
 
 void Table::mousePressEvent(

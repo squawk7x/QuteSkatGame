@@ -39,6 +39,7 @@ class Table : public QMainWindow {
                  QString antwortHoerer);
   void onFrageHand();
   void onRuleAndTrump(Rule rule, std::string trump);
+  // void onRoboGedrueckt(); // direct
   void onResultat();
 
   void onUpdateSkatLayout(LinkTo dest = LinkTo::Skat);

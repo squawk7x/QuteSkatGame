@@ -460,11 +460,15 @@ void CardVec::evaluateCards(
     });
 
     auto isValidCard = [&](const Card& card) -> bool {
-      if (hasJack && trickCardFirst.rank() == "J") return card.rank() == "J";
+      if (trickCardFirst.rank() == "J" && hasJack) return card.rank() == "J";
 
-      if (hasSuit) return card.suit() == requiredSuit && card.rank() != "J";
+      if (trickCardFirst.rank() != "J" && hasSuit)
+        return (card.suit() == requiredSuit && card.rank() != "J");
 
-      return false;
+      // if (hasSuit) return (card.suit() == requiredSuit);
+
+      // return false;
+      return true;
     };
 
     // Apply filtering
@@ -504,6 +508,11 @@ void CardVec::setPowerCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardStrongest,
     Order order) {
   qDebug() << "setPowerCards...";
+
+  if (validCards_.empty()) {
+    qDebug() << "No power cards after filtering.";
+    return;
+  }
 
   lowestPowerCard_ = Card();
   highestPowerCard_ = Card();
@@ -585,6 +594,11 @@ void CardVec::setRankCards(
     Rule rule, const Card& trickCardStrongest, Order order) {
   qDebug() << "setRankCards...";
 
+  if (validCards_.empty()) {
+    qDebug() << "No cards available to determine rank.";
+    return;
+  }
+
   lowestRankCard_ = Card();
   highestRankCard_ = Card();
   nextLowerRankCard_ = Card();
@@ -594,11 +608,6 @@ void CardVec::setRankCards(
 
   qDebug() << "sorted by Rank power:";
   printContainer(validCards_);
-
-  if (validCards_.empty()) {
-    qDebug() << "No cards available to determine rank.";
-    return;
-  }
 
   lowestRankCard_ = validCards_.front();
   qDebug() << "lowestRankCard_"
@@ -657,6 +666,11 @@ void CardVec::setRankCards(
 void CardVec::setValueCards(
     const Card& trickCardStrongest, Order order) {
   qDebug() << "setValueCards...";
+
+  if (validCards_.empty()) {
+    qDebug() << "No cards available to determine rank.";
+    return;
+  }
 
   lowestValueCard_ = Card();
   highestValueCard_ = Card();
