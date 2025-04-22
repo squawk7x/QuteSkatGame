@@ -192,7 +192,12 @@ std::string Card::suit() const { return suit_; }
 std::string Card::rank() const { return rank_; }
 std::string Card::suitname() const { return suitname_; }
 std::string Card::rankname() const { return rankname_; }
-std::string Card::str() const { return str_; }
+std::string Card::str() const {
+  if (suit_.empty() || rank_.empty()) {
+    return "<invalid card>";
+  }
+  return str_;
+}
 std::string Card::name() const { return name_; }
 bool Card::isEmpty() const { return (suit_ == "" && rank_ == ""); }
 

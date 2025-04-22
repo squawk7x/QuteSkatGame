@@ -48,37 +48,65 @@ int Player::points() const { return points_; }
 void Player::checkForNull() {
   qDebug() << this->name() << "checkForNull ...";
 
-  bool isNullOk = true;
+  // Null
 
+  bool isNullOk = true;
+  bool isNullHandOk = true;
   for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
     std::vector<int> nullPattern = handdeck_.toPattern(Rule::Null, suit);
 
     auto last5 = nullPattern | std::views::reverse | std::views::take(5);
     int sumLast5 = std::accumulate(last5.begin(), last5.end(), 0);
+    int sumAll8 = std::accumulate(nullPattern.begin(), nullPattern.end(), 0);
 
     // e.g. AKQJ1987
-    // e.g. XXX11100
-    isNullOk = isNullOk && sumLast5 >= 3;
+    // e.g. XXX11100 || 00100000 (kann evtl. weggedrückt werden)
+    isNullOk = isNullOk && (sumLast5 >= 3 || sumAll8 == 1);
+    // e.g. AKQJ1987
+    // e.g. 0XX11100 (kein Ass)
+    isNullHandOk = isNullOk && (isNullHandOk && nullPattern.front() != 1);
     qDebug() << "isNullOk:" << isNullOk;
     if (not isNullOk) break;
+    // mit break => trotzdem aud Null Ouvert prüfen
+    // return;
+    // mit return => Abbruch Null Überprüfung
   }
   if (isNullOk) desiredRule_ = Rule::Null;
+  if (isNullHandOk) desiredHand_ = true;
+
+  // Null Ouvert
 
   bool isNullOuvertOk = true;
+  bool isNullOuvertHandOk = true;
   for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
     std::vector<int> nullPattern = handdeck_.toPattern(Rule::Null, suit);
 
     auto last5 = nullPattern | std::views::reverse | std::views::take(5);
     int sumLast5 = std::accumulate(last5.begin(), last5.end(), 0);
+    int sumAll8 = std::accumulate(nullPattern.begin(), nullPattern.end(), 0);
 
     // e.g. AKQJ1987
-    // e.g. XXX11001
-    isNullOuvertOk =
-        isNullOuvertOk && (sumLast5 >= 3 && nullPattern.back() == 1);
+    // e.g. 1XX11XX1
+    isNullOuvertOk = isNullOuvertOk &&
+                     (sumLast5 >= 3 && nullPattern.back() == 1 || sumAll8 == 0);
+    isNullOuvertHandOk = isNullOuvertOk && isNullOuvertHandOk &&
+                         (nullPattern.front() != 1 || sumAll8 == 0);
+
     qDebug() << "isNullOuvertOk:" << isNullOuvertOk;
-    if (not isNullOk || isNullOuvertOk) break;
+    if (not isNullOuvertOk) {
+      // Testing
+      // break;
+      return;
+    }
   }
-  if (isNullOk && isNullOuvertOk) desiredOuvert_ = true;
+  if (isNullOuvertOk) desiredRule_ = Rule::Null;
+  if (isNullOuvertOk) desiredOuvert_ = true;
+  if (isNullOuvertHandOk) desiredHand_ = true;
+
+  // // Testing:
+  // desiredRule_ = Rule::Null;
+  // desiredOuvert_ = false;
+  // desiredHand_ = false;
 }
 
 void Player::checkForGrand() {

@@ -469,7 +469,10 @@ void Game::roboDruecken(
 
   // ===================== Hand ====================
 
+  // hand / ouvert / schneiderAngesagt, schwarzAngesagt
   // entscheidet player in setDesiredGame()
+
+  if (player->desiredHand_ == true) return;
 
   // =================   not hand_  =================
 

@@ -710,7 +710,9 @@ void CardVec::setValueCards(
       }
     }
     qDebug() << "nextLowerValueCard_"
-             << QString::fromStdString(nextLowerValueCard_.str());
+             << (nextLowerValueCard_ != Card()
+                     ? QString::fromStdString(nextLowerValueCard_.str())
+                     : "<none>");
 
     sortCardsByValue(validCards_, Order::Decrease);
 
@@ -725,7 +727,9 @@ void CardVec::setValueCards(
       }
     }
     qDebug() << "nextHigherValueCard_"
-             << QString::fromStdString(nextHigherValueCard_.str());
+             << (nextHigherValueCard_ != Card()
+                     ? QString::fromStdString(nextHigherValueCard_.str())
+                     : "<none>");
   }
 }
 
