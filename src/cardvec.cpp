@@ -508,7 +508,16 @@ void CardVec::evaluateCards(
   setValueCards(trickCardStrongest, order);
 }
 
-//
+/* PowerCards can eventually beat  trickCardStrongest
+
+                                  highest
+        nexthigher        lowest  highest     lowest can be equal to nexthigher
+    trickCardStrongest    lowest  highest
+        nextLower         lowest  highest     highest can be equal to nextLower
+                          lowest
+
+*/
+
 void CardVec::setPowerCards(
     Rule rule, const std::string& trumpSuit, const Card& trickCardStrongest,
     Order order) {

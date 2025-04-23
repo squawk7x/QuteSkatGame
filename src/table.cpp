@@ -115,7 +115,8 @@ Table::Table(
     QObject::connect(ui->pbOuvert, &QPushButton::toggled, this,
                      [this](bool checked) {
                        game_->ouvert_ = checked;
-
+                       if (not checked) game_->schneiderAngesagt_ = false;
+                       if (not checked) game_->schwarzAngesagt_ = false;
                        setButtonLogic();
 
                        qDebug() << "ouvert_ set to" << game_->ouvert_;
@@ -124,6 +125,8 @@ Table::Table(
     QObject::connect(
         ui->pbSchneider, &QPushButton::toggled, this, [this](bool checked) {
           game_->schneiderAngesagt_ = checked;
+          // Reset schwarzAngesagt_ to false when schneiderAngesagt_ to false
+          if (not checked) game_->schwarzAngesagt_ = false;
 
           qDebug() << "schneider_ set to" << game_->schneiderAngesagt_;
         });
@@ -143,7 +146,7 @@ Table::Table(
     QObject::connect(ui->pbBieten, &QPushButton::clicked, this, [this]() {
       if (!game_->sager->isRobot()) game_->gereizt_ = game_->reizen();
 
-      qDebug() << "Player pbBieten" << game_->sager->name();
+      // qDebug() << "Player pbBieten" << game_->sager->name();
 
       game_->bieten(Passen::Nein);
     });
@@ -165,6 +168,7 @@ Table::Table(
       ui->gbFrageHand->hide();
       ui->gbDruecken->show();
       onUpdateSkatLayout(LinkTo::SoloPlayer);
+      setButtonLogic();
     });
 
     QObject::connect(ui->pbHandJa, &QPushButton::clicked, this, [this]() {
@@ -172,6 +176,7 @@ Table::Table(
       ui->pbHand->setText("Hand");
       ui->gbFrageHand->hide();
       ui->pbDruecken->click();  // even if not visible
+      setButtonLogic();
     });
 
     QObject::connect(game_, &Game::roboGedrueckt, this, [this]() {
@@ -690,29 +695,39 @@ Grand Hand Ouvert         Ja            Ja (automatisch)
  */
 
 void Table::setButtonLogic() {
-  if (game_->rule_ == Rule::Grand || game_->rule_ == Rule::Suit) {
-    ui->pbHand->setVisible(game_->hand_);
-    ui->pbOuvert->setVisible(game_->hand_);
-
-    // Schneider is always announced if playing Grand Hand
-    ui->pbSchneider->setVisible(game_->hand_);
-    game_->schneiderAngesagt_ = false;
-    ui->pbSchneider->setChecked(false || game_->ouvert_);
-    ui->pbSchneider->setDisabled(false || game_->ouvert_);
-
-    // Schwarz is only announced if Grand Hand Ouvert is played
-    ui->pbSchwarz->setVisible(game_->hand_);
-    game_->schwarzAngesagt_ = false;
-    ui->pbSchwarz->setChecked(false || game_->ouvert_);
-    ui->pbSchwarz->setDisabled(false || game_->ouvert_);
-
-    ui->pbOuvert->setVisible(game_->hand_);
-  }
-
   if (game_->rule_ == Rule::Null) {
     ui->pbOuvert->setVisible(true);
     ui->pbSchneider->setVisible(false);
     ui->pbSchwarz->setVisible(false);
+    return;
+  }
+
+  else if (game_->rule_ == Rule::Ramsch) {
+    ui->pbOuvert->setVisible(false);
+    ui->pbSchneider->setVisible(false);
+    ui->pbSchwarz->setVisible(false);
+    return;
+  }
+
+  ui->pbHand->setVisible(game_->hand_);
+  ui->pbOuvert->setVisible(game_->hand_);
+
+  ui->pbSchneider->setVisible(game_->hand_);
+  ui->pbSchwarz->setVisible(game_->hand_);
+
+  ui->pbSchneider->setEnabled(game_->ouvert_);
+  ui->pbSchwarz->setEnabled(game_->ouvert_);
+
+  if (game_->rule_ == Rule::Suit) {
+    ui->pbSchneider->setChecked(game_->schneiderAngesagt_);
+    ui->pbSchwarz->setChecked(game_->schwarzAngesagt_);
+  }
+
+  else if (game_->rule_ == Rule::Grand) {
+    ui->pbSchneider->setChecked(game_->schneiderAngesagt_ || game_->ouvert_);
+    ui->pbSchwarz->setChecked(game_->schwarzAngesagt_ || game_->ouvert_);
+    ui->pbSchneider->setDisabled(game_->ouvert_);
+    ui->pbSchwarz->setDisabled(game_->ouvert_);
   }
 }
 

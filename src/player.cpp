@@ -45,149 +45,191 @@ bool Player::isRobot() const { return isRobot_; }
 int Player::score() const { return score_; }
 int Player::points() const { return points_; }
 
+// ============================   Null   ==============================
+
 void Player::checkForNull() {
-  qDebug() << this->name() << "checkForNull ...";
+  qDebug() << QString::fromStdString(this->name()) << "checkForNull ...";
 
-  // Null
+  bool isNullOk = true;    // must be Ok for all suits
+  bool isHandOk = true;    // must be Ok for all suits
+  bool isOuvertOk = true;  // must be Ok for all suits
 
-  bool isNullOk = true;
-  bool isNullHandOk = true;
   for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
-    std::vector<int> nullPattern = handdeck_.toPattern(Rule::Null, suit);
+    std::vector<int> pattern = handdeck_.toPattern(Rule::Null, suit);
+    // int sumAll8 = std::ranges::fold_left(pattern, 0, std::plus{});
+    int sumAll8 = std::accumulate(pattern.begin(), pattern.end(), 0);
 
-    auto last5 = nullPattern | std::views::reverse | std::views::take(5);
+    auto last5 = pattern | std::views::drop(3);
+    // int sumLast5 = std::ranges::fold_left(last5, 0, std::plus{});
     int sumLast5 = std::accumulate(last5.begin(), last5.end(), 0);
-    int sumAll8 = std::accumulate(nullPattern.begin(), nullPattern.end(), 0);
+    // e.g. AKQJ1987
+    // e.g. 10011100 Risiko fehlende 7 und fehlende 8, mit Ass
+    isNullOk = isNullOk && (sumLast5 >= 3);
+    qDebug() << "isNullOk:" << isNullOk;
+    // e.g. AKQJ1987
+    // e.g. 10011010 Risiko fehlende 7 oder fehlende 8, mit Ass
+    isHandOk = isHandOk && (pattern[7] == 1 || pattern[6] == 1 || sumAll8 == 0);
+    qDebug() << "isHandOk:" << isHandOk;
 
     // e.g. AKQJ1987
-    // e.g. XXX11100 || 00100000 (kann evtl. weggedrückt werden)
-    isNullOk = isNullOk && (sumLast5 >= 3 || sumAll8 == 1);
-    // e.g. AKQJ1987
-    // e.g. 0XX11100 (kein Ass)
-    isNullHandOk = isNullOk && (isNullHandOk && nullPattern.front() != 1);
-    qDebug() << "isNullOk:" << isNullOk;
-    if (not isNullOk) break;
-    // mit break => trotzdem aud Null Ouvert prüfen
+    // e.g. 10011001 Risiko eine Farbe muß eventuell weggedrückt werden
+    isOuvertOk = isOuvertOk && (pattern[0] != 1 || sumAll8 <= 1);
+    qDebug() << "isOuvertOk:" << isOuvertOk;
+
+    if (not isNullOk) return;
     // return;
     // mit return => Abbruch Null Überprüfung
   }
-  if (isNullOk) desiredRule_ = Rule::Null;
-  if (isNullHandOk) desiredHand_ = true;
-
-  // Null Ouvert
-
-  bool isNullOuvertOk = true;
-  bool isNullOuvertHandOk = true;
-  for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
-    std::vector<int> nullPattern = handdeck_.toPattern(Rule::Null, suit);
-
-    auto last5 = nullPattern | std::views::reverse | std::views::take(5);
-    int sumLast5 = std::accumulate(last5.begin(), last5.end(), 0);
-    int sumAll8 = std::accumulate(nullPattern.begin(), nullPattern.end(), 0);
-
-    // e.g. AKQJ1987
-    // e.g. 1XX11XX1
-    isNullOuvertOk = isNullOuvertOk &&
-                     (sumLast5 >= 3 && nullPattern.back() == 1 || sumAll8 == 0);
-    isNullOuvertHandOk = isNullOuvertOk && isNullOuvertHandOk &&
-                         (nullPattern.front() != 1 || sumAll8 == 0);
-
-    qDebug() << "isNullOuvertOk:" << isNullOuvertOk;
-    if (not isNullOuvertOk) {
-      // Testing
-      // break;
-      return;
-    }
+  if (isNullOk) {
+    desiredRule_ = Rule::Null;
+    desiredHand_ = isHandOk;
+    desiredOuvert_ = isOuvertOk;
   }
-  if (isNullOuvertOk) desiredRule_ = Rule::Null;
-  if (isNullOuvertOk) desiredOuvert_ = true;
-  if (isNullOuvertHandOk) desiredHand_ = true;
 
-  // // Testing:
+  // Testing:
   // desiredRule_ = Rule::Null;
   // desiredOuvert_ = false;
   // desiredHand_ = false;
 }
 
 void Player::checkForGrand() {
-  qDebug() << this->name() << "checkForGrand ...";
+  qDebug() << QString::fromStdString(this->name()) << "checkForGrand ...";
 
-  bool isGrandOk = true;
-  bool isJackOk = true;
-  bool isSuitOk = true;
-
-  // e.g. JJJJ  A1KQ987
-  // e.g. 1011  101XXXX
-  for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
-    std::vector<int> pattern = handdeck_.toPattern(Rule::Grand, suit);
-
-    /// JJJJ
-    auto jackPattern = pattern | std::views::take(4);
-    int numJacks = std::accumulate(jackPattern.begin(), jackPattern.end(), 0);
-    std::vector<int> jackVec(jackPattern.begin(), jackPattern.end());
-
-    isJackOk =
-        isJackOk && (numJacks >= 3 && jackVec != std::vector<int>{0, 0, 1, 1});
-
-    auto topSuitPattern = pattern | std::views::drop(4) |  // drop J J J J
-                          std::views::take(3);             // consider A 10 K
-    int numTopSuit =
-        std::accumulate(topSuitPattern.begin(), topSuitPattern.end(), 0);
-    std::vector<int> suitTopVec(topSuitPattern.begin(), topSuitPattern.end());
-
-    auto suitPattern = pattern | std::views::drop(4);  // drop J J J J
-    int numSuit = std::accumulate(suitPattern.begin(), suitPattern.end(), 0);
-    std::vector<int> suitVec(suitPattern.begin(), suitPattern.end());
-
-    isSuitOk = isSuitOk &&
-               ((numTopSuit >= 2 &&
-                 suitTopVec !=
-                     std::vector<int>{
-                         0, 1, 1}) ||  // 2 von den hohen aber nicht 10 und K
-                numSuit <= 1);         // max 1 zum wegdrücken
-
-    isGrandOk = isJackOk && isSuitOk;
-
-    qDebug() << "isGrandOk:" << isGrandOk;
-    if (not isGrandOk) break;
-  }
-  if (isGrandOk) desiredRule_ = Rule::Grand;
-}
-
-void Player::checkForSuit() {
-  qDebug() << this->name() << "checkForSuit ...";
-
-  bool isSuitOk = false;
+  bool isGrandOk = false;
+  bool isJackOk = false;
+  bool isSuitOk = true;    // must be Ok for all suits
+  bool isHandOk = true;    // must be Ok for all suits
+  bool isOuvertOk = true;  // must be Ok for all suits
 
   // e.g. JJJJ  A1KQ987
   // e.g. 1011  101XXXX
   for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
     std::vector<int> pattern = handdeck_.toPattern(Rule::Suit, suit);
 
-    auto jackPattern = pattern | std::views::take(4);
-    int numJacks = std::accumulate(jackPattern.begin(), jackPattern.end(), 0);
-    std::vector<int> jackVec(jackPattern.begin(), jackPattern.end());
+    // Take JJJJ into account
+    auto jackView = pattern | std::views::take(4);
+    int numJacks = std::accumulate(jackView.begin(), jackView.end(), 0);
+    std::vector<int> jackVector(jackView.begin(), jackView.end());
 
-    auto suitPattern = pattern | std::views::drop(4);  // drop J J J J
-    int numSuits = std::accumulate(suitPattern.begin(), suitPattern.end(), 0);
+    isJackOk = (numJacks >= 2 && jackVector != std::vector<int>{0, 0, 1, 1} ||
+                numJacks >= 1 && jackVector[0] == 1);
 
-    std::vector<int> suitVec(suitPattern.begin(), suitPattern.end());
+    // take A 10 into account or size of suit
+    auto suitView = pattern | std::views::drop(4);  // drop JJJJ
+    int numSuits = std::accumulate(suitView.begin(), suitView.end(), 0);
+    std::vector<int> suitVector(suitView.begin(), suitView.end());
 
-    isSuitOk = isSuitOk || (numJacks + numSuits >= 5);
+    auto top2view = suitView | std::views::take(2);  // consider A 10
+    std::vector<int> top2vector(top2view.begin(), top2view.end());
 
-    qDebug() << "isSuitOk:" << isSuitOk;
-    if (isSuitOk) break;
+    isSuitOk =
+        isSuitOk && (top2vector == std::vector<int>{1, 0} ||
+                     top2vector == std::vector<int>{1, 1} || numSuits >= 4);
+
+    // lange
+    isHandOk = isHandOk && numJacks >= 3 && (numSuits == 0 || numSuits >= 5);
+
+    auto top4view = suitView | std::views::take(4);  // consider A 10
+    std::vector<int> top4vector(top4view.begin(), top4view.end());
+
+    isOuvertOk =
+        isOuvertOk && numJacks >= 3 &&
+        // die 2 höchsten Buben
+        (jackVector != std::vector<int>{0, 1, 1, 1} &&
+         jackVector != std::vector<int>{1, 0, 1, 1}) &&
+        // von einer Farbe keine Karte oder die höchsten
+        (numSuits == 0 ||
+         (numSuits == 1 && top4vector == std::vector<int>{1, 0, 0, 0}) ||
+         (numSuits == 2 && top4vector == std::vector<int>{1, 1, 0, 0}) ||
+         (numSuits == 3 && top4vector == std::vector<int>{1, 1, 1, 0}) ||
+         (numSuits >= 4 && top4vector == std::vector<int>{1, 1, 1, 1}));
+
+    isGrandOk = isJackOk && isSuitOk;
+
+    qDebug() << "isGrandOk:" << isGrandOk;
+    if (not isGrandOk) {
+      return;
+    }
   }
+
+  if (isGrandOk) {
+    desiredRule_ = Rule::Grand;
+    desiredTrump_ = "J";
+    desiredHand_ = isHandOk;
+
+    // Ouvert requires Hand
+    if (isOuvertOk) {
+      desiredHand_ = true;
+      desiredOuvert_ = isOuvertOk;
+      desiredSchneider_ = true;
+      desiredSchneiderAngesagt_ = true;
+      desiredSchwarz_ = true;
+      desiredSchwarzAngesagt_ = true;
+    }
+  }
+}
+
+void Player::checkForSuit() {
+  qDebug() << QString::fromStdString(this->name()) << "checkForSuit ...";
+
+  bool isSuitOk = false;   // only for this suit
+  bool isHandOk = true;    // must apply to all suits
+  bool isOuvertOk = true;  // only for this suit
+
+  // e.g. JJJJ  A1KQ987
+  // e.g. 1011  101XXXX
+  for (const std::string &suit : {"♣", "♠", "♥", "♦"}) {
+    std::vector<int> pattern = handdeck_.toPattern(Rule::Suit, suit);
+
+    auto jackView = pattern | std::views::take(4);
+    int numJacks = std::accumulate(jackView.begin(), jackView.end(), 0);
+    std::vector<int> jackVector(jackView.begin(), jackView.end());
+
+    auto suitView = pattern | std::views::drop(4);  // drop JJJJ
+    int numSuits = std::accumulate(suitView.begin(), suitView.end(), 0);
+
+    std::vector<int> suitVector(suitView.begin(), suitView.end());
+
+    isSuitOk = isSuitOk || (numJacks >= 1 && numJacks + numSuits >= 5) ||
+               (numSuits >= 6 && suitView[0] == 1 && suitView[1] == 1);
+
+    // check for all suits
+    isHandOk = isHandOk && (numSuits == 0 || numSuits >= 3);
+
+    // check for all suits / 2-Farbenspiel
+    isOuvertOk = isOuvertOk && (numSuits == 0 || numSuits >= 4);
+
+    // if (isSuitOk) break;  // not return!
+  }
+  qDebug() << "isSuitOk:" << isSuitOk;
+
   if (isSuitOk) {
     desiredRule_ = Rule::Suit;
+
     std::pair favorite =
         handdeck_.mostPairInMap(handdeck_.mapCards(Rule::Suit));
     desiredTrump_ = favorite.first;
+
+    desiredHand_ = isHandOk;
+
+    if (isOuvertOk) {
+      desiredHand_ = true;
+      desiredOuvert_ = true;
+    }
   }
 }
 
 void Player::setDesiredGame() {
   qDebug() << "setDesiredGame ...";
+
+  desiredRule_ = Rule::Unset;
+  desiredTrump_ = "";
+  desiredHand_ = false;
+  desiredOuvert_ = false;
+  desiredSchneider_ = false;
+  desiredSchneiderAngesagt_ = false;
+  desiredSchwarz_ = false;
+  desiredSchwarzAngesagt_ = false;
 
   if (desiredRule_ == Rule::Unset) checkForNull();
   if (desiredRule_ == Rule::Unset) checkForGrand();

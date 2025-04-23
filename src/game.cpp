@@ -59,14 +59,15 @@ void Game::start() {
     player->tricks_.clear();
     player->skat_.cards().clear();
 
-    player->desiredRule_ = Rule::Unset;
-    player->desiredTrump_ = "";
-    player->desiredHand_ = false;
-    player->desiredSchneider_ = false;
-    player->desiredSchneiderAngesagt_ = false;
-    player->desiredSchwarz_ = false;
-    player->desiredSchwarzAngesagt_ = false;
-    player->desiredOuvert_ = false;
+    // reset in Player::setDesiredGame()
+    // player->desiredRule_ = Rule::Unset;
+    // player->desiredTrump_ = "";
+    // player->desiredHand_ = false;
+    // player->desiredSchneider_ = false;
+    // player->desiredSchneiderAngesagt_ = false;
+    // player->desiredSchwarz_ = false;
+    // player->desiredSchwarzAngesagt_ = false;
+    // player->desiredOuvert_ = false;
   }
 
   player_1.isRobot_ = false;
@@ -503,7 +504,7 @@ void Game::roboDruecken(
 
   else if (rule_ == Rule::Suit || rule_ == Rule::Grand) {
     // alle 12 Karten zählen für spitzen
-    qDebug() << player->name() << "spielt mit / ohne:"
+    qDebug() << QString::fromStdString(player->name()) << "spielt mit / ohne:"
              << player->handdeck_.spitzen(player->desiredRule_,
                                           player->desiredTrump_);
 
@@ -652,14 +653,15 @@ void Game::druecken() {
 
     player->skat_ = skat_;
 
-    qDebug() << player->name() << "hat gedrückt:";
+    qDebug() << QString::fromStdString(player->name()) << "hat gedrückt:";
     for (const Card& card : player->skat_.cards())
       qDebug() << QString::fromStdString(card.str());
 
     // (game_->skat_.size() == 2) witd mit pbDruecken überprüft
     player->setPoints();
 
-    qDebug() << player->name() << "drückt" << player->points() << "points";
+    qDebug() << QString::fromStdString(player->name()) << "drückt"
+             << player->points() << "points";
     // Punkte setzen
     skat_.cards().clear();
   }
@@ -1238,8 +1240,11 @@ void Game::finishRound() {
     assert(player_1.points_ + player_2.points_ + player_3.points_ +
                urSkat_.points() ==
            120);
-  else
+  else if (rule_ == Rule::Grand || rule_ == Rule::Suit)
     assert(player_1.points_ + player_2.points_ + player_3.points_ == 120);
+
+  else if (rule_ == Rule::Null)
+    assert(1 == 1);  // TODO
 
   // Ramsch
   // TODO Schieberamsch
