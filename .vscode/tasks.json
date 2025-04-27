@@ -5,10 +5,10 @@
     "args": [
         "-fdiagnostics-color=always",
         "-g",
-        "-I/home/andreas/Qt/6.8.2/gcc_64/include",
-        "-I/home/andreas/Qt/6.8.2/gcc_64/include/QtCore",
-        "-I/home/andreas/Qt/6.8.2/gcc_64/include/QtWidgets",
-        "-I/home/andreas/Qt/6.8.2/gcc_64/include/QtGui",
+        "-I/home/andreas/Qt/6.9.0/gcc_64/include",
+        "-I/home/andreas/Qt/6.9.0/gcc_64/include/QtCore",
+        "-I/home/andreas/Qt/6.9.0/gcc_64/include/QtWidgets",
+        "-I/home/andreas/Qt/6.9.0/gcc_64/include/QtGui",
         "/home/andreas/Qt-Projects/QuteSkatGame/src/game.cpp",
         "-o",
         "/home/andreas/Qt-Projects/QuteSkatGame/src/game"

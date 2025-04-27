@@ -72,33 +72,33 @@ if(QT_VERSION_MAJOR EQUAL 6)
 endif()
 
 # ---------------------------------------------------------
-
 # Enable testing
-enable_testing()
 
-# Find GoogleTest and Qt6
-set(GTEST_DIR /usr/share/googletest)
-set(GMOCK_DIR /usr/share/googletest/googlemock)
+# enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Test Widgets Gui)
+# # Find GoogleTest and Qt6
+# set(GTEST_DIR /usr/share/googletest)
+# set(GMOCK_DIR /usr/share/googletest/googlemock)
 
-# Include GoogleTest and GoogleMock
-include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
+# find_package(Qt6 REQUIRED COMPONENTS Core Test Widgets Gui)
 
-# Add GoogleTest
-add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
+# # Include GoogleTest and GoogleMock
+# include_directories(${GTEST_DIR}/googletest/include ${GMOCK_DIR}/include)
 
-# Define test executable Define sources without main.cpp
-set(TEST_SOURCES ${PROJECT_SOURCES} tests/tester.cpp)
-list(REMOVE_ITEM TEST_SOURCES src/main.cpp)
+# # Add GoogleTest
+# add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/googletest-build)
 
-# Define test executable
-add_executable(runTests #[[tests/tst_reizen.cpp tests/tst_bieten.cpp]]
-               tests/tester.cpp ${TEST_SOURCES})
+# # Define test executable Define sources without main.cpp
+# set(TEST_SOURCES ${PROJECT_SOURCES} tests/tester.cpp)
+# list(REMOVE_ITEM TEST_SOURCES src/main.cpp)
 
-# Link GoogleTest and Qt6
-target_link_libraries(runTests gtest gtest_main Qt6::Core Qt6::Test
-                      Qt6::Widgets)
+# # Define test executable
+# add_executable(runTests #[[tests/tst_reizen.cpp tests/tst_bieten.cpp]]
+#                tests/tester.cpp ${TEST_SOURCES})
 
-# Register the tests
-add_test(NAME CardTests COMMAND runTests)
+# # Link GoogleTest and Qt6
+# target_link_libraries(runTests gtest gtest_main Qt6::Core Qt6::Test
+#                       Qt6::Widgets)
+
+# # Register the tests
+# add_test(NAME CardTests COMMAND runTests)

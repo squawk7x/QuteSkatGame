@@ -8,6 +8,12 @@
 Card::Card() : suit_(""), rank_("") {}
 
 // Constructor: Card("♥", "Q")
+
+/**
+ * @brief Card::Card primary constructor e.g.: Card("♥", "Q")
+ * @param suit any of these suits: {"♣", "♥", "♠", "♦"}
+ * @param rank any of these ranks: {"J", "A", "10", "K", "Q", "9", "8",  "7"}
+ */
 Card::Card(
     const std::string& suit, const std::string& rank)
     : suit_{suit}, rank_{rank} {
@@ -21,7 +27,10 @@ Card::Card(
   }
 }
 
-// Constructor: Card("♥Q")
+/**
+ * @brief Card::Card alternative constructor: e.g. Card("♥Q")
+ * @param cardStr any combination of suit and rank as single string
+ */
 Card::Card(
     const std::string& cardStr) {
   // std::cout << cardStr.length();
@@ -43,24 +52,38 @@ Card::Card(
   }
 }
 
-// Constructor: Card(std::pair("♥", "Q"))
+/**
+ * @brief Card::Card alternative constructor: e.g. Card(std::pair("♥",
+ * "Q"))
+ * @param pair of suit and rank e.g. pair("♥", "Q")
+ */
 Card::Card(
     const std::pair<std::string, std::string>& pair)
     : Card(pair.first, pair.second) {}
 
-// Clone
+/**
+ * @brief Card::clone creates a deep copy of a card
+ * @return returns a unique pointer to a card
+ */
 std::unique_ptr<Card> Card::clone() const {
   return std::make_unique<Card>(*this);  // Deep copy and unique ownership
 }
 
-// Copy constructor
+/**
+ * @brief Card::Card copy constructor
+ * @param other
+ */
 Card::Card(
     const Card& other)
     : suit_(other.suit_), rank_(other.rank_) {
   initCard();
 }
 
-// Copy assignment
+/**
+ * @brief Card::operator = copy assignment operator
+ * @param other
+ * @return
+ */
 Card& Card::operator=(
     const Card& other) {
   if (this != &other) {
@@ -71,7 +94,10 @@ Card& Card::operator=(
   return *this;
 }
 
-// Move constructor
+/**
+ * @brief Card::Card move constructor
+ * @param other
+ */
 Card::Card(
     Card&& other) noexcept
     : suit_(std::move(other.suit_)),
@@ -96,7 +122,11 @@ Card::Card(
   other.power_ = 0;
 }
 
-// Move assignment (Fixed Recursive Call)
+/**
+ * @brief Card::operator = move assignment operator
+ * @param other
+ * @return
+ */
 Card& Card::operator=(
     Card&& other) noexcept {
   if (this != &other) {
@@ -125,18 +155,48 @@ Card& Card::operator=(
   return *this;
 }
 
-// Comparison Operators
+/**
+ * @brief Card::operator == comparison operator ==
+ * @param other
+ * @return
+ */
 bool Card::operator==(
     const Card& other) const {
   return suit_ == other.suit_ && rank_ == other.rank_;
 }
 
+/**
+ * @brief Card::operator <=> "space ship" operator <=>
+ * @param other
+ * @return
+ */
 std::strong_ordering Card::operator<=>(
     const Card& other) const {
   return value_ <=> other.value_;
 }
 
-// Private Methods
+/**
+ * @brief Initializes the member fields of a Card object, e.g., for const Card&
+ * card = Card("♥Q").
+ *
+ * @details
+ * The following member fields are initialized:
+ *
+ * @section member_variables Class Member Variables
+ * - `pair_` (std::pair<std::string, std::string>): A pair that stores the rank
+ * and suit of the card.
+ * - `suit_` (std::string): The suit of the card, initialized to "♥".
+ * - `rank_` (std::string): The rank of the card, initialized to "Q".
+ * - `suitname_` (std::string): The name of the suit (e.g., "hearts").
+ * - `rankname_` (std::string): The name of the rank (e.g., "queen").
+ * - `str_` (std::string): The string representation of the card, e.g., "♥Q".
+ * - `name_` (std::string): The name used to identify the card image, e.g.,
+ * "queen_of_hearts".
+ * - `value_` (int): The value of the card (e.g. value_ of Q is initialized to
+ * 3).
+ * - `power_` (mutable int): The mutable power of the card, set according to the
+ * enum class Rule { Unset, Suit, Grand, Null, Ramsch }.
+ */
 void Card::initCard() {
   if (suit_.empty() || rank_.empty()) return;
 
@@ -149,7 +209,12 @@ void Card::initCard() {
   setValue(rank_);
 }
 
-// private setters
+/**
+ * @brief Card::setSuitname
+ * @param suit
+ *
+ * - `suitname_` (std::string): The name of the suit (e.g., "hearts").
+ */
 void Card::setSuitname(
     const std::string& suit) {
   auto it = std::ranges::find(suits, suit);
@@ -158,6 +223,13 @@ void Card::setSuitname(
   }
 }
 
+/**
+ * @brief Card::setRankname
+ * @param rank
+ *
+ * - `rankname_` (std::string): The name of the rank (e.g., "queen").
+ */
+
 void Card::setRankname(
     const std::string& rank) {
   auto it = std::ranges::find(ranks, rank);
@@ -165,11 +237,28 @@ void Card::setRankname(
     rankname_ = ranknames[std::distance(ranks.begin(), it)];
   }
 }
-
+/**
+ * @brief Card::setStr
+ *
+ * - `str_` (std::string): The string representation of the card, e.g., "♥Q".
+ */
 void Card::setStr() { str_ = suit_ + rank_; }
+
+/**
+ * @brief Card::setName
+ *
+ * - `name_` (std::string): The name used to identify the card image, e.g.,
+ * "queen_of_hearts".
+ */
 void Card::setName() { name_ = rankname_ + "_of_" + suitname_ /* + ".png"*/; }
 
-// Card values for german Skat game
+/**
+ * @brief Card::setValue
+ * @param rank
+ *
+ * - `value_` (int): The value of the card (e.g. value_ of Q is initialized to
+ * 3).
+ */
 void Card::setValue(
     const std::string& rank) {
   if (rank == "A") {
@@ -203,7 +292,14 @@ bool Card::isEmpty() const { return (suit_ == "" && rank_ == ""); }
 
 int Card::value() const { return value_; }
 
-// public methods
+/**
+ * @brief Card::power
+ * @param rule
+ * @param trumpSuit
+ * @return the power of the card according to the
+ * enum class Rule { Unset, Suit, Grand, Null, Ramsch } and the suit of trump
+ * when Rule::Suit is set.
+ */
 int Card::power(
     Rule rule, const std::string& trumpSuit) const {
   if (rule == Rule::Suit || rule == Rule::Grand || rule == Rule::Ramsch) {
@@ -235,12 +331,24 @@ int Card::power(
   return power_;
 }
 
+/**
+ * @brief Card::hasMoreValue
+ * @param other
+ * @return compares two cards and returns wether card has more value than other
+ * card.
+ */
 bool Card::hasMoreValue(
     const Card& other) {
   if (this->value_ > other.value_) return true;
   return false;
 }
 
+/**
+ * @brief Card::hasMorePower
+ * @param other
+ * @return compares two cards and returns wether card has more power than other
+ * card.
+ */
 bool Card::hasMorePower(
     const Card& other) {
   if (this->power_ > other.power_) return true;
